@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
-  Tool, Home, Star, Users, Phone, Wallet, HelpCircle, Clock
+  Wrench, Home, Star, Users, Phone, Wallet, HelpCircle, Clock
 } from "lucide-react";
 
 export default function CustomerDashboard() {
@@ -36,7 +36,7 @@ export default function CustomerDashboard() {
           className="w-full h-14 text-lg"
           onClick={() => navigate("/customer/book-service")}
         >
-          <Tool className="mr-2 w-5 h-5" />
+          <Wrench className="mr-2 w-5 h-5" />
           Book a Service
         </Button>
       </div>
@@ -71,12 +71,12 @@ export default function CustomerDashboard() {
       <div className="grid grid-cols-4 gap-4 mb-8">
         {[
           { icon: <Home className="w-6 h-6" />, name: "Home Cleaning" },
-          { icon: <Tool className="w-6 h-6" />, name: "Plumbing" },
-          { icon: <Tool className="w-6 h-6" />, name: "Electrical" },
-          { icon: <Tool className="w-6 h-6" />, name: "Painting" },
-          { icon: <Tool className="w-6 h-6" />, name: "Carpentry" },
-          { icon: <Tool className="w-6 h-6" />, name: "Appliances" },
-          { icon: <Tool className="w-6 h-6" />, name: "Pest Control" },
+          { icon: <Wrench className="w-6 h-6" />, name: "Plumbing" },
+          { icon: <Wrench className="w-6 h-6" />, name: "Electrical" },
+          { icon: <Wrench className="w-6 h-6" />, name: "Painting" },
+          { icon: <Wrench className="w-6 h-6" />, name: "Carpentry" },
+          { icon: <Wrench className="w-6 h-6" />, name: "Appliances" },
+          { icon: <Wrench className="w-6 h-6" />, name: "Pest Control" },
           { icon: <HelpCircle className="w-6 h-6" />, name: "More" }
         ].map((service, index) => (
           <Card key={index} className="p-3 flex flex-col items-center justify-center text-center">
