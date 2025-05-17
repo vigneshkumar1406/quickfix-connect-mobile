@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
   Wrench, Home, Star, Users, Phone, Wallet, HelpCircle, Clock, 
-  Fridge, WashingMachine
+  Refrigerator, WashingMachine
 } from "lucide-react";
 
 export default function CustomerDashboard() {
@@ -75,7 +75,7 @@ export default function CustomerDashboard() {
           { icon: <Wrench className="w-6 h-6" />, name: "Electrical" },
           { icon: <Wrench className="w-6 h-6" />, name: "Painting" },
           { icon: <Wrench className="w-6 h-6" />, name: "Carpentry" },
-          { icon: <Fridge className="w-6 h-6" />, name: "Fridge Repair" },
+          { icon: <Refrigerator className="w-6 h-6" />, name: "Fridge Repair" },
           { icon: <WashingMachine className="w-6 h-6" />, name: "Washing Machine" },
           { icon: <Wrench className="w-6 h-6" />, name: "Appliances" },
           { icon: <Wrench className="w-6 h-6" />, name: "Pest Control" },
