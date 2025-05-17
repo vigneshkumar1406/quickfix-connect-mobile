@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -5,15 +6,28 @@ import {
   Wrench, Home, Star, Users, Phone, Wallet, HelpCircle, Clock, 
   Refrigerator, WashingMachine
 } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from '@/contexts/LocationContext';
+import { toast } from "sonner";
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { currentLocation, getUserLocation } = useLocation();
+
+  const handleBookService = () => {
+    // Request location before booking service
+    if (!currentLocation) {
+      getUserLocation();
+    }
+    navigate("/customer/book-service");
+  };
 
   return (
     <div className="w-full pb-6 animate-fade-in">
       <div className="bg-primary text-white p-6 rounded-b-3xl mb-6">
         <h1 className="text-2xl font-bold mb-1">QuickFix</h1>
-        <p className="opacity-90">Welcome back</p>
+        <p className="opacity-90">Welcome back {user?.name || ''}</p>
         
         <Card className="bg-white mt-6 p-3 rounded-lg text-foreground">
           <div className="flex items-center mb-3">
@@ -34,7 +48,7 @@ export default function CustomerDashboard() {
       <div className="mb-6">
         <Button 
           className="w-full h-14 text-lg"
-          onClick={() => navigate("/customer/book-service")}
+          onClick={handleBookService}
         >
           <Wrench className="mr-2 w-5 h-5" />
           Book a Service
@@ -107,7 +121,10 @@ export default function CustomerDashboard() {
       <Button 
         variant="outline" 
         className="w-full"
-        onClick={() => navigate("/")}
+        onClick={() => {
+          logout();
+          navigate("/");
+        }}
       >
         Sign Out
       </Button>
