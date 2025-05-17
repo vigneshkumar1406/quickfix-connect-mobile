@@ -20,6 +20,8 @@ const services = [
   "Painting",
   "Cleaning",
   "Appliance Repair",
+  "Fridge Repair",
+  "Washing Machine",
   "Pest Control",
   "AC Service",
 ];
