@@ -1,10 +1,9 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
   Wrench, Home, Star, Users, Phone, Wallet, HelpCircle, Clock, 
-  Refrigerator, WashingMachine
+  Refrigerator, WashingMachine, Coins, Gift, History, TrendingUp
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from '@/contexts/LocationContext';
@@ -29,18 +28,52 @@ export default function CustomerDashboard() {
         <h1 className="text-2xl font-bold mb-1">QuickFix</h1>
         <p className="opacity-90">Welcome back {user?.name || ''}</p>
         
-        <Card className="bg-white mt-6 p-3 rounded-lg text-foreground">
+        <Card className="bg-white mt-6 p-4 rounded-lg text-foreground">
           <div className="flex items-center mb-3">
-            <Wallet className="w-5 h-5 text-primary mr-2" />
-            <h3 className="font-semibold">QuickFix Wallet</h3>
+            <Coins className="w-5 h-5 text-yellow-500 mr-2" />
+            <h3 className="font-semibold">QuickFix Coins</h3>
           </div>
           
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-4">
             <div>
               <p className="text-sm text-neutral-300">Available Balance</p>
-              <p className="text-xl font-bold">₹0.00</p>
+              <p className="text-xl font-bold text-yellow-600">0 Coins</p>
+              <p className="text-xs text-neutral-400">= ₹0.00</p>
             </div>
-            <Button size="sm" variant="outline">Add Money</Button>
+            <Button size="sm" variant="outline" className="flex items-center gap-1">
+              <Wallet className="w-4 h-4" />
+              Manage
+            </Button>
+          </div>
+
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center text-green-600">
+              <Gift className="w-4 h-4 mr-2" />
+              <span>Earn 400 coins when referral completes a job</span>
+            </div>
+            <div className="flex items-center text-blue-600">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              <span>Get 1% back as coins for online payments</span>
+            </div>
+            <div className="flex items-center text-purple-600">
+              <Star className="w-4 h-4 mr-2" />
+              <span>Get 1000 coins when bill reaches ₹5000</span>
+            </div>
+          </div>
+
+          <div className="flex gap-2 mt-4">
+            <Button size="sm" variant="ghost" className="flex-1 text-xs">
+              <History className="w-4 h-4 mr-1" />
+              History
+            </Button>
+            <Button size="sm" variant="ghost" className="flex-1 text-xs">
+              <Users className="w-4 h-4 mr-1" />
+              Referrals
+            </Button>
+          </div>
+          
+          <div className="mt-3 p-2 bg-yellow-50 rounded text-xs text-center">
+            <span className="font-medium">Exchange Rate:</span> 10 coins = ₹1 (service charges only)
           </div>
         </Card>
       </div>
