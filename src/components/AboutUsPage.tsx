@@ -127,7 +127,7 @@ export default function AboutUsPage() {
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="space-y-3">
         <Button 
