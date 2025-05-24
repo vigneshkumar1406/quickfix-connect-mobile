@@ -6,48 +6,45 @@ import { OtpInput } from "@/components/ui/otp-input";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BackButton from "./BackButton";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function OtpVerification() {
   const [phone, setPhone] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const { sendOTP, verifyOTP } = useAuth();
   
   const userRole = localStorage.getItem("quickfix-role") || "customer";
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     if (phone.length < 10) {
       toast.error("Please enter a valid phone number");
       return;
     }
     
     setIsLoading(true);
+    const result = await sendOTP(phone);
+    setIsLoading(false);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    if (result.success) {
       setOtpSent(true);
-      toast.success("OTP sent to your phone");
-    }, 1500);
+    }
   };
 
-  const handleVerifyOtp = (otp: string) => {
+  const handleVerifyOtp = async (otp: string) => {
     setIsLoading(true);
+    const result = await verifyOTP(phone, otp);
+    setIsLoading(false);
     
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Phone number verified successfully");
-      
+    if (result.success) {
       // Navigate based on user role
       if (userRole === "worker") {
         navigate("/worker/registration");
       } else {
         navigate("/customer/dashboard");
       }
-    }, 1500);
+    }
   };
 
   const handleSkip = () => {
@@ -60,6 +57,9 @@ export default function OtpVerification() {
 
   return (
     <div className="w-full max-w-md mx-auto animate-fade-in">
+      {/* reCAPTCHA container - invisible */}
+      <div id="recaptcha-container"></div>
+      
       <div className="mb-6">
         <BackButton withLabel />
       </div>
@@ -77,10 +77,11 @@ export default function OtpVerification() {
             <label className="text-sm font-medium mb-1 block">Phone Number</label>
             <Input
               type="tel"
-              placeholder="Enter your phone number"
+              placeholder="Enter your 10-digit phone number"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full"
+              maxLength={10}
             />
           </div>
           <Button
@@ -103,11 +104,11 @@ export default function OtpVerification() {
       ) : (
         <div className="space-y-6">
           <p className="text-center text-sm">
-            We've sent a code to: <strong>{phone}</strong>
+            We've sent a code to: <strong>+91 {phone}</strong>
           </p>
           
           <OtpInput 
-            length={4} 
+            length={6} 
             onComplete={handleVerifyOtp}
             className="mb-6" 
           />

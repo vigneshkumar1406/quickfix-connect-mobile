@@ -30,20 +30,22 @@ const OtpLogin = () => {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
     
-    if (!otp || otp.length !== 4) {
-      alert('Please enter a valid 4-digit OTP');
+    if (!otp || otp.length !== 6) {
+      alert('Please enter a valid 6-digit OTP');
       return;
     }
     
     const response = await verifyOTP(phoneNumber, otp);
     if (response.success) {
-      // Redirect based on user type - could be determined by a role in user object
       navigate('/customer/dashboard');
     }
   };
 
   return (
     <Card className="p-6">
+      {/* reCAPTCHA container - invisible */}
+      <div id="recaptcha-container"></div>
+      
       {!otpSent ? (
         <form onSubmit={handleSendOtp}>
           <div className="mb-4">
@@ -71,8 +73,8 @@ const OtpLogin = () => {
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter 4-digit OTP"
-                maxLength={4}
+                placeholder="Enter 6-digit OTP"
+                maxLength={6}
                 required
               />
               <p className="text-sm text-neutral-500">
