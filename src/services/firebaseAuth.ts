@@ -11,14 +11,20 @@ let recaptchaVerifier: RecaptchaVerifier | null = null;
 let confirmationResult: ConfirmationResult | null = null;
 
 export const initializeRecaptcha = () => {
+  console.log('Current hostname:', window.location.hostname);
+  console.log('Current origin:', window.location.origin);
+  
   if (!recaptchaVerifier) {
     recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      'size': 'normal', // Changed from 'invisible' to 'normal' for better reliability
+      'size': 'normal',
       'callback': () => {
-        console.log('reCAPTCHA solved');
+        console.log('reCAPTCHA solved successfully');
       },
       'expired-callback': () => {
-        console.log('reCAPTCHA expired');
+        console.log('reCAPTCHA expired, please try again');
+      },
+      'error-callback': (error: any) => {
+        console.error('reCAPTCHA error:', error);
       }
     });
   }
@@ -29,20 +35,38 @@ export const sendFirebaseOTP = async (phoneNumber: string): Promise<{ success: b
   try {
     // Clear any existing verification
     if (recaptchaVerifier) {
+      console.log('Clearing existing reCAPTCHA verifier');
       recaptchaVerifier.clear();
       recaptchaVerifier = null;
     }
     
+    // Check if reCAPTCHA container exists
+    const container = document.getElementById('recaptcha-container');
+    if (!container) {
+      return {
+        success: false,
+        message: "reCAPTCHA container not found. Please refresh the page and try again."
+      };
+    }
+    
+    // Clear the container
+    container.innerHTML = '';
+    
     // Ensure phone number has country code
     const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+91${phoneNumber}`;
     console.log('Attempting to send OTP to:', formattedPhone);
+    console.log('Current domain:', window.location.hostname);
     
     const recaptcha = initializeRecaptcha();
     
     // Render the reCAPTCHA
+    console.log('Rendering reCAPTCHA...');
     await recaptcha.render();
+    console.log('reCAPTCHA rendered successfully');
     
+    console.log('Sending OTP via Firebase...');
     confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, recaptcha);
+    console.log('OTP sent successfully');
     
     return { 
       success: true, 
@@ -57,7 +81,7 @@ export const sendFirebaseOTP = async (phoneNumber: string): Promise<{ success: b
     if (error.code === 'auth/captcha-check-failed') {
       return { 
         success: false, 
-        message: "reCAPTCHA verification failed. Please try again or check if the domain is authorized in Firebase." 
+        message: `Domain authorization failed. Current domain: ${window.location.hostname}. Please ensure this domain is added to Firebase Auth settings.` 
       };
     } else if (error.code === 'auth/too-many-requests') {
       return { 
@@ -68,6 +92,11 @@ export const sendFirebaseOTP = async (phoneNumber: string): Promise<{ success: b
       return { 
         success: false, 
         message: "Invalid phone number format." 
+      };
+    } else if (error.code === 'auth/quota-exceeded') {
+      return { 
+        success: false, 
+        message: "SMS quota exceeded. Please try again later or contact support." 
       };
     }
     
