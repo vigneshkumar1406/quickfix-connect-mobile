@@ -57,9 +57,6 @@ export default function OtpVerification() {
 
   return (
     <div className="w-full max-w-md mx-auto animate-fade-in">
-      {/* reCAPTCHA container - invisible */}
-      <div id="recaptcha-container"></div>
-      
       <div className="mb-6">
         <BackButton withLabel />
       </div>
@@ -84,6 +81,12 @@ export default function OtpVerification() {
               maxLength={10}
             />
           </div>
+          
+          {/* reCAPTCHA container - now visible */}
+          <div className="flex justify-center">
+            <div id="recaptcha-container"></div>
+          </div>
+          
           <Button
             onClick={handleSendOtp}
             disabled={isLoading}

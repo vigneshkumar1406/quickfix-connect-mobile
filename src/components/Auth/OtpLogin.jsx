@@ -43,9 +43,6 @@ const OtpLogin = () => {
 
   return (
     <Card className="p-6">
-      {/* reCAPTCHA container - invisible */}
-      <div id="recaptcha-container"></div>
-      
       {!otpSent ? (
         <form onSubmit={handleSendOtp}>
           <div className="mb-4">
@@ -58,6 +55,11 @@ const OtpLogin = () => {
               maxLength={10}
               required
             />
+          </div>
+          
+          {/* reCAPTCHA container - now visible */}
+          <div className="flex justify-center mb-4">
+            <div id="recaptcha-container"></div>
           </div>
           
           <Button type="submit" className="w-full" disabled={loading}>
