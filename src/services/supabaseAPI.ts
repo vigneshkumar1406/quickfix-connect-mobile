@@ -1,60 +1,25 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
 
-// Types
-export interface Profile {
-  id: string;
-  phone_number?: string;
-  full_name?: string;
-  avatar_url?: string;
-  user_type: 'customer' | 'worker';
-}
+// Use Supabase generated types
+type Profile = Database['public']['Tables']['profiles']['Row'];
+type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
+type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
 
-export interface Worker {
-  id: string;
-  user_id: string;
-  skills: string[];
-  experience_years: number;
-  hourly_rate?: number;
-  description?: string;
-  kyc_verified: boolean;
-  status: 'pending_verification' | 'verified' | 'suspended';
-  rating: number;
-  total_jobs: number;
-  available: boolean;
-}
+type Worker = Database['public']['Tables']['workers']['Row'];
+type WorkerInsert = Database['public']['Tables']['workers']['Insert'];
+type WorkerUpdate = Database['public']['Tables']['workers']['Update'];
 
-export interface ServiceBooking {
-  id: string;
-  customer_id: string;
-  worker_id?: string;
-  service_type: string;
-  description?: string;
-  booking_type: 'now' | 'scheduled';
-  scheduled_date?: string;
-  scheduled_time?: string;
-  customer_name?: string;
-  customer_phone?: string;
-  address: string;
-  latitude?: number;
-  longitude?: number;
-  estimated_cost?: number;
-  final_cost?: number;
-  status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
-}
+type ServiceBooking = Database['public']['Tables']['service_bookings']['Row'];
+type ServiceBookingInsert = Database['public']['Tables']['service_bookings']['Insert'];
+type ServiceBookingUpdate = Database['public']['Tables']['service_bookings']['Update'];
 
-export interface UserLocation {
-  id: string;
-  user_id: string;
-  latitude: number;
-  longitude: number;
-  address?: string;
-  city?: string;
-  state?: string;
-  pincode?: string;
-  is_current: boolean;
-}
+type UserLocation = Database['public']['Tables']['user_locations']['Row'];
+type UserLocationInsert = Database['public']['Tables']['user_locations']['Insert'];
+
+type NotificationInsert = Database['public']['Tables']['notifications']['Insert'];
 
 // Authentication API
 export const authAPI = {
@@ -118,14 +83,14 @@ export const profileAPI = {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as Profile;
     } catch (error) {
       console.error("Error fetching profile:", error);
       return null;
     }
   },
 
-  updateProfile: async (userId: string, updates: Partial<Profile>) => {
+  updateProfile: async (userId: string, updates: ProfileUpdate) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -142,7 +107,7 @@ export const profileAPI = {
     }
   },
 
-  createProfile: async (profile: Partial<Profile>) => {
+  createProfile: async (profile: ProfileInsert) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -161,7 +126,7 @@ export const profileAPI = {
 
 // Worker API
 export const workerAPI = {
-  registerWorker: async (workerData: Partial<Worker>) => {
+  registerWorker: async (workerData: WorkerInsert) => {
     try {
       const { data, error } = await supabase
         .from('workers')
@@ -177,7 +142,7 @@ export const workerAPI = {
     }
   },
 
-  updateWorker: async (workerId: string, updates: Partial<Worker>) => {
+  updateWorker: async (workerId: string, updates: WorkerUpdate) => {
     try {
       const { data, error } = await supabase
         .from('workers')
@@ -203,7 +168,7 @@ export const workerAPI = {
         .single();
       
       if (error && error.code !== 'PGRST116') throw error;
-      return data;
+      return data as Worker;
     } catch (error) {
       console.error("Error fetching worker:", error);
       return null;
@@ -240,8 +205,13 @@ export const workerAPI = {
 
 // Location API
 export const locationAPI = {
-  updateLocation: async (locationData: Partial<UserLocation>) => {
+  updateLocation: async (locationData: UserLocationInsert) => {
     try {
+      // Ensure required fields are present
+      if (!locationData.latitude || !locationData.longitude) {
+        throw new Error("Latitude and longitude are required");
+      }
+
       // First, set all user's locations to not current
       const { error: updateError } = await supabase
         .from('user_locations')
@@ -275,7 +245,7 @@ export const locationAPI = {
         .single();
       
       if (error && error.code !== 'PGRST116') throw error;
-      return data;
+      return data as UserLocation;
     } catch (error) {
       console.error("Error fetching current location:", error);
       return null;
@@ -285,7 +255,7 @@ export const locationAPI = {
 
 // Service Booking API
 export const serviceAPI = {
-  createBooking: async (bookingData: Partial<ServiceBooking>) => {
+  createBooking: async (bookingData: ServiceBookingInsert) => {
     try {
       const { data, error } = await supabase
         .from('service_bookings')
@@ -301,7 +271,7 @@ export const serviceAPI = {
     }
   },
 
-  updateBooking: async (bookingId: string, updates: Partial<ServiceBooking>) => {
+  updateBooking: async (bookingId: string, updates: ServiceBookingUpdate) => {
     try {
       const { data, error } = await supabase
         .from('service_bookings')
@@ -318,7 +288,7 @@ export const serviceAPI = {
     }
   },
 
-  getBooking: async (bookingId: string): Promise<ServiceBooking | null> => {
+  getBooking: async (bookingId: string) => {
     try {
       const { data, error } = await supabase
         .from('service_bookings')
@@ -360,17 +330,19 @@ export const serviceAPI = {
 
 // Notification API
 export const notificationAPI = {
-  createNotification: async (userId: string, title: string, message: string, type?: string, data?: any) => {
+  createNotification: async (userId: string, title: string, message: string, type?: Database['public']['Enums']['notification_type'], data?: any) => {
     try {
+      const notificationData: NotificationInsert = {
+        user_id: userId,
+        title,
+        message,
+        type: type || 'general',
+        data
+      };
+
       const { data: notification, error } = await supabase
         .from('notifications')
-        .insert({
-          user_id: userId,
-          title,
-          message,
-          type: type || 'general',
-          data
-        })
+        .insert(notificationData)
         .select()
         .single();
       
@@ -444,16 +416,16 @@ export const walletAPI = {
       if (walletError) throw walletError;
       
       const newBalance = type === 'credit' 
-        ? wallet.balance + amount 
-        : wallet.balance - amount;
+        ? (wallet.balance || 0) + amount 
+        : (wallet.balance || 0) - amount;
       
       // Update wallet balance
       const { error: updateError } = await supabase
         .from('wallets')
         .update({ 
           balance: newBalance,
-          total_earned: type === 'credit' ? wallet.total_earned + amount : wallet.total_earned,
-          total_spent: type === 'debit' ? wallet.total_spent + amount : wallet.total_spent
+          total_earned: type === 'credit' ? (wallet.total_earned || 0) + amount : wallet.total_earned,
+          total_spent: type === 'debit' ? (wallet.total_spent || 0) + amount : wallet.total_spent
         })
         .eq('user_id', userId);
       
@@ -535,3 +507,6 @@ export const reviewAPI = {
     }
   }
 };
+
+// Export types for use in other files
+export type { Profile, Worker, ServiceBooking, UserLocation };
