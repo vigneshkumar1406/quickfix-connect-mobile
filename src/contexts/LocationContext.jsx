@@ -15,23 +15,32 @@ export const LocationProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // Get user's location
+  // Get user's location with better error handling
   const getUserLocation = () => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         const errorMsg = "Geolocation is not supported by your browser";
         setError(errorMsg);
         console.error(errorMsg);
+        toast.error(errorMsg);
         reject(new Error(errorMsg));
         return;
       }
       
       console.log("Getting user location...");
       setLoading(true);
+      setError(null);
+      
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000 // Cache for 1 minute
+      };
       
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          console.log("Location retrieved:", position);
+          console.log("Location retrieved successfully:", position);
+          
           const location = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
@@ -39,12 +48,14 @@ export const LocationProvider = ({ children }) => {
             timestamp: position.timestamp
           };
           
+          console.log("Processed location:", location);
           setCurrentLocation(location);
           setLoading(false);
           setError(null);
           
           // If user is authenticated, update location in backend
           if (isAuthenticated && user?.id) {
+            console.log("Updating location in backend...");
             await updateLocationInBackend(location);
           }
           
@@ -53,14 +64,29 @@ export const LocationProvider = ({ children }) => {
         (error) => {
           console.error("Geolocation error:", error);
           setLoading(false);
-          setError(error.message);
+          
+          let errorMessage = "Unable to get your location";
+          
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = "Location access denied. Please enable location permissions in your browser.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = "Location information is unavailable.";
+              break;
+            case error.TIMEOUT:
+              errorMessage = "Location request timed out. Please try again.";
+              break;
+            default:
+              errorMessage = "An unknown error occurred while getting location.";
+              break;
+          }
+          
+          setError(errorMessage);
+          toast.error(errorMessage);
           reject(error);
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0
-        }
+        options
       );
     });
   };
@@ -68,18 +94,29 @@ export const LocationProvider = ({ children }) => {
   // Start location tracking
   const startTracking = () => {
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
+      const errorMsg = "Geolocation is not supported by your browser";
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
     
     console.log("Starting location tracking...");
     setTrackingEnabled(true);
-    getUserLocation(); // Get initial location
+    
+    // Get initial location
+    getUserLocation().catch(console.error);
     
     // Set up periodic tracking
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 30000 // Cache for 30 seconds during tracking
+    };
+    
     const watchId = navigator.geolocation.watchPosition(
       async (position) => {
-        console.log("Location updated:", position);
+        console.log("Location updated during tracking:", position);
+        
         const location = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
@@ -96,17 +133,28 @@ export const LocationProvider = ({ children }) => {
       },
       (error) => {
         console.error("Location tracking error:", error);
-        setError(error.message);
+        let errorMessage = "Location tracking failed";
+        
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location access denied during tracking";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location unavailable during tracking";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "Location tracking timed out";
+            break;
+        }
+        
+        setError(errorMessage);
+        toast.error(errorMessage);
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-      }
+      options
     );
     
     // Store watchId for cleanup
-    localStorage.setItem('quickfix_location_watchId', watchId);
+    localStorage.setItem('quickfix_location_watchId', watchId.toString());
   };
   
   // Stop location tracking
@@ -123,23 +171,29 @@ export const LocationProvider = ({ children }) => {
   
   // Update location in backend
   const updateLocationInBackend = async (location) => {
-    if (!isAuthenticated || !user?.id) return;
+    if (!isAuthenticated || !user?.id) {
+      console.log("Not authenticated, skipping backend update");
+      return;
+    }
     
     try {
       console.log("Updating location in backend:", location);
       
-      // Reverse geocode to get address
+      // Get address from coordinates using reverse geocoding
       const address = await reverseGeocode(location.lat, location.lng);
       
       const locationData = {
         user_id: user.id,
         latitude: location.lat,
         longitude: location.lng,
-        address: address
+        address: address,
+        is_current: true
       };
       
       const result = await locationAPI.updateLocation(locationData);
-      if (!result.success) {
+      if (result.success) {
+        console.log("Location updated successfully in backend");
+      } else {
         console.error("Failed to update location:", result.message);
       }
     } catch (error) {
@@ -150,12 +204,13 @@ export const LocationProvider = ({ children }) => {
   // Find nearby workers
   const findNearbyWorkers = async (serviceType, radius = 10) => {
     if (!currentLocation) {
-      const errorMsg = "Current location not available";
+      const errorMsg = "Current location not available. Please enable location access.";
       console.error(errorMsg);
+      toast.error(errorMsg);
       return { success: false, message: errorMsg };
     }
     
-    console.log("Finding nearby workers for:", serviceType);
+    console.log("Finding nearby workers for:", serviceType, "at location:", currentLocation);
     setLoading(true);
     
     try {
@@ -169,15 +224,17 @@ export const LocationProvider = ({ children }) => {
       setLoading(false);
       
       if (response.success) {
-        console.log("Found workers:", response);
+        console.log("Found workers:", response.data);
         return response;
       } else {
         console.error("Failed to find workers:", response.message);
+        toast.error("No workers found in your area");
         return response;
       }
     } catch (error) {
       console.error("Error finding nearby workers:", error);
       setLoading(false);
+      toast.error("Failed to find nearby workers");
       return { success: false, message: error.message };
     }
   };
@@ -185,13 +242,41 @@ export const LocationProvider = ({ children }) => {
   // Reverse geocode coordinates to address
   const reverseGeocode = async (lat, lng) => {
     console.log("Reverse geocoding:", lat, lng);
-    // Simple mock implementation - in production, use Google Maps Geocoding API
+    
     try {
-      // This is a simple approximation - replace with actual geocoding service
-      return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      // Using OpenStreetMap Nominatim API for reverse geocoding (free)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Reverse geocoding response:", data);
+        
+        if (data.display_name) {
+          return data.display_name;
+        }
+      }
     } catch (error) {
       console.error("Reverse geocoding error:", error);
-      return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    }
+    
+    // Fallback to coordinates
+    return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  };
+  
+  // Check location permissions
+  const checkLocationPermission = async () => {
+    if (!navigator.permissions) {
+      return 'unknown';
+    }
+    
+    try {
+      const permission = await navigator.permissions.query({ name: 'geolocation' });
+      return permission.state; // 'granted', 'denied', or 'prompt'
+    } catch (error) {
+      console.error("Error checking location permission:", error);
+      return 'unknown';
     }
   };
   
@@ -203,6 +288,14 @@ export const LocationProvider = ({ children }) => {
       console.log("Restoring location tracking on mount");
       startTracking();
     }
+    
+    // Check location permission on mount
+    checkLocationPermission().then(permission => {
+      console.log("Location permission status:", permission);
+      if (permission === 'denied') {
+        setError("Location access is denied. Please enable it in your browser settings.");
+      }
+    });
     
     return () => {
       if (trackingEnabled) {
@@ -225,7 +318,8 @@ export const LocationProvider = ({ children }) => {
     startTracking,
     stopTracking,
     findNearbyWorkers,
-    reverseGeocode
+    reverseGeocode,
+    checkLocationPermission
   };
   
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;

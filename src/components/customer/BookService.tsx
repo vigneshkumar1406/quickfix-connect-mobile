@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,14 +5,16 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
 import { 
-  Clock, Calendar, MapPin, User, Users, ArrowRight, Navigation, Map
+  Clock, Calendar, MapPin, User, Users, ArrowRight, Navigation, Map, AlertCircle
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation as useLocationContext } from '@/contexts/LocationContext';
+import MapPicker from "./MapPicker";
 
 const services = [
   "Plumbing",
@@ -31,7 +32,14 @@ const services = [
 export default function BookService() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { currentLocation, getUserLocation } = useLocationContext();
+  const { 
+    currentLocation, 
+    getUserLocation, 
+    loading: locationLoading, 
+    error: locationError,
+    reverseGeocode 
+  } = useLocationContext();
+  
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [bookingType, setBookingType] = useState("now");
@@ -42,6 +50,7 @@ export default function BookService() {
   const [customerPhone, setCustomerPhone] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [showMapPicker, setShowMapPicker] = useState(false);
   
   // Check if service was pre-selected from dashboard or quick actions
   useEffect(() => {
@@ -73,42 +82,35 @@ export default function BookService() {
     setIsLoadingLocation(true);
     
     try {
-      await getUserLocation();
+      const location = await getUserLocation();
+      console.log("Current location received:", location);
       
-      // Simulate a small delay to show loading state
-      setTimeout(() => {
-        if (currentLocation) {
-          console.log("Current location received:", currentLocation);
-          // Simulate reverse geocoding - in real app, use Google Maps API
-          const mockAddress = `Current Location: ${currentLocation.lat.toFixed(6)}, ${currentLocation.lng.toFixed(6)}\n123 Main Street, Adyar, Chennai, Tamil Nadu 600020`;
-          setAddress(mockAddress);
-          toast.success("Current location fetched successfully");
-        } else {
-          // Fallback mock address
-          const fallbackAddress = "123 Main Street, Adyar, Chennai, Tamil Nadu 600020";
-          setAddress(fallbackAddress);
-          toast.success("Location fetched (using fallback)");
-        }
-        setIsLoadingLocation(false);
-      }, 1000);
-      
+      if (location) {
+        // Get human-readable address
+        const addressText = await reverseGeocode(location.lat, location.lng);
+        setAddress(addressText);
+        toast.success("Current location fetched successfully");
+      } else {
+        throw new Error("Unable to get location");
+      }
     } catch (error) {
       console.error("Error getting location:", error);
+      toast.error("Could not get current location. Please enter manually or check your location permissions.");
+    } finally {
       setIsLoadingLocation(false);
-      
-      // Provide fallback address
-      const fallbackAddress = "Enter your address manually or use the map option below";
-      setAddress(fallbackAddress);
-      toast.error("Could not get current location. Please enter manually.");
     }
+  };
+
+  const handleMapLocationSelect = (selectedLocation: { lat: number; lng: number; address: string }) => {
+    console.log("Location selected from map:", selectedLocation);
+    setAddress(selectedLocation.address);
+    setShowMapPicker(false);
+    toast.success("Location selected from map");
   };
 
   const handleLocateOnMap = () => {
     console.log("Opening map location picker...");
-    // For now, simulate map selection with a different mock address
-    const mockMapAddress = "456 Park Avenue, T. Nagar, Chennai, Tamil Nadu 600017\n(Selected from map)";
-    setAddress(mockMapAddress);
-    toast.success("Location selected from map");
+    setShowMapPicker(true);
   };
   
   const handleBookService = () => {
@@ -167,12 +169,23 @@ export default function BookService() {
         scheduledDate: bookingType === "later" ? selectedDate : null,
         scheduledTime: bookingType === "later" ? selectedTime : null,
         customerName: bookingFor === "others" ? customerName : null,
-        customerPhone: bookingFor === "others" ? customerPhone : null
+        customerPhone: bookingFor === "others" ? customerPhone : null,
+        location: currentLocation // Include current location coordinates if available
       };
       
       navigate("/customer/finding-service", { state: { bookingDetails } });
     }, 1500);
   };
+
+  if (showMapPicker) {
+    return (
+      <MapPicker
+        onLocationSelect={handleMapLocationSelect}
+        onClose={() => setShowMapPicker(false)}
+        initialLocation={currentLocation}
+      />
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto pb-10 animate-fade-in">
@@ -183,6 +196,16 @@ export default function BookService() {
       <h1 className="text-2xl font-bold mb-2">Book a Service</h1>
       <p className="text-neutral-300 mb-6">Select service and preferences</p>
       
+      {/* Location Error Alert */}
+      {locationError && (
+        <Alert className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {locationError}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       {/* Address Section */}
       <div className="mb-6">
         <h2 className="font-semibold mb-3">Service Address</h2>
@@ -192,11 +215,11 @@ export default function BookService() {
               variant="outline" 
               size="sm" 
               onClick={handleCurrentLocation}
-              disabled={isLoadingLocation}
+              disabled={isLoadingLocation || locationLoading}
               className="flex-1"
             >
               <Navigation className="w-4 h-4 mr-2" />
-              {isLoadingLocation ? "Getting Location..." : "Current Location"}
+              {isLoadingLocation || locationLoading ? "Getting Location..." : "Current Location"}
             </Button>
             <Button 
               variant="outline" 
@@ -221,6 +244,13 @@ export default function BookService() {
             <div className="text-xs text-green-600 flex items-center">
               <MapPin className="w-3 h-3 mr-1" />
               Address ready for booking
+            </div>
+          )}
+          
+          {currentLocation && (
+            <div className="text-xs text-blue-600 flex items-center">
+              <Navigation className="w-3 h-3 mr-1" />
+              Location: {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
             </div>
           )}
         </div>
