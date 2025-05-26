@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
-  Wrench, Home, Star, Users, Phone, Wallet, HelpCircle, Clock, 
+  Wrench, Star, Users, Phone, Wallet, Clock, 
   Coins, Gift, History, TrendingUp, ChevronDown, ChevronUp
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +25,7 @@ export default function CustomerDashboard() {
   };
 
   const handleServiceSelect = (serviceName: string) => {
+    console.log("Service selected:", serviceName);
     navigate("/customer/book-service", { state: { selectedService: serviceName } });
   };
 
@@ -66,16 +67,32 @@ export default function CustomerDashboard() {
       image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center"
     },
     { 
-      name: "More", 
+      name: "AC Service", 
       image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center"
     }
   ];
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case "book-later":
+        navigate("/customer/book-service", { state: { bookingType: "later" } });
+        break;
+      case "for-others":
+        navigate("/customer/book-service", { state: { bookingFor: "others" } });
+        break;
+      case "contact":
+        toast.info("Contact feature coming soon!");
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <div className="w-full pb-24 animate-fade-in">
       <div className="bg-primary text-white p-6 rounded-b-3xl mb-6">
         <h1 className="text-2xl font-bold mb-1">QuickFix</h1>
-        <p className="opacity-90">Welcome back {user?.name || ''}</p>
+        <p className="opacity-90">Welcome back {user?.name || user?.phoneNumber || 'Customer'}</p>
       </div>
       
       <div className="mb-6">
@@ -91,21 +108,30 @@ export default function CustomerDashboard() {
       <h2 className="font-semibold mb-3">Quick Actions</h2>
       
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <Card className="p-3 flex flex-col items-center justify-center text-center">
+        <Card 
+          className="p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleQuickAction("book-later")}
+        >
           <div className="bg-neutral-100 p-2 rounded-full mb-2">
             <Clock className="w-4 h-4 text-primary" />
           </div>
           <h3 className="text-xs">Book Later</h3>
         </Card>
         
-        <Card className="p-3 flex flex-col items-center justify-center text-center">
+        <Card 
+          className="p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleQuickAction("for-others")}
+        >
           <div className="bg-neutral-100 p-2 rounded-full mb-2">
             <Users className="w-4 h-4 text-primary" />
           </div>
           <h3 className="text-xs">For Others</h3>
         </Card>
         
-        <Card className="p-3 flex flex-col items-center justify-center text-center">
+        <Card 
+          className="p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleQuickAction("contact")}
+        >
           <div className="bg-neutral-100 p-2 rounded-full mb-2">
             <Phone className="w-4 h-4 text-primary" />
           </div>
@@ -127,6 +153,10 @@ export default function CustomerDashboard() {
                 src={service.image} 
                 alt={service.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.log("Image failed to load:", service.image);
+                  e.currentTarget.src = "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center";
+                }}
               />
             </div>
             <h3 className="text-xs">{service.name}</h3>

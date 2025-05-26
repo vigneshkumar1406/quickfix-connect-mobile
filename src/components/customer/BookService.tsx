@@ -17,7 +17,7 @@ import { useLocation as useLocationContext } from '@/contexts/LocationContext';
 
 const services = [
   "Plumbing",
-  "Electrical",
+  "Electrical", 
   "Carpentry",
   "Painting",
   "Home Cleaning",
@@ -38,60 +38,140 @@ export default function BookService() {
   const [bookingFor, setBookingFor] = useState("self");
   const [address, setAddress] = useState("");
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
   
-  // Check if service was pre-selected from dashboard
+  // Check if service was pre-selected from dashboard or quick actions
   useEffect(() => {
+    console.log("Location state:", location.state);
+    
     if (location.state?.selectedService) {
+      console.log("Pre-selected service:", location.state.selectedService);
       setSelectedService(location.state.selectedService);
+    }
+    
+    if (location.state?.bookingType) {
+      console.log("Pre-selected booking type:", location.state.bookingType);
+      setBookingType(location.state.bookingType);
+    }
+    
+    if (location.state?.bookingFor) {
+      console.log("Pre-selected booking for:", location.state.bookingFor);
+      setBookingFor(location.state.bookingFor);
     }
   }, [location.state]);
 
   const handleServiceSelect = (service: string) => {
+    console.log("Service selected manually:", service);
     setSelectedService(service);
   };
 
   const handleCurrentLocation = async () => {
+    console.log("Getting current location...");
     setIsLoadingLocation(true);
+    
     try {
       await getUserLocation();
-      if (currentLocation) {
-        // Simulate reverse geocoding - in real app, use Google Maps API
-        const mockAddress = "123 Main Street, Adyar, Chennai, Tamil Nadu 600020";
-        setAddress(mockAddress);
-        toast.success("Current location fetched");
-      }
+      
+      // Simulate a small delay to show loading state
+      setTimeout(() => {
+        if (currentLocation) {
+          console.log("Current location received:", currentLocation);
+          // Simulate reverse geocoding - in real app, use Google Maps API
+          const mockAddress = `Current Location: ${currentLocation.lat.toFixed(6)}, ${currentLocation.lng.toFixed(6)}\n123 Main Street, Adyar, Chennai, Tamil Nadu 600020`;
+          setAddress(mockAddress);
+          toast.success("Current location fetched successfully");
+        } else {
+          // Fallback mock address
+          const fallbackAddress = "123 Main Street, Adyar, Chennai, Tamil Nadu 600020";
+          setAddress(fallbackAddress);
+          toast.success("Location fetched (using fallback)");
+        }
+        setIsLoadingLocation(false);
+      }, 1000);
+      
     } catch (error) {
-      toast.error("Failed to get current location");
-    } finally {
+      console.error("Error getting location:", error);
       setIsLoadingLocation(false);
+      
+      // Provide fallback address
+      const fallbackAddress = "Enter your address manually or use the map option below";
+      setAddress(fallbackAddress);
+      toast.error("Could not get current location. Please enter manually.");
     }
   };
 
   const handleLocateOnMap = () => {
-    // For now, simulate map selection
-    const mockAddress = "456 Park Avenue, T. Nagar, Chennai, Tamil Nadu 600017";
-    setAddress(mockAddress);
+    console.log("Opening map location picker...");
+    // For now, simulate map selection with a different mock address
+    const mockMapAddress = "456 Park Avenue, T. Nagar, Chennai, Tamil Nadu 600017\n(Selected from map)";
+    setAddress(mockMapAddress);
     toast.success("Location selected from map");
   };
   
   const handleBookService = () => {
+    console.log("Attempting to book service...");
+    console.log("Selected service:", selectedService);
+    console.log("Address:", address);
+    console.log("Booking type:", bookingType);
+    console.log("Booking for:", bookingFor);
+    
+    // Validation
     if (!selectedService) {
       toast.error("Please select a service");
       return;
     }
 
-    if (!address && bookingType === "now") {
-      toast.error("Please provide an address");
+    if (!address.trim()) {
+      toast.error("Please provide a service address");
       return;
+    }
+    
+    if (bookingType === "later") {
+      if (!selectedDate) {
+        toast.error("Please select a date for scheduled service");
+        return;
+      }
+      if (!selectedTime) {
+        toast.error("Please select a time for scheduled service");
+        return;
+      }
+    }
+    
+    if (bookingFor === "others") {
+      if (!customerName.trim()) {
+        toast.error("Please enter the customer name");
+        return;
+      }
+      if (!customerPhone.trim()) {
+        toast.error("Please enter the customer phone number");
+        return;
+      }
     }
     
     setIsLoading(true);
     
     // Simulate booking process
+    console.log("Processing booking...");
     setTimeout(() => {
       setIsLoading(false);
-      navigate("/customer/finding-service");
-    }, 1000);
+      console.log("Booking successful, navigating to finding service page");
+      
+      // Pass booking details to the next page
+      const bookingDetails = {
+        service: selectedService,
+        address: address,
+        bookingType: bookingType,
+        scheduledDate: bookingType === "later" ? selectedDate : null,
+        scheduledTime: bookingType === "later" ? selectedTime : null,
+        customerName: bookingFor === "others" ? customerName : null,
+        customerPhone: bookingFor === "others" ? customerPhone : null
+      };
+      
+      navigate("/customer/finding-service", { state: { bookingDetails } });
+    }, 1500);
   };
 
   return (
@@ -116,12 +196,13 @@ export default function BookService() {
               className="flex-1"
             >
               <Navigation className="w-4 h-4 mr-2" />
-              {isLoadingLocation ? "Loading..." : "Current Location"}
+              {isLoadingLocation ? "Getting Location..." : "Current Location"}
             </Button>
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleLocateOnMap}
+              disabled={isLoadingLocation}
               className="flex-1"
             >
               <Map className="w-4 h-4 mr-2" />
@@ -130,11 +211,18 @@ export default function BookService() {
           </div>
           
           <Textarea
-            placeholder="Enter or edit your address..."
+            placeholder="Enter your complete address including street, area, city, and pincode..."
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            className="min-h-[80px]"
+            className="min-h-[100px]"
           />
+          
+          {address && (
+            <div className="text-xs text-green-600 flex items-center">
+              <MapPin className="w-3 h-3 mr-1" />
+              Address ready for booking
+            </div>
+          )}
         </div>
       </div>
       
@@ -170,6 +258,8 @@ export default function BookService() {
                 <Input
                   id="date"
                   type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                   className="mt-1"
                 />
@@ -180,9 +270,18 @@ export default function BookService() {
                 <Input
                   id="time"
                   type="time"
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
                   className="mt-1"
                 />
               </div>
+              
+              {selectedDate && selectedTime && (
+                <div className="text-xs text-green-600 flex items-center">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Scheduled for {selectedDate} at {selectedTime}
+                </div>
+              )}
             </div>
           </Card>
         </TabsContent>
@@ -190,7 +289,7 @@ export default function BookService() {
       
       <div className="mb-6">
         <h2 className="font-semibold mb-3">Book For</h2>
-        <RadioGroup defaultValue="self" onValueChange={setBookingFor}>
+        <RadioGroup value={bookingFor} onValueChange={setBookingFor}>
           <div className="flex space-x-4">
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="self" id="self" />
@@ -213,13 +312,23 @@ export default function BookService() {
         {bookingFor === "others" && (
           <div className="mt-4 space-y-3">
             <div className="space-y-1">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="Enter name" />
+              <Label htmlFor="name">Customer Name</Label>
+              <Input 
+                id="name" 
+                placeholder="Enter customer name" 
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+              />
             </div>
             
             <div className="space-y-1">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" placeholder="Enter phone number" />
+              <Label htmlFor="phone">Customer Phone Number</Label>
+              <Input 
+                id="phone" 
+                placeholder="Enter phone number" 
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+              />
             </div>
           </div>
         )}
@@ -227,18 +336,23 @@ export default function BookService() {
       
       <div className="mb-6">
         <h2 className="font-semibold mb-3">Select Service</h2>
+        {selectedService && (
+          <div className="mb-3 p-2 bg-primary/10 rounded text-sm text-primary">
+            Selected: {selectedService}
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-3">
           {services.map((service) => (
             <Card
               key={service}
-              className={`p-4 cursor-pointer transition-all ${
+              className={`p-4 cursor-pointer transition-all hover:shadow-md ${
                 selectedService === service
                   ? "border-primary bg-primary/5"
                   : ""
               }`}
               onClick={() => handleServiceSelect(service)}
             >
-              <p className="text-center">{service}</p>
+              <p className="text-center text-sm">{service}</p>
             </Card>
           ))}
         </div>
@@ -246,10 +360,10 @@ export default function BookService() {
       
       <Button 
         onClick={handleBookService} 
-        disabled={isLoading || !selectedService} 
+        disabled={isLoading || !selectedService || !address.trim()} 
         className="w-full"
       >
-        {isLoading ? "Processing..." : "Continue"}
+        {isLoading ? "Processing..." : "Continue to Find Service Provider"}
         <ArrowRight className="ml-2 w-4 h-4" />
       </Button>
     </div>

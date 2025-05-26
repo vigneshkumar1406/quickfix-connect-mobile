@@ -19,12 +19,14 @@ export default function WorkerDashboard() {
   
   const handleAvailabilityChange = (checked: boolean) => {
     setAvailable(checked);
+    console.log("Availability changed to:", checked);
     
     if (checked) {
       toast.success("You are now available for jobs");
       
       // Simulate job notification after a few seconds
       setTimeout(() => {
+        console.log("Showing job notification");
         setShowJobNotification(true);
       }, 3000);
     } else {
@@ -34,8 +36,11 @@ export default function WorkerDashboard() {
   };
   
   const handleAcceptJob = () => {
+    console.log("Job accept clicked, hasPayment:", hasPayment);
+    
     if (!hasPayment) {
       // Show payment required modal
+      toast.error("Payment method required to accept jobs");
       navigate("/worker/payment");
       return;
     }
@@ -47,8 +52,29 @@ export default function WorkerDashboard() {
   };
   
   const handleRejectJob = () => {
+    console.log("Job rejected");
     setShowJobNotification(false);
     toast.info("Job rejected");
+  };
+
+  const handleQuickAction = (action: string) => {
+    console.log("Quick action clicked:", action);
+    switch (action) {
+      case "job-alerts":
+        toast.info("Job alerts feature coming soon!");
+        break;
+      case "job-history":
+        toast.info("Job history feature coming soon!");
+        break;
+      case "payment":
+        navigate("/worker/payment");
+        break;
+      case "settings":
+        toast.info("Settings feature coming soon!");
+        break;
+      default:
+        break;
+    }
   };
 
   return (
@@ -119,14 +145,20 @@ export default function WorkerDashboard() {
       <h2 className="font-semibold mb-3">Quick Actions</h2>
       
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <Card className="p-4 flex flex-col items-center justify-center text-center">
+        <Card 
+          className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleQuickAction("job-alerts")}
+        >
           <div className="bg-neutral-100 p-3 rounded-full mb-2">
             <Bell className="w-5 h-5 text-primary" />
           </div>
           <h3 className="text-sm font-medium">Job Alerts</h3>
         </Card>
         
-        <Card className="p-4 flex flex-col items-center justify-center text-center">
+        <Card 
+          className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleQuickAction("job-history")}
+        >
           <div className="bg-neutral-100 p-3 rounded-full mb-2">
             <Clock className="w-5 h-5 text-primary" />
           </div>
@@ -134,8 +166,8 @@ export default function WorkerDashboard() {
         </Card>
         
         <Card 
-          className="p-4 flex flex-col items-center justify-center text-center cursor-pointer"
-          onClick={() => navigate("/worker/payment")}
+          className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleQuickAction("payment")}
         >
           <div className="bg-neutral-100 p-3 rounded-full mb-2">
             <Wallet className="w-5 h-5 text-primary" />
@@ -143,7 +175,10 @@ export default function WorkerDashboard() {
           <h3 className="text-sm font-medium">Payment</h3>
         </Card>
         
-        <Card className="p-4 flex flex-col items-center justify-center text-center">
+        <Card 
+          className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleQuickAction("settings")}
+        >
           <div className="bg-neutral-100 p-3 rounded-full mb-2">
             <Settings className="w-5 h-5 text-primary" />
           </div>

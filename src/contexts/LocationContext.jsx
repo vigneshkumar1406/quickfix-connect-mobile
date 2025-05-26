@@ -17,42 +17,52 @@ export const LocationProvider = ({ children }) => {
   
   // Get user's location
   const getUserLocation = () => {
-    if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
-      toast.error("Location services not supported");
-      return;
-    }
-    
-    setLoading(true);
-    
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const location = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          timestamp: position.timestamp
-        };
-        
-        setCurrentLocation(location);
-        setLoading(false);
-        
-        // If user is authenticated, update location in backend
-        if (isAuthenticated && user) {
-          updateLocationInBackend(location);
-        }
-      },
-      (error) => {
-        setLoading(false);
-        setError(error.message);
-        toast.error(`Error getting location: ${error.message}`);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        const errorMsg = "Geolocation is not supported by your browser";
+        setError(errorMsg);
+        console.error(errorMsg);
+        reject(new Error(errorMsg));
+        return;
       }
-    );
+      
+      console.log("Getting user location...");
+      setLoading(true);
+      
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("Location retrieved:", position);
+          const location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+            timestamp: position.timestamp
+          };
+          
+          setCurrentLocation(location);
+          setLoading(false);
+          setError(null);
+          
+          // If user is authenticated, update location in backend
+          if (isAuthenticated && user) {
+            updateLocationInBackend(location);
+          }
+          
+          resolve(location);
+        },
+        (error) => {
+          console.error("Geolocation error:", error);
+          setLoading(false);
+          setError(error.message);
+          reject(error);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        }
+      );
+    });
   };
   
   // Start location tracking
@@ -62,12 +72,14 @@ export const LocationProvider = ({ children }) => {
       return;
     }
     
+    console.log("Starting location tracking...");
     setTrackingEnabled(true);
     getUserLocation(); // Get initial location
     
     // Set up periodic tracking
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
+        console.log("Location updated:", position);
         const location = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
@@ -83,8 +95,8 @@ export const LocationProvider = ({ children }) => {
         }
       },
       (error) => {
+        console.error("Location tracking error:", error);
         setError(error.message);
-        toast.error(`Location tracking error: ${error.message}`);
       },
       {
         enableHighAccuracy: true,
@@ -99,6 +111,7 @@ export const LocationProvider = ({ children }) => {
   
   // Stop location tracking
   const stopTracking = () => {
+    console.log("Stopping location tracking...");
     const watchId = localStorage.getItem('quickfix_location_watchId');
     if (watchId) {
       navigator.geolocation.clearWatch(parseInt(watchId));
@@ -113,7 +126,8 @@ export const LocationProvider = ({ children }) => {
     if (!isAuthenticated || !user) return;
     
     try {
-      await locationAPI.updateLocation(user.id, location);
+      console.log("Updating location in backend:", location);
+      await locationAPI.updateLocation(user.id || user.uid, location);
     } catch (error) {
       console.error("Failed to update location in backend:", error);
     }
@@ -122,26 +136,37 @@ export const LocationProvider = ({ children }) => {
   // Find nearby workers
   const findNearbyWorkers = async (serviceType, radius = 10) => {
     if (!currentLocation) {
-      toast.error("Current location not available");
-      return { success: false, message: "Location not available" };
+      const errorMsg = "Current location not available";
+      console.error(errorMsg);
+      return { success: false, message: errorMsg };
     }
     
+    console.log("Finding nearby workers for:", serviceType);
     setLoading(true);
     try {
       const response = await locationAPI.findNearbyWorkers(currentLocation, radius, serviceType);
       setLoading(false);
       
       if (response.success) {
+        console.log("Found workers:", response);
         return response;
       } else {
-        toast.error(response.message || "Failed to find nearby workers");
+        console.error("Failed to find workers:", response.message);
         return response;
       }
     } catch (error) {
+      console.error("Error finding nearby workers:", error);
       setLoading(false);
-      toast.error("An error occurred while finding nearby workers");
       return { success: false, message: error.message };
     }
+  };
+  
+  // Reverse geocode coordinates to address
+  const reverseGeocode = async (lat, lng) => {
+    console.log("Reverse geocoding:", lat, lng);
+    // In a real app, you would use Google Maps Geocoding API
+    // For now, return a mock address
+    return `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}\nMock Address: Street, Area, City, Pincode`;
   };
   
   // Initialize location on mount if tracking was enabled
@@ -149,6 +174,7 @@ export const LocationProvider = ({ children }) => {
     const wasTracking = localStorage.getItem('quickfix_tracking_enabled') === 'true';
     
     if (wasTracking) {
+      console.log("Restoring location tracking on mount");
       startTracking();
     }
     
@@ -172,7 +198,8 @@ export const LocationProvider = ({ children }) => {
     getUserLocation,
     startTracking,
     stopTracking,
-    findNearbyWorkers
+    findNearbyWorkers,
+    reverseGeocode
   };
   
   return <LocationContext.Provider value={value}>{children}</LocationContext.Provider>;
