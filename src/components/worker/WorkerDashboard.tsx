@@ -6,11 +6,12 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Bell, Wallet, Clock, Settings, AlertCircle } from "lucide-react";
+import { Bell, Wallet, Clock, Settings, AlertCircle, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
 
 export default function WorkerDashboard() {
   const [available, setAvailable] = useState(false);
   const [hasPayment, setHasPayment] = useState(false);
+  const [isWalletExpanded, setIsWalletExpanded] = useState(false);
   const navigate = useNavigate();
   
   // Simulated job notification
@@ -51,25 +52,10 @@ export default function WorkerDashboard() {
   };
 
   return (
-    <div className="w-full pb-6 animate-fade-in">
+    <div className="w-full pb-24 animate-fade-in">
       <div className="bg-primary text-white p-6 rounded-b-3xl mb-6">
         <h1 className="text-2xl font-bold mb-1">Worker Dashboard</h1>
         <p className="opacity-90">Welcome back, Worker</p>
-        
-        <div className="mt-6 bg-white/10 p-3 rounded-lg flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="bg-white text-primary p-2 rounded-full mr-3">
-              <Wallet className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-sm opacity-90">Earnings</p>
-              <p className="font-bold">₹0.00</p>
-            </div>
-          </div>
-          <Button variant="secondary" size="sm" className="text-primary">
-            View
-          </Button>
-        </div>
       </div>
       
       {showJobNotification && (
@@ -167,11 +153,61 @@ export default function WorkerDashboard() {
       
       <Button 
         variant="outline" 
-        className="w-full"
+        className="w-full mb-6"
         onClick={() => navigate("/")}
       >
         Sign Out
       </Button>
+
+      {/* Fixed Wallet Box at Bottom */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t">
+        <Card 
+          className="cursor-pointer transition-all duration-300"
+          onClick={() => setIsWalletExpanded(!isWalletExpanded)}
+        >
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Wallet className="w-5 h-5 text-primary mr-2" />
+                <div>
+                  <h3 className="font-semibold text-sm">Earnings</h3>
+                  <p className="text-xs text-neutral-300">Today's earnings</p>
+                </div>
+              </div>
+              <div className="flex items-center">
+                <span className="text-sm font-bold">₹0.00</span>
+                {isWalletExpanded ? <ChevronDown className="w-4 h-4 ml-2" /> : <ChevronUp className="w-4 h-4 ml-2" />}
+              </div>
+            </div>
+            
+            {isWalletExpanded && (
+              <div className="mt-4 space-y-3 animate-slide-in">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="text-center p-2 bg-green-50 rounded">
+                    <p className="text-xs text-neutral-300">This Week</p>
+                    <p className="font-bold text-green-600">₹0.00</p>
+                  </div>
+                  <div className="text-center p-2 bg-blue-50 rounded">
+                    <p className="text-xs text-neutral-300">This Month</p>
+                    <p className="font-bold text-blue-600">₹0.00</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button size="sm" variant="ghost" className="flex-1 text-xs">
+                    <Clock className="w-4 h-4 mr-1" />
+                    History
+                  </Button>
+                  <Button size="sm" variant="outline" className="flex-1 text-xs">
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                    Analytics
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

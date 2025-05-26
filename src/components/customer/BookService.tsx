@@ -1,24 +1,26 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
 import { 
-  Clock, Calendar, MapPin, User, Users, ArrowRight 
+  Clock, Calendar, MapPin, User, Users, ArrowRight, Navigation, Map
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useLocation as useLocationContext } from '@/contexts/LocationContext';
 
 const services = [
   "Plumbing",
   "Electrical",
   "Carpentry",
   "Painting",
-  "Cleaning",
+  "Home Cleaning",
   "Appliance Repair",
   "Fridge Repair",
   "Washing Machine",
@@ -28,18 +30,58 @@ const services = [
 
 export default function BookService() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { currentLocation, getUserLocation } = useLocationContext();
   const [selectedService, setSelectedService] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [bookingType, setBookingType] = useState("now");
   const [bookingFor, setBookingFor] = useState("self");
+  const [address, setAddress] = useState("");
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   
+  // Check if service was pre-selected from dashboard
+  useEffect(() => {
+    if (location.state?.selectedService) {
+      setSelectedService(location.state.selectedService);
+    }
+  }, [location.state]);
+
   const handleServiceSelect = (service: string) => {
     setSelectedService(service);
+  };
+
+  const handleCurrentLocation = async () => {
+    setIsLoadingLocation(true);
+    try {
+      await getUserLocation();
+      if (currentLocation) {
+        // Simulate reverse geocoding - in real app, use Google Maps API
+        const mockAddress = "123 Main Street, Adyar, Chennai, Tamil Nadu 600020";
+        setAddress(mockAddress);
+        toast.success("Current location fetched");
+      }
+    } catch (error) {
+      toast.error("Failed to get current location");
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+
+  const handleLocateOnMap = () => {
+    // For now, simulate map selection
+    const mockAddress = "456 Park Avenue, T. Nagar, Chennai, Tamil Nadu 600017";
+    setAddress(mockAddress);
+    toast.success("Location selected from map");
   };
   
   const handleBookService = () => {
     if (!selectedService) {
       toast.error("Please select a service");
+      return;
+    }
+
+    if (!address && bookingType === "now") {
+      toast.error("Please provide an address");
       return;
     }
     
@@ -61,6 +103,41 @@ export default function BookService() {
       <h1 className="text-2xl font-bold mb-2">Book a Service</h1>
       <p className="text-neutral-300 mb-6">Select service and preferences</p>
       
+      {/* Address Section */}
+      <div className="mb-6">
+        <h2 className="font-semibold mb-3">Service Address</h2>
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleCurrentLocation}
+              disabled={isLoadingLocation}
+              className="flex-1"
+            >
+              <Navigation className="w-4 h-4 mr-2" />
+              {isLoadingLocation ? "Loading..." : "Current Location"}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleLocateOnMap}
+              className="flex-1"
+            >
+              <Map className="w-4 h-4 mr-2" />
+              Locate on Map
+            </Button>
+          </div>
+          
+          <Textarea
+            placeholder="Enter or edit your address..."
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className="min-h-[80px]"
+          />
+        </div>
+      </div>
+      
       <Tabs defaultValue="now" className="mb-6" onValueChange={(v) => setBookingType(v)}>
         <TabsList className="grid grid-cols-2 mb-4">
           <TabsTrigger value="now" className="flex items-center">
@@ -78,8 +155,8 @@ export default function BookService() {
             <div className="flex items-center">
               <MapPin className="w-5 h-5 text-primary mr-2" />
               <div>
-                <p className="text-sm font-medium">Current Location</p>
-                <p className="text-xs text-neutral-300">Service will be booked for your current location</p>
+                <p className="text-sm font-medium">Immediate Service</p>
+                <p className="text-xs text-neutral-300">Service will be scheduled as soon as possible</p>
               </div>
             </div>
           </Card>
@@ -103,15 +180,6 @@ export default function BookService() {
                 <Input
                   id="time"
                   type="time"
-                  className="mt-1"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  placeholder="Enter address for service"
                   className="mt-1"
                 />
               </div>
