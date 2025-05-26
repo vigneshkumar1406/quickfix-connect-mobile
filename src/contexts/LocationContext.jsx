@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState, useEffect } from 'react';
-import { locationAPI } from '../services/api';
+import { locationAPI, workerAPI } from '../services/supabaseAPI';
 import { useAuth } from './AuthContext';
 import { toast } from 'sonner';
 
@@ -30,7 +30,7 @@ export const LocationProvider = ({ children }) => {
       setLoading(true);
       
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        async (position) => {
           console.log("Location retrieved:", position);
           const location = {
             lat: position.coords.latitude,
@@ -44,8 +44,8 @@ export const LocationProvider = ({ children }) => {
           setError(null);
           
           // If user is authenticated, update location in backend
-          if (isAuthenticated && user) {
-            updateLocationInBackend(location);
+          if (isAuthenticated && user?.id) {
+            await updateLocationInBackend(location);
           }
           
           resolve(location);
@@ -78,7 +78,7 @@ export const LocationProvider = ({ children }) => {
     
     // Set up periodic tracking
     const watchId = navigator.geolocation.watchPosition(
-      (position) => {
+      async (position) => {
         console.log("Location updated:", position);
         const location = {
           lat: position.coords.latitude,
@@ -90,8 +90,8 @@ export const LocationProvider = ({ children }) => {
         setCurrentLocation(location);
         
         // If user is authenticated, update location in backend
-        if (isAuthenticated && user) {
-          updateLocationInBackend(location);
+        if (isAuthenticated && user?.id) {
+          await updateLocationInBackend(location);
         }
       },
       (error) => {
@@ -123,11 +123,25 @@ export const LocationProvider = ({ children }) => {
   
   // Update location in backend
   const updateLocationInBackend = async (location) => {
-    if (!isAuthenticated || !user) return;
+    if (!isAuthenticated || !user?.id) return;
     
     try {
       console.log("Updating location in backend:", location);
-      await locationAPI.updateLocation(user.id || user.uid, location);
+      
+      // Reverse geocode to get address
+      const address = await reverseGeocode(location.lat, location.lng);
+      
+      const locationData = {
+        user_id: user.id,
+        latitude: location.lat,
+        longitude: location.lng,
+        address: address
+      };
+      
+      const result = await locationAPI.updateLocation(locationData);
+      if (!result.success) {
+        console.error("Failed to update location:", result.message);
+      }
     } catch (error) {
       console.error("Failed to update location in backend:", error);
     }
@@ -143,8 +157,15 @@ export const LocationProvider = ({ children }) => {
     
     console.log("Finding nearby workers for:", serviceType);
     setLoading(true);
+    
     try {
-      const response = await locationAPI.findNearbyWorkers(currentLocation, radius, serviceType);
+      const response = await workerAPI.findNearbyWorkers(
+        currentLocation.lat, 
+        currentLocation.lng, 
+        serviceType, 
+        radius
+      );
+      
       setLoading(false);
       
       if (response.success) {
@@ -164,16 +185,21 @@ export const LocationProvider = ({ children }) => {
   // Reverse geocode coordinates to address
   const reverseGeocode = async (lat, lng) => {
     console.log("Reverse geocoding:", lat, lng);
-    // In a real app, you would use Google Maps Geocoding API
-    // For now, return a mock address
-    return `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}\nMock Address: Street, Area, City, Pincode`;
+    // Simple mock implementation - in production, use Google Maps Geocoding API
+    try {
+      // This is a simple approximation - replace with actual geocoding service
+      return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    } catch (error) {
+      console.error("Reverse geocoding error:", error);
+      return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    }
   };
   
   // Initialize location on mount if tracking was enabled
   useEffect(() => {
     const wasTracking = localStorage.getItem('quickfix_tracking_enabled') === 'true';
     
-    if (wasTracking) {
+    if (wasTracking && isAuthenticated) {
       console.log("Restoring location tracking on mount");
       startTracking();
     }
@@ -183,7 +209,7 @@ export const LocationProvider = ({ children }) => {
         stopTracking();
       }
     };
-  }, []);
+  }, [isAuthenticated]);
   
   // Save tracking status when it changes
   useEffect(() => {

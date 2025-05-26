@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
+import { useLocation as useLocationContext } from "@/contexts/LocationContext";
+import { serviceAPI } from "@/services/supabaseAPI";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Search, MapPin, Clock, User, Phone, Star, CheckCircle, Loader2
 } from "lucide-react";
@@ -12,85 +15,180 @@ import {
 export default function FindingService() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const { findNearbyWorkers } = useLocationContext();
   const [searchStep, setSearchStep] = useState(1);
   const [foundWorkers, setFoundWorkers] = useState<any[]>([]);
   const [selectedWorker, setSelectedWorker] = useState<any>(null);
   const [bookingDetails, setBookingDetails] = useState<any>(null);
+  const [bookingId, setBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     console.log("FindingService received state:", location.state);
     if (location.state?.bookingDetails) {
       setBookingDetails(location.state.bookingDetails);
+      // Create the booking in the database
+      createBooking(location.state.bookingDetails);
     }
   }, [location.state]);
 
+  const createBooking = async (details: any) => {
+    if (!user?.id) {
+      toast.error("Please log in to continue");
+      return;
+    }
+
+    try {
+      const bookingData = {
+        customer_id: user.id,
+        service_type: details.service,
+        description: details.description || '',
+        booking_type: details.bookingType,
+        scheduled_date: details.scheduledDate,
+        scheduled_time: details.scheduledTime,
+        customer_name: details.customerName,
+        customer_phone: details.customerPhone,
+        address: details.address,
+        latitude: details.latitude,
+        longitude: details.longitude,
+        estimated_cost: details.estimatedCost || 500
+      };
+
+      const result = await serviceAPI.createBooking(bookingData);
+      if (result.success) {
+        setBookingId(result.data.id);
+        console.log("Booking created:", result.data);
+      } else {
+        toast.error("Failed to create booking");
+      }
+    } catch (error) {
+      console.error("Error creating booking:", error);
+      toast.error("Failed to create booking");
+    }
+  };
+
   useEffect(() => {
-    // Simulate finding workers process
-    const timer = setTimeout(() => {
-      if (searchStep === 1) {
+    // Find workers process
+    const timer = setTimeout(async () => {
+      if (searchStep === 1 && bookingDetails) {
         setSearchStep(2);
-        // Simulate finding workers
-        const mockWorkers = [
-          {
-            id: 1,
-            name: "Rajesh Kumar",
-            rating: 4.8,
-            experience: "5 years",
-            distance: "1.2 km",
-            specialization: bookingDetails?.service || "Plumbing",
-            phone: "+91 98765 43210",
-            completedJobs: 150,
-            available: true
-          },
-          {
-            id: 2,
-            name: "Suresh Patel",
-            rating: 4.6,
-            experience: "3 years", 
-            distance: "2.1 km",
-            specialization: bookingDetails?.service || "Plumbing",
-            phone: "+91 87654 32109",
-            completedJobs: 89,
-            available: true
-          },
-          {
-            id: 3,
-            name: "Mahesh Singh",
-            rating: 4.9,
-            experience: "7 years",
-            distance: "0.8 km",
-            specialization: bookingDetails?.service || "Plumbing", 
-            phone: "+91 76543 21098",
-            completedJobs: 200,
-            available: true
-          }
-        ];
-        setFoundWorkers(mockWorkers);
         
-        setTimeout(() => {
-          setSearchStep(3);
-        }, 2000);
+        try {
+          // Find nearby workers using the real API
+          const result = await findNearbyWorkers(bookingDetails.service, 10);
+          
+          if (result.success && result.data) {
+            const workersWithProfiles = result.data.map(worker => ({
+              id: worker.id,
+              name: worker.profiles?.full_name || 'Worker',
+              rating: worker.rating || 4.5,
+              experience: `${worker.experience_years || 2} years`,
+              distance: `${worker.distance?.toFixed(1) || '1.2'} km`,
+              specialization: bookingDetails.service,
+              phone: worker.profiles?.phone_number || '+91 98765 43210',
+              completedJobs: worker.total_jobs || 0,
+              available: worker.available,
+              user_id: worker.user_id,
+              hourly_rate: worker.hourly_rate || 300,
+              eta: worker.eta || Math.floor(Math.random() * 30) + 5
+            }));
+            
+            setFoundWorkers(workersWithProfiles);
+            
+            setTimeout(() => {
+              setSearchStep(3);
+            }, 2000);
+          } else {
+            // Fallback to mock data if no workers found
+            const mockWorkers = [
+              {
+                id: 1,
+                name: "Rajesh Kumar",
+                rating: 4.8,
+                experience: "5 years",
+                distance: "1.2 km",
+                specialization: bookingDetails.service,
+                phone: "+91 98765 43210",
+                completedJobs: 150,
+                available: true,
+                hourly_rate: 400,
+                eta: 15
+              },
+              {
+                id: 2,
+                name: "Suresh Patel",
+                rating: 4.6,
+                experience: "3 years", 
+                distance: "2.1 km",
+                specialization: bookingDetails.service,
+                phone: "+91 87654 32109",
+                completedJobs: 89,
+                available: true,
+                hourly_rate: 350,
+                eta: 25
+              }
+            ];
+            setFoundWorkers(mockWorkers);
+            
+            setTimeout(() => {
+              setSearchStep(3);
+            }, 2000);
+          }
+        } catch (error) {
+          console.error("Error finding workers:", error);
+          toast.error("Failed to find nearby workers");
+        }
       }
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [searchStep, bookingDetails]);
+  }, [searchStep, bookingDetails, findNearbyWorkers]);
 
-  const handleSelectWorker = (worker: any) => {
+  const handleSelectWorker = async (worker: any) => {
     console.log("Worker selected:", worker);
     setSelectedWorker(worker);
     setSearchStep(4);
     
-    setTimeout(() => {
-      toast.success(`${worker.name} has accepted your booking!`);
-      navigate("/customer/tracking", { 
-        state: { 
-          worker, 
-          bookingDetails,
-          bookingId: Date.now() 
-        } 
-      });
-    }, 2000);
+    // Assign worker to booking
+    if (bookingId) {
+      try {
+        const result = await serviceAPI.updateBooking(bookingId, {
+          worker_id: worker.id,
+          status: 'assigned'
+        });
+        
+        if (result.success) {
+          toast.success(`${worker.name} has accepted your booking!`);
+          
+          setTimeout(() => {
+            navigate("/customer/tracking", { 
+              state: { 
+                worker, 
+                bookingDetails,
+                bookingId: bookingId
+              } 
+            });
+          }, 2000);
+        } else {
+          toast.error("Failed to assign worker");
+        }
+      } catch (error) {
+        console.error("Error assigning worker:", error);
+        toast.error("Failed to assign worker");
+      }
+    } else {
+      // Fallback for demo
+      setTimeout(() => {
+        toast.success(`${worker.name} has accepted your booking!`);
+        navigate("/customer/tracking", { 
+          state: { 
+            worker, 
+            bookingDetails,
+            bookingId: Date.now() 
+          } 
+        });
+      }, 2000);
+    }
   };
 
   const renderSearchStep = () => {
@@ -140,7 +238,7 @@ export default function FindingService() {
                       <div className="space-y-1 text-sm text-neutral-300">
                         <div className="flex items-center">
                           <MapPin className="w-4 h-4 mr-1" />
-                          <span>{worker.distance} away</span>
+                          <span>{worker.distance} away • {worker.eta} min ETA</span>
                         </div>
                         <div className="flex items-center">
                           <User className="w-4 h-4 mr-1" />
@@ -150,6 +248,11 @@ export default function FindingService() {
                           <CheckCircle className="w-4 h-4 mr-1" />
                           <span>{worker.completedJobs} jobs completed</span>
                         </div>
+                        {worker.hourly_rate && (
+                          <div className="flex items-center">
+                            <span className="font-semibold">₹{worker.hourly_rate}/hr</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     
