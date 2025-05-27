@@ -32,6 +32,8 @@ import WorkerRegistrationPage from "@/pages/worker/WorkerRegistrationPage";
 import WorkerTermsPage from "@/pages/worker/WorkerTermsPage";
 import WorkerJobDetailsPage from "@/pages/worker/WorkerJobDetailsPage";
 import WorkerPaymentPage from "@/pages/worker/WorkerPaymentPage";
+import WorkerEstimationCheckPage from "@/pages/worker/WorkerEstimationCheckPage";
+import WorkerBillGenerationPage from "@/pages/worker/WorkerBillGenerationPage";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +70,8 @@ function App() {
                   <Route path="/worker/terms" element={<WorkerTermsPage />} />
                   <Route path="/worker/job-details" element={<WorkerJobDetailsPage />} />
                   <Route path="/worker/payment" element={<WorkerPaymentPage />} />
+                  <Route path="/worker/estimation-check" element={<WorkerEstimationCheckPage />} />
+                  <Route path="/worker/bill-generation" element={<WorkerBillGenerationPage />} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>

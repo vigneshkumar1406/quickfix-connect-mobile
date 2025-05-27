@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Coins, Gift, Users, History, Wallet, 
   TrendingUp, Star, Plus, Minus, Clock, CheckCircle,
-  Copy, Share, QrCode
+  Copy, Share, QrCode, ShoppingCart
 } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -98,6 +97,12 @@ export default function QuickFixWallet() {
     // Implement payment gateway integration
   };
 
+  const handleUseForProducts = () => {
+    toast.info("Redirecting to products section...");
+    // Navigate to products/marketplace section
+    navigate("/customer/products");
+  };
+
   const handleWithdraw = () => {
     toast.info("Withdrawal feature coming soon!");
     // Implement withdrawal functionality
@@ -181,9 +186,9 @@ export default function QuickFixWallet() {
               <Plus className="w-4 h-4 mr-2" />
               Add Money
             </Button>
-            <Button variant="outline" size="sm" onClick={handleWithdraw} className="flex-1 text-white border-white hover:bg-white hover:text-purple-600">
-              <Minus className="w-4 h-4 mr-2" />
-              Withdraw
+            <Button variant="outline" size="sm" onClick={handleUseForProducts} className="flex-1 text-white border-white hover:bg-white hover:text-purple-600">
+              <ShoppingCart className="w-4 h-4 mr-2" />
+              Use for Products
             </Button>
           </div>
         </div>

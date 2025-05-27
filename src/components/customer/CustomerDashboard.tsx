@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { 
   Wrench, Star, Users, Phone, Wallet, Clock, 
-  Coins, Gift, History, TrendingUp, ChevronDown, ChevronUp
+  Coins, Gift, History, TrendingUp, ChevronDown, ChevronUp, Calculator
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation } from '@/contexts/LocationContext';
@@ -46,6 +46,10 @@ export default function CustomerDashboard() {
 
   const handleWalletClick = () => {
     navigate("/customer/wallet");
+  };
+
+  const handleGetEstimation = () => {
+    navigate("/customer/estimation");
   };
 
   const services = [
@@ -98,13 +102,22 @@ export default function CustomerDashboard() {
         <p className="opacity-90">Welcome back {user?.name || user?.phoneNumber || 'Customer'}</p>
       </div>
       
-      <div className="mb-6">
+      <div className="mb-6 space-y-3">
         <Button 
           className="w-full h-14 text-lg"
           onClick={handleBookService}
         >
           <Wrench className="mr-2 w-5 h-5" />
           Book a Service
+        </Button>
+        
+        <Button 
+          variant="outline"
+          className="w-full h-12 text-base"
+          onClick={handleGetEstimation}
+        >
+          <Calculator className="mr-2 w-5 h-5" />
+          Get Estimation
         </Button>
       </div>
       
@@ -192,7 +205,7 @@ export default function CustomerDashboard() {
         Sign Out
       </Button>
 
-      {/* Updated Fixed Wallet Box at Bottom */}
+      {/* Fixed Wallet Box at Bottom */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t">
         <Card 
           className="cursor-pointer transition-all duration-300"
@@ -203,7 +216,7 @@ export default function CustomerDashboard() {
               <div className="flex items-center">
                 <Coins className="w-5 h-5 text-yellow-500 mr-2" />
                 <div>
-                  <h3 className="font-semibold text-sm">QuickFix Coins</h3>
+                  <h3 className="font-semibold text-sm">QuickFix Wallet</h3>
                   <p className="text-xs text-neutral-300">0 Coins available</p>
                 </div>
               </div>

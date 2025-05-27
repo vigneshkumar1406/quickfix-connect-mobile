@@ -6,7 +6,10 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Bell, Wallet, Clock, Settings, AlertCircle, ChevronDown, ChevronUp, TrendingUp } from "lucide-react";
+import { 
+  Bell, Wallet, Clock, Settings, AlertCircle, ChevronDown, ChevronUp, 
+  TrendingUp, Calculator, FileText, Headphones 
+} from "lucide-react";
 
 export default function WorkerDashboard() {
   const [available, setAvailable] = useState(false);
@@ -72,6 +75,17 @@ export default function WorkerDashboard() {
       case "settings":
         toast.info("Settings feature coming soon!");
         break;
+      case "estimation-check":
+        toast.info("Opening estimation check interface...");
+        navigate("/worker/estimation-check");
+        break;
+      case "bill-generation":
+        toast.info("Opening bill generation interface...");
+        navigate("/worker/bill-generation");
+        break;
+      case "customer-support":
+        toast.info("Connecting to customer support...");
+        break;
       default:
         break;
     }
@@ -84,6 +98,7 @@ export default function WorkerDashboard() {
         <p className="opacity-90">Welcome back, Worker</p>
       </div>
       
+      {/* Job Notification */}
       {showJobNotification && (
         <Card className="mb-6 p-4 border-2 border-accent animate-pulse-smooth">
           <div className="flex justify-between items-start mb-3">
@@ -121,6 +136,7 @@ export default function WorkerDashboard() {
         </Card>
       )}
       
+      {/* Availability Status */}
       <Card className="mb-6 p-4">
         <div className="flex items-center justify-between">
           <div>
@@ -167,6 +183,26 @@ export default function WorkerDashboard() {
         
         <Card 
           className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleQuickAction("estimation-check")}
+        >
+          <div className="bg-neutral-100 p-3 rounded-full mb-2">
+            <Calculator className="w-5 h-5 text-primary" />
+          </div>
+          <h3 className="text-sm font-medium">Estimation Check</h3>
+        </Card>
+        
+        <Card 
+          className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
+          onClick={() => handleQuickAction("bill-generation")}
+        >
+          <div className="bg-neutral-100 p-3 rounded-full mb-2">
+            <FileText className="w-5 h-5 text-primary" />
+          </div>
+          <h3 className="text-sm font-medium">Bill Generation</h3>
+        </Card>
+        
+        <Card 
+          className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => handleQuickAction("payment")}
         >
           <div className="bg-neutral-100 p-3 rounded-full mb-2">
@@ -177,12 +213,12 @@ export default function WorkerDashboard() {
         
         <Card 
           className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handleQuickAction("settings")}
+          onClick={() => handleQuickAction("customer-support")}
         >
           <div className="bg-neutral-100 p-3 rounded-full mb-2">
-            <Settings className="w-5 h-5 text-primary" />
+            <Headphones className="w-5 h-5 text-primary" />
           </div>
-          <h3 className="text-sm font-medium">Settings</h3>
+          <h3 className="text-sm font-medium">Customer Support</h3>
         </Card>
       </div>
       
