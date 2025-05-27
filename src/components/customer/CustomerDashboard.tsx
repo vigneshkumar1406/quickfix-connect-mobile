@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +26,26 @@ export default function CustomerDashboard() {
   const handleServiceSelect = (serviceName: string) => {
     console.log("Service selected:", serviceName);
     navigate("/customer/book-service", { state: { selectedService: serviceName } });
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case "book-later":
+        navigate("/customer/book-service", { state: { bookingType: "later" } });
+        break;
+      case "for-others":
+        navigate("/customer/book-service", { state: { bookingFor: "others" } });
+        break;
+      case "contact":
+        toast.info("Contact feature coming soon!");
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleWalletClick = () => {
+    navigate("/customer/wallet");
   };
 
   const services = [
@@ -71,22 +90,6 @@ export default function CustomerDashboard() {
       image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center"
     }
   ];
-
-  const handleQuickAction = (action: string) => {
-    switch (action) {
-      case "book-later":
-        navigate("/customer/book-service", { state: { bookingType: "later" } });
-        break;
-      case "for-others":
-        navigate("/customer/book-service", { state: { bookingFor: "others" } });
-        break;
-      case "contact":
-        toast.info("Contact feature coming soon!");
-        break;
-      default:
-        break;
-    }
-  };
 
   return (
     <div className="w-full pb-24 animate-fade-in">
@@ -189,11 +192,11 @@ export default function CustomerDashboard() {
         Sign Out
       </Button>
 
-      {/* Fixed Wallet Box at Bottom */}
+      {/* Updated Fixed Wallet Box at Bottom */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t">
         <Card 
           className="cursor-pointer transition-all duration-300"
-          onClick={() => setIsWalletExpanded(!isWalletExpanded)}
+          onClick={handleWalletClick}
         >
           <div className="p-4">
             <div className="flex items-center justify-between">
@@ -206,47 +209,11 @@ export default function CustomerDashboard() {
               </div>
               <div className="flex items-center">
                 <span className="text-sm font-bold text-yellow-600 mr-2">₹0.00</span>
-                {isWalletExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                <div className="bg-blue-100 p-1 rounded">
+                  <Wallet className="w-4 h-4 text-blue-600" />
+                </div>
               </div>
             </div>
-            
-            {isWalletExpanded && (
-              <div className="mt-4 space-y-3 animate-slide-in">
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center text-green-600">
-                    <Gift className="w-4 h-4 mr-2" />
-                    <span>Earn 400 coins when referral completes a job</span>
-                  </div>
-                  <div className="flex items-center text-blue-600">
-                    <TrendingUp className="w-4 h-4 mr-2" />
-                    <span>Get 1% back as coins for online payments</span>
-                  </div>
-                  <div className="flex items-center text-purple-600">
-                    <Star className="w-4 h-4 mr-2" />
-                    <span>Get 1000 coins when bill reaches ₹5000</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button size="sm" variant="ghost" className="flex-1 text-xs">
-                    <History className="w-4 h-4 mr-1" />
-                    History
-                  </Button>
-                  <Button size="sm" variant="ghost" className="flex-1 text-xs">
-                    <Users className="w-4 h-4 mr-1" />
-                    Referrals
-                  </Button>
-                  <Button size="sm" variant="outline" className="flex-1 text-xs">
-                    <Wallet className="w-4 h-4 mr-1" />
-                    Manage
-                  </Button>
-                </div>
-                
-                <div className="p-2 bg-yellow-50 rounded text-xs text-center">
-                  <span className="font-medium">Exchange Rate:</span> 10 coins = ₹1 (service charges only)
-                </div>
-              </div>
-            )}
           </div>
         </Card>
       </div>

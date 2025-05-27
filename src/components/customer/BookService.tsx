@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
 import { 
-  Clock, Calendar, MapPin, User, Users, ArrowRight, Navigation, Map, AlertCircle
+  Clock, Calendar, MapPin, User, Users, ArrowRight, Navigation, Map, AlertCircle, Calculator
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLocation as useLocationContext } from '@/contexts/LocationContext';
-import MapPicker from "./MapPicker";
+import MapPickerWithSearch from "./MapPickerWithSearch";
 
 const services = [
   "Plumbing",
@@ -112,6 +112,31 @@ export default function BookService() {
     console.log("Opening map location picker...");
     setShowMapPicker(true);
   };
+
+  const handleGetEstimation = () => {
+    if (!selectedService) {
+      toast.error("Please select a service first");
+      return;
+    }
+
+    if (!address.trim()) {
+      toast.error("Please provide a service address");
+      return;
+    }
+
+    const bookingDetails = {
+      service: selectedService,
+      address: address,
+      bookingType: bookingType,
+      scheduledDate: bookingType === "later" ? selectedDate : null,
+      scheduledTime: bookingType === "later" ? selectedTime : null,
+      customerName: bookingFor === "others" ? customerName : null,
+      customerPhone: bookingFor === "others" ? customerPhone : null,
+      location: currentLocation
+    };
+
+    navigate("/customer/estimation", { state: { bookingDetails } });
+  };
   
   const handleBookService = () => {
     console.log("Attempting to book service...");
@@ -120,7 +145,6 @@ export default function BookService() {
     console.log("Booking type:", bookingType);
     console.log("Booking for:", bookingFor);
     
-    // Validation
     if (!selectedService) {
       toast.error("Please select a service");
       return;
@@ -179,7 +203,7 @@ export default function BookService() {
 
   if (showMapPicker) {
     return (
-      <MapPicker
+      <MapPickerWithSearch
         onLocationSelect={handleMapLocationSelect}
         onClose={() => setShowMapPicker(false)}
         initialLocation={currentLocation}
@@ -388,14 +412,27 @@ export default function BookService() {
         </div>
       </div>
       
-      <Button 
-        onClick={handleBookService} 
-        disabled={isLoading || !selectedService || !address.trim()} 
-        className="w-full"
-      >
-        {isLoading ? "Processing..." : "Continue to Find Service Provider"}
-        <ArrowRight className="ml-2 w-4 h-4" />
-      </Button>
+      {/* Updated Action Buttons with Estimation Option */}
+      <div className="space-y-3">
+        <Button 
+          onClick={handleBookService} 
+          disabled={isLoading || !selectedService || !address.trim()} 
+          className="w-full"
+        >
+          {isLoading ? "Processing..." : "Continue to Find Service Provider"}
+          <ArrowRight className="ml-2 w-4 h-4" />
+        </Button>
+        
+        <Button 
+          variant="outline"
+          onClick={handleGetEstimation}
+          disabled={!selectedService || !address.trim()}
+          className="w-full"
+        >
+          <Calculator className="w-4 h-4 mr-2" />
+          Get Estimation First
+        </Button>
+      </div>
     </div>
   );
 }
