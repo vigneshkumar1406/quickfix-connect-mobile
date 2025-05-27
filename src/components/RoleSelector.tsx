@@ -32,7 +32,7 @@ export default function RoleSelector() {
   const handleRoleSelect = (role: string) => {
     // In a real app, you would store this in localStorage/context
     localStorage.setItem("quickfix-role", role);
-    navigate("/verify");
+    navigate("/verification");
   };
 
   return (
