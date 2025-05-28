@@ -508,5 +508,24 @@ export const reviewAPI = {
   }
 };
 
+// Service Categories API
+export const serviceCategoryAPI = {
+  getCategories: async () => {
+    try {
+      const { data, error } = await supabase
+        .from('service_categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+      
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error fetching service categories:", error);
+      return { success: false, message: error.message };
+    }
+  }
+};
+
 // Export types for use in other files
 export type { Profile, Worker, ServiceBooking, UserLocation };
