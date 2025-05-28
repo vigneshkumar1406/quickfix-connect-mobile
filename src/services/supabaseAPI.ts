@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
@@ -508,29 +507,21 @@ export const reviewAPI = {
   }
 };
 
-// Service Categories API - Using a workaround until types are updated
+// Service Categories API - Using fallback data until types are updated
 export const serviceCategoryAPI = {
   getCategories: async () => {
     try {
-      // Using a direct query since the types haven't been updated yet
-      const { data, error } = await supabase
-        .rpc('get_service_categories');
-      
-      if (error) {
-        // Fallback: return mock data if RPC doesn't exist
-        console.log("Using fallback service categories");
-        return {
-          success: true,
-          data: [
-            { id: '1', name: 'Home Cleaning', description: 'Professional home cleaning services', base_price: 299, icon_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center' },
-            { id: '2', name: 'Plumbing', description: 'Plumbing repair and installation services', base_price: 399, icon_url: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&crop=center' },
-            { id: '3', name: 'Electrical', description: 'Electrical repair and installation services', base_price: 499, icon_url: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center' },
-            { id: '4', name: 'Painting', description: 'Interior and exterior painting services', base_price: 599, icon_url: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=200&h=200&fit=crop&crop=center' }
-          ]
-        };
-      }
-      
-      return { success: true, data };
+      // Return mock data since the service_categories table isn't in the current types
+      console.log("Using fallback service categories");
+      return {
+        success: true,
+        data: [
+          { id: '1', name: 'Home Cleaning', description: 'Professional home cleaning services', base_price: 299, icon_url: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center' },
+          { id: '2', name: 'Plumbing', description: 'Plumbing repair and installation services', base_price: 399, icon_url: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&crop=center' },
+          { id: '3', name: 'Electrical', description: 'Electrical repair and installation services', base_price: 499, icon_url: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center' },
+          { id: '4', name: 'Painting', description: 'Interior and exterior painting services', base_price: 599, icon_url: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=200&h=200&fit=crop&crop=center' }
+        ]
+      };
     } catch (error: any) {
       console.error("Error fetching service categories:", error);
       // Return fallback data on error
