@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -6,14 +7,21 @@ import {
   Coins, Gift, History, TrendingUp, ChevronDown, ChevronUp, Calculator
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
-import { useLocation } from '@/contexts/LocationContext';
+import { useLocation as useLocationContext } from '@/contexts/LocationContext';
 import { toast } from "sonner";
 import { useState } from "react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
-  const { currentLocation, getUserLocation } = useLocation();
+  const { currentLocation, getUserLocation } = useLocationContext();
   const [isWalletExpanded, setIsWalletExpanded] = useState(false);
 
   const handleBookService = () => {
@@ -55,43 +63,83 @@ export default function CustomerDashboard() {
   const services = [
     { 
       name: "Home Cleaning", 
-      image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center"
+      ]
     },
     { 
       name: "Plumbing", 
-      image: "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop&crop=center"
+      ]
     },
     { 
       name: "Electrical", 
-      image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center"
+      ]
     },
     { 
       name: "Painting", 
-      image: "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center"
+      ]
     },
     { 
       name: "Carpentry", 
-      image: "https://images.unsplash.com/photo-1609072053033-8e9e11eb6c17?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1609072053033-8e9e11eb6c17?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center"
+      ]
     },
     { 
       name: "Fridge Repair", 
-      image: "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center"
+      ]
     },
     { 
       name: "Washing Machine", 
-      image: "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center"
+      ]
     },
     { 
       name: "Appliances", 
-      image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center"
+      ]
     },
     { 
       name: "Pest Control", 
-      image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center"
+      ]
     },
     { 
       name: "AC Service", 
-      image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center"
+      images: [
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center"
+      ]
     }
   ];
 
@@ -157,25 +205,35 @@ export default function CustomerDashboard() {
       
       <h2 className="font-semibold mb-3">Services</h2>
       
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 gap-4 mb-8">
         {services.map((service, index) => (
           <Card 
             key={index} 
             className="p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => handleServiceSelect(service.name)}
           >
-            <div className="w-12 h-12 mb-2 rounded-lg overflow-hidden">
-              <img 
-                src={service.image} 
-                alt={service.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  console.log("Image failed to load:", service.image);
-                  e.currentTarget.src = "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center";
-                }}
-              />
+            <div className="w-full h-24 mb-2 rounded-lg overflow-hidden relative">
+              <Carousel className="w-full h-full">
+                <CarouselContent>
+                  {service.images.map((image, imgIndex) => (
+                    <CarouselItem key={imgIndex}>
+                      <img 
+                        src={image} 
+                        alt={`${service.name} ${imgIndex + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.log("Image failed to load:", image);
+                          e.currentTarget.src = "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center";
+                        }}
+                      />
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-1 h-6 w-6" />
+                <CarouselNext className="right-1 h-6 w-6" />
+              </Carousel>
             </div>
-            <h3 className="text-xs">{service.name}</h3>
+            <h3 className="text-xs font-medium">{service.name}</h3>
           </Card>
         ))}
       </div>
