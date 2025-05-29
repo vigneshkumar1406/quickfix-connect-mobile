@@ -1,303 +1,323 @@
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { 
-  Wrench, Star, Users, Phone, Wallet, Clock, 
-  Coins, Gift, History, TrendingUp, ChevronDown, ChevronUp, Calculator
-} from "lucide-react";
-import { useAuth } from '@/contexts/AuthContext';
-import { useLocation as useLocationContext } from '@/contexts/LocationContext';
-import { toast } from "sonner";
+
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Search, 
+  MapPin, 
+  Star, 
+  Clock, 
+  Users, 
+  Zap,
+  User,
+  Bell,
+  Settings,
+  Wallet,
+  History
+} from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocation } from "@/contexts/LocationContext";
+import ServiceImageSlider from "./ServiceImageSlider";
+import CustomerNameModal from "./CustomerNameModal";
 
-// Create a separate component for the auto-sliding image carousel
-const ServiceImageCarousel = ({ images, serviceName }: { images: string[], serviceName: string }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 2000); // Change image every 2 seconds
-
-    return () => clearInterval(interval);
-  }, [images.length]);
-
-  return (
-    <div className="w-full h-24 rounded-lg overflow-hidden relative">
-      <img 
-        src={images[currentImageIndex]} 
-        alt={`${serviceName} ${currentImageIndex + 1}`}
-        className="w-full h-full object-cover transition-opacity duration-500"
-        onError={(e) => {
-          console.log("Image failed to load:", images[currentImageIndex]);
-          e.currentTarget.src = "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center";
-        }}
-      />
-      <div className="absolute bottom-1 right-1 bg-black/50 text-white text-xs px-1 rounded">
-        {currentImageIndex + 1}/{images.length}
-      </div>
-    </div>
-  );
-};
+const services = [
+  {
+    id: 1,
+    name: "Plumbing",
+    description: "Professional plumbing services for all your needs",
+    price: "₹199 onwards",
+    rating: 4.8,
+    bookings: 1200,
+    images: [
+      "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400"
+    ]
+  },
+  {
+    id: 2,
+    name: "Electrical",
+    description: "Safe and reliable electrical solutions",
+    price: "₹149 onwards",
+    rating: 4.7,
+    bookings: 980,
+    images: [
+      "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=400",
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400",
+      "https://images.unsplash.com/photo-1621905252472-e8592929c4c6?w=400"
+    ]
+  },
+  {
+    id: 3,
+    name: "Cleaning",
+    description: "Deep cleaning services for your home",
+    price: "₹299 onwards",
+    rating: 4.9,
+    bookings: 1500,
+    images: [
+      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400",
+      "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=400",
+      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=400"
+    ]
+  },
+  {
+    id: 4,
+    name: "AC Repair",
+    description: "AC installation, repair and maintenance",
+    price: "₹399 onwards",
+    rating: 4.6,
+    bookings: 750,
+    images: [
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400",
+      "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400",
+      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400"
+    ]
+  },
+  {
+    id: 5,
+    name: "Carpenter",
+    description: "Furniture repair and woodwork services",
+    price: "₹249 onwards",
+    rating: 4.8,
+    bookings: 890,
+    images: [
+      "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400",
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400",
+      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400"
+    ]
+  },
+  {
+    id: 6,
+    name: "Painting",
+    description: "Interior and exterior painting services",
+    price: "₹179 onwards",
+    rating: 4.7,
+    bookings: 650,
+    images: [
+      "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400",
+      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=400",
+      "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400"
+    ]
+  }
+];
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
-  const { currentLocation, getUserLocation } = useLocationContext();
-  const [isWalletExpanded, setIsWalletExpanded] = useState(false);
+  const { user } = useAuth();
+  const { currentLocation, getUserLocation } = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [isLoadingName, setIsLoadingName] = useState(false);
 
-  const handleBookService = () => {
-    if (!currentLocation) {
-      getUserLocation();
+  // Check if customer name exists
+  useEffect(() => {
+    const savedName = localStorage.getItem('quickfix_customer_name');
+    if (savedName) {
+      setCustomerName(savedName);
+    } else if (user) {
+      // Show name modal for new customers
+      setShowNameModal(true);
     }
-    navigate("/customer/book-service");
+  }, [user]);
+
+  const handleNameSubmit = (name: string) => {
+    setIsLoadingName(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      localStorage.setItem('quickfix_customer_name', name);
+      setCustomerName(name);
+      setShowNameModal(false);
+      setIsLoadingName(false);
+      toast.success(`Welcome, ${name}! 🎉`);
+    }, 1000);
   };
 
-  const handleServiceSelect = (serviceName: string) => {
-    console.log("Service selected:", serviceName);
-    navigate("/customer/book-service", { state: { selectedService: serviceName } });
-  };
-
-  const handleQuickAction = (action: string) => {
-    switch (action) {
-      case "book-later":
-        navigate("/customer/book-service", { state: { bookingType: "later" } });
-        break;
-      case "for-others":
-        navigate("/customer/book-service", { state: { bookingFor: "others" } });
-        break;
-      case "contact":
-        navigate("/contact");
-        break;
-      default:
-        break;
-    }
-  };
-
-  const handleWalletClick = () => {
-    navigate("/customer/wallet");
+  const handleServiceSelect = (service: any) => {
+    navigate("/customer/book-service", { 
+      state: { 
+        selectedService: service,
+        customerName: customerName 
+      } 
+    });
   };
 
   const handleGetEstimation = () => {
-    console.log("Navigating to estimation page");
     navigate("/customer/estimation");
   };
 
-  const services = [
-    { 
-      name: "Home Cleaning", 
-      images: [
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=200&h=200&fit=crop&crop=center"
-      ]
-    },
-    { 
-      name: "Plumbing", 
-      images: [
-        "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=200&h=200&fit=crop&crop=center"
-      ]
-    },
-    { 
-      name: "Electrical", 
-      images: [
-        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1609010697446-11f2155278f0?w=200&h=200&fit=crop&crop=center"
-      ]
-    },
-    { 
-      name: "Painting", 
-      images: [
-        "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1616464654248-5bbdc3b4c101?w=200&h=200&fit=crop&crop=center"
-      ]
-    },
-    { 
-      name: "Carpentry", 
-      images: [
-        "https://images.unsplash.com/photo-1609072053033-8e9e11eb6c17?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=200&h=200&fit=crop&crop=center"
-      ]
-    },
-    { 
-      name: "Fridge Repair", 
-      images: [
-        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1565814636199-ae8133055c1c?w=200&h=200&fit=crop&crop=center"
-      ]
-    },
-    { 
-      name: "Washing Machine", 
-      images: [
-        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop&crop=center"
-      ]
-    },
-    { 
-      name: "Appliances", 
-      images: [
-        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=200&h=200&fit=crop&crop=center"
-      ]
-    },
-    { 
-      name: "Pest Control", 
-      images: [
-        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1600298881974-6be191ceeda1?w=200&h=200&fit=crop&crop=center"
-      ]
-    },
-    { 
-      name: "AC Service", 
-      images: [
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1635247230951-8b1e62516b45?w=200&h=200&fit=crop&crop=center"
-      ]
-    }
-  ];
+  const filteredServices = services.filter(service =>
+    service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    service.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="w-full pb-24 animate-fade-in">
-      <div className="bg-primary text-white p-6 rounded-b-3xl mb-6">
-        <h1 className="text-2xl font-bold mb-1">QuickFix</h1>
-        <p className="opacity-90">Welcome back {user?.name || user?.phoneNumber || 'Customer'}</p>
-      </div>
-      
-      <div className="mb-6 space-y-3">
-        <Button 
-          className="w-full h-14 text-lg"
-          onClick={handleBookService}
-        >
-          <Wrench className="mr-2 w-5 h-5" />
-          Book a Service
-        </Button>
-        
-        <Button 
-          variant="outline"
-          className="w-full h-12 text-base"
-          onClick={handleGetEstimation}
-        >
-          <Calculator className="mr-2 w-5 h-5" />
-          Get Estimation
-        </Button>
-      </div>
-      
-      <h2 className="font-semibold mb-3">Quick Actions</h2>
-      
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <Card 
-          className="p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handleQuickAction("book-later")}
-        >
-          <div className="bg-neutral-100 p-2 rounded-full mb-2">
-            <Clock className="w-4 h-4 text-primary" />
-          </div>
-          <h3 className="text-xs">Book Later</h3>
-        </Card>
-        
-        <Card 
-          className="p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handleQuickAction("for-others")}
-        >
-          <div className="bg-neutral-100 p-2 rounded-full mb-2">
-            <Users className="w-4 h-4 text-primary" />
-          </div>
-          <h3 className="text-xs">For Others</h3>
-        </Card>
-        
-        <Card 
-          className="p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => handleQuickAction("contact")}
-        >
-          <div className="bg-neutral-100 p-2 rounded-full mb-2">
-            <Phone className="w-4 h-4 text-primary" />
-          </div>
-          <h3 className="text-xs">Contact Us</h3>
-        </Card>
-      </div>
-      
-      <h2 className="font-semibold mb-3">Services</h2>
-      
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        {services.map((service, index) => (
-          <Card 
-            key={index} 
-            className="p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
-            onClick={() => handleServiceSelect(service.name)}
-          >
-            <ServiceImageCarousel images={service.images} serviceName={service.name} />
-            <h3 className="text-xs font-medium mt-2">{service.name}</h3>
-          </Card>
-        ))}
-      </div>
-      
-      <Card className="mb-6">
-        <div className="p-4">
-          <div className="flex items-center mb-3">
-            <Star className="w-5 h-5 text-primary mr-2" />
-            <h3 className="font-semibold">Reviews</h3>
-          </div>
-          <p className="text-neutral-300 text-sm">View reviews for completed services</p>
-        </div>
-        <div className="border-t px-4 py-3 flex justify-between items-center">
-          <span className="text-sm">30 past services</span>
-          <Button variant="ghost" size="sm">View All</Button>
-        </div>
-      </Card>
-      
-      <Button 
-        variant="outline" 
-        className="w-full mb-6"
-        onClick={() => {
-          logout();
-          navigate("/");
-        }}
-      >
-        Sign Out
-      </Button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <CustomerNameModal 
+        isOpen={showNameModal}
+        onSubmit={handleNameSubmit}
+        loading={isLoadingName}
+      />
 
-      {/* Fixed Wallet Box at Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-background border-t">
-        <Card 
-          className="cursor-pointer transition-all duration-300"
-          onClick={handleWalletClick}
-        >
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Coins className="w-5 h-5 text-yellow-500 mr-2" />
-                <div>
-                  <h3 className="font-semibold text-sm">QuickFix Wallet</h3>
-                  <p className="text-xs text-neutral-300">0 Coins available</p>
-                </div>
-              </div>
-              <div className="flex items-center">
-                <span className="text-sm font-bold text-yellow-600 mr-2">₹0.00</span>
-                <div className="bg-blue-100 p-1 rounded">
-                  <Wallet className="w-4 h-4 text-blue-600" />
-                </div>
-              </div>
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {customerName ? `Hi, ${customerName}! 👋` : 'Welcome to QuickFix! 👋'}
+              </h1>
+              <p className="text-gray-600">Find trusted professionals for all your home services</p>
             </div>
+            <div className="flex items-center space-x-3">
+              <Button variant="ghost" size="sm">
+                <Bell className="w-5 h-5" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/customer/wallet")}>
+                <Wallet className="w-5 h-5" />
+              </Button>
+              <Button variant="ghost" size="sm">
+                <Settings className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        {/* Location and Search */}
+        <div className="mb-6 space-y-4">
+          <div className="flex items-center space-x-2 text-gray-600">
+            <MapPin className="w-4 h-4" />
+            <span className="text-sm">
+              {currentLocation ? "Current Location" : "Location not set"}
+            </span>
+            {!currentLocation && (
+              <Button 
+                variant="link" 
+                size="sm" 
+                onClick={getUserLocation}
+                className="text-primary p-0 h-auto"
+              >
+                Set Location
+              </Button>
+            )}
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Input
+              type="text"
+              placeholder="Search for services..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-4 py-3 text-lg border-gray-200 focus:border-primary"
+            />
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Button 
+              variant="outline" 
+              className="p-4 h-auto flex-col space-y-2"
+              onClick={handleGetEstimation}
+            >
+              <Zap className="w-6 h-6 text-primary" />
+              <span className="text-sm font-medium">Get Estimation</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="p-4 h-auto flex-col space-y-2"
+              onClick={() => navigate("/customer/service-tracking")}
+            >
+              <Clock className="w-6 h-6 text-orange-500" />
+              <span className="text-sm font-medium">Track Service</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="p-4 h-auto flex-col space-y-2"
+            >
+              <History className="w-6 h-6 text-green-500" />
+              <span className="text-sm font-medium">History</span>
+            </Button>
+            <Button 
+              variant="outline" 
+              className="p-4 h-auto flex-col space-y-2"
+            >
+              <User className="w-6 h-6 text-purple-500" />
+              <span className="text-sm font-medium">Profile</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Services Grid */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4">Popular Services</h2>
+          
+          {filteredServices.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-gray-500">No services found matching your search.</p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredServices.map((service) => (
+                <Card
+                  key={service.id}
+                  className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
+                  onClick={() => handleServiceSelect(service)}
+                >
+                  <div className="aspect-square">
+                    <ServiceImageSlider 
+                      images={service.images} 
+                      serviceName={service.name}
+                    />
+                  </div>
+                  
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                        {service.name}
+                      </h3>
+                      <Badge variant="secondary" className="text-xs">
+                        <Star className="w-3 h-3 mr-1 fill-yellow-400 text-yellow-400" />
+                        {service.rating}
+                      </Badge>
+                    </div>
+                    
+                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                      {service.description}
+                    </p>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-primary">{service.price}</span>
+                      <div className="flex items-center text-gray-500 text-xs">
+                        <Users className="w-3 h-3 mr-1" />
+                        {service.bookings} bookings
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Emergency Services */}
+        <Card className="bg-red-50 border-red-200">
+          <div className="p-6">
+            <h3 className="text-xl font-semibold text-red-800 mb-2">Emergency Services</h3>
+            <p className="text-red-600 mb-4">Need urgent help? We're available 24/7 for emergency services.</p>
+            <Button className="bg-red-600 hover:bg-red-700">
+              Call Emergency Support
+            </Button>
           </div>
         </Card>
       </div>

@@ -1,20 +1,27 @@
+
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useNavigate, useLocation } from "react-router-dom";
-import { toast } from "sonner";
-import BackButton from "../BackButton";
-import { 
-  Clock, Calendar, MapPin, User, Users, ArrowRight, Navigation, Map, AlertCircle, Calculator
-} from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useLocation as useLocationContext } from '@/contexts/LocationContext';
-import MapPickerWithSearch from "./MapPickerWithSearch";
+import { Badge } from "@/components/ui/badge";
+import { 
+  ArrowLeft, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  Phone, 
+  User, 
+  Users,
+  CheckCircle,
+  AlertCircle
+} from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocation as useLocationContext } from "@/contexts/LocationContext";
+import ContactBookModal from "./ContactBookModal";
 
 const services = [
   "Plumbing",
@@ -51,6 +58,8 @@ export default function BookService() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [showMapPicker, setShowMapPicker] = useState(false);
+  const [showContactBook, setShowContactBook] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<any>(null);
   
   // Check if service was pre-selected from dashboard or quick actions
   useEffect(() => {
@@ -201,6 +210,18 @@ export default function BookService() {
     }, 1500);
   };
 
+  const handleBookForOthers = () => {
+    setShowContactBook(true);
+  };
+
+  const handleContactSelect = (contact: any) => {
+    setSelectedContact(contact);
+    setCustomerName(contact.name);
+    setCustomerPhone(contact.phone);
+    setBookingType("others");
+    toast.success(`Booking for ${contact.name}`);
+  };
+
   if (showMapPicker) {
     return (
       <MapPickerWithSearch
@@ -212,226 +233,234 @@ export default function BookService() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto pb-10 animate-fade-in">
-      <div className="mb-4">
-        <BackButton withLabel />
-      </div>
-      
-      <h1 className="text-2xl font-bold mb-2">Book a Service</h1>
-      <p className="text-neutral-300 mb-6">Select service and preferences</p>
-      
-      {/* Location Error Alert */}
-      {locationError && (
-        <Alert className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {locationError}
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {/* Address Section */}
-      <div className="mb-6">
-        <h2 className="font-semibold mb-3">Service Address</h2>
-        <div className="space-y-3">
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleCurrentLocation}
-              disabled={isLoadingLocation || locationLoading}
-              className="flex-1"
-            >
-              <Navigation className="w-4 h-4 mr-2" />
-              {isLoadingLocation || locationLoading ? "Getting Location..." : "Current Location"}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleLocateOnMap}
-              disabled={isLoadingLocation}
-              className="flex-1"
-            >
-              <Map className="w-4 h-4 mr-2" />
-              Locate on Map
-            </Button>
-          </div>
-          
-          <Textarea
-            placeholder="Enter your complete address including street, area, city, and pincode..."
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            className="min-h-[100px]"
-          />
-          
-          {address && (
-            <div className="text-xs text-green-600 flex items-center">
-              <MapPin className="w-3 h-3 mr-1" />
-              Address ready for booking
-            </div>
-          )}
-          
-          {currentLocation && (
-            <div className="text-xs text-blue-600 flex items-center">
-              <Navigation className="w-3 h-3 mr-1" />
-              Location: {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
-            </div>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <ContactBookModal 
+        isOpen={showContactBook}
+        onClose={() => setShowContactBook(false)}
+        onSelectContact={handleContactSelect}
+      />
+
+      <div className="w-full max-w-md mx-auto pb-10 animate-fade-in">
+        <div className="mb-4">
+          <BackButton withLabel />
         </div>
-      </div>
-      
-      <Tabs defaultValue="now" className="mb-6" onValueChange={(v) => setBookingType(v)}>
-        <TabsList className="grid grid-cols-2 mb-4">
-          <TabsTrigger value="now" className="flex items-center">
-            <Clock className="w-4 h-4 mr-2" />
-            Book Now
-          </TabsTrigger>
-          <TabsTrigger value="later" className="flex items-center">
-            <Calendar className="w-4 h-4 mr-2" />
-            Schedule
-          </TabsTrigger>
-        </TabsList>
         
-        <TabsContent value="now">
-          <Card className="p-4">
-            <div className="flex items-center">
-              <MapPin className="w-5 h-5 text-primary mr-2" />
-              <div>
-                <p className="text-sm font-medium">Immediate Service</p>
-                <p className="text-xs text-neutral-300">Service will be scheduled as soon as possible</p>
-              </div>
+        <h1 className="text-2xl font-bold mb-2">Book a Service</h1>
+        <p className="text-neutral-300 mb-6">Select service and preferences</p>
+        
+        {/* Location Error Alert */}
+        {locationError && (
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {locationError}
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {/* Address Section */}
+        <div className="mb-6">
+          <h2 className="font-semibold mb-3">Service Address</h2>
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCurrentLocation}
+                disabled={isLoadingLocation || locationLoading}
+                className="flex-1"
+              >
+                <Navigation className="w-4 h-4 mr-2" />
+                {isLoadingLocation || locationLoading ? "Getting Location..." : "Current Location"}
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleLocateOnMap}
+                disabled={isLoadingLocation}
+                className="flex-1"
+              >
+                <Map className="w-4 h-4 mr-2" />
+                Locate on Map
+              </Button>
             </div>
-          </Card>
-        </TabsContent>
+            
+            <Textarea
+              placeholder="Enter your complete address including street, area, city, and pincode..."
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="min-h-[100px]"
+            />
+            
+            {address && (
+              <div className="text-xs text-green-600 flex items-center">
+                <MapPin className="w-3 h-3 mr-1" />
+                Address ready for booking
+              </div>
+            )}
+            
+            {currentLocation && (
+              <div className="text-xs text-blue-600 flex items-center">
+                <Navigation className="w-3 h-3 mr-1" />
+                Location: {currentLocation.lat.toFixed(6)}, {currentLocation.lng.toFixed(6)}
+              </div>
+            )}
+          </div>
+        </div>
         
-        <TabsContent value="later">
-          <Card className="p-4">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="date">Select Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="mt-1"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="time">Select Time</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={selectedTime}
-                  onChange={(e) => setSelectedTime(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              
-              {selectedDate && selectedTime && (
-                <div className="text-xs text-green-600 flex items-center">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Scheduled for {selectedDate} at {selectedTime}
+        <Tabs defaultValue="now" className="mb-6" onValueChange={(v) => setBookingType(v)}>
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="now" className="flex items-center">
+              <Clock className="w-4 h-4 mr-2" />
+              Book Now
+            </TabsTrigger>
+            <TabsTrigger value="later" className="flex items-center">
+              <Calendar className="w-4 h-4 mr-2" />
+              Schedule
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="now">
+            <Card className="p-4">
+              <div className="flex items-center">
+                <MapPin className="w-5 h-5 text-primary mr-2" />
+                <div>
+                  <p className="text-sm font-medium">Immediate Service</p>
+                  <p className="text-xs text-neutral-300">Service will be scheduled as soon as possible</p>
                 </div>
-              )}
-            </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      
-      <div className="mb-6">
-        <h2 className="font-semibold mb-3">Book For</h2>
-        <RadioGroup value={bookingFor} onValueChange={setBookingFor}>
-          <div className="flex space-x-4">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="self" id="self" />
-              <Label htmlFor="self" className="flex items-center cursor-pointer">
-                <User className="w-4 h-4 mr-1" />
-                Self
-              </Label>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="others" id="others" />
-              <Label htmlFor="others" className="flex items-center cursor-pointer">
-                <Users className="w-4 h-4 mr-1" />
-                Someone else
-              </Label>
-            </div>
-          </div>
-        </RadioGroup>
-        
-        {bookingFor === "others" && (
-          <div className="mt-4 space-y-3">
-            <div className="space-y-1">
-              <Label htmlFor="name">Customer Name</Label>
-              <Input 
-                id="name" 
-                placeholder="Enter customer name" 
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-1">
-              <Label htmlFor="phone">Customer Phone Number</Label>
-              <Input 
-                id="phone" 
-                placeholder="Enter phone number" 
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-      
-      <div className="mb-6">
-        <h2 className="font-semibold mb-3">Select Service</h2>
-        {selectedService && (
-          <div className="mb-3 p-2 bg-primary/10 rounded text-sm text-primary">
-            Selected: {selectedService}
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-3">
-          {services.map((service) => (
-            <Card
-              key={service}
-              className={`p-4 cursor-pointer transition-all hover:shadow-md ${
-                selectedService === service
-                  ? "border-primary bg-primary/5"
-                  : ""
-              }`}
-              onClick={() => handleServiceSelect(service)}
-            >
-              <p className="text-center text-sm">{service}</p>
+              </div>
             </Card>
-          ))}
-        </div>
-      </div>
-      
-      {/* Updated Action Buttons with Estimation Option */}
-      <div className="space-y-3">
-        <Button 
-          onClick={handleBookService} 
-          disabled={isLoading || !selectedService || !address.trim()} 
-          className="w-full"
-        >
-          {isLoading ? "Processing..." : "Continue to Find Service Provider"}
-          <ArrowRight className="ml-2 w-4 h-4" />
-        </Button>
+          </TabsContent>
+          
+          <TabsContent value="later">
+            <Card className="p-4">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="date">Select Date</Label>
+                  <Input
+                    id="date"
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="time">Select Time</Label>
+                  <Input
+                    id="time"
+                    type="time"
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                {selectedDate && selectedTime && (
+                  <div className="text-xs text-green-600 flex items-center">
+                    <Clock className="w-3 h-3 mr-1" />
+                    Scheduled for {selectedDate} at {selectedTime}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
         
-        <Button 
-          variant="outline"
-          onClick={handleGetEstimation}
-          disabled={!selectedService || !address.trim()}
-          className="w-full"
-        >
-          <Calculator className="w-4 h-4 mr-2" />
-          Get Estimation First
-        </Button>
+        <div className="mb-6">
+          <h2 className="font-semibold mb-3">Book For</h2>
+          <RadioGroup value={bookingFor} onValueChange={setBookingFor}>
+            <div className="flex space-x-4">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="self" id="self" />
+                <Label htmlFor="self" className="flex items-center cursor-pointer">
+                  <User className="w-4 h-4 mr-1" />
+                  Self
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="others" id="others" />
+                <Label htmlFor="others" className="flex items-center cursor-pointer">
+                  <Users className="w-4 h-4 mr-1" />
+                  Someone else
+                </Label>
+              </div>
+            </div>
+          </RadioGroup>
+          
+          {bookingFor === "others" && (
+            <div className="mt-4 space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="name">Customer Name</Label>
+                <Input 
+                  id="name" 
+                  placeholder="Enter customer name" 
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-1">
+                <Label htmlFor="phone">Customer Phone Number</Label>
+                <Input 
+                  id="phone" 
+                  placeholder="Enter phone number" 
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="mb-6">
+          <h2 className="font-semibold mb-3">Select Service</h2>
+          {selectedService && (
+            <div className="mb-3 p-2 bg-primary/10 rounded text-sm text-primary">
+              Selected: {selectedService}
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3">
+            {services.map((service) => (
+              <Card
+                key={service}
+                className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+                  selectedService === service
+                    ? "border-primary bg-primary/5"
+                    : ""
+                }`}
+                onClick={() => handleServiceSelect(service)}
+              >
+                <p className="text-center text-sm">{service}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+        
+        {/* Updated Action Buttons with Estimation Option */}
+        <div className="space-y-3">
+          <Button 
+            onClick={handleBookService} 
+            disabled={isLoading || !selectedService || !address.trim()} 
+            className="w-full"
+          >
+            {isLoading ? "Processing..." : "Continue to Find Service Provider"}
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={handleGetEstimation}
+            disabled={!selectedService || !address.trim()}
+            className="w-full"
+          >
+            <Calculator className="w-4 h-4 mr-2" />
+            Get Estimation First
+          </Button>
+        </div>
       </div>
     </div>
   );
