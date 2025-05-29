@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -9,14 +8,37 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocation as useLocationContext } from '@/contexts/LocationContext';
 import { toast } from "sonner";
-import { useState } from "react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { useState, useEffect } from "react";
+
+// Create a separate component for the auto-sliding image carousel
+const ServiceImageCarousel = ({ images, serviceName }: { images: string[], serviceName: string }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 2000); // Change image every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  return (
+    <div className="w-full h-24 rounded-lg overflow-hidden relative">
+      <img 
+        src={images[currentImageIndex]} 
+        alt={`${serviceName} ${currentImageIndex + 1}`}
+        className="w-full h-full object-cover transition-opacity duration-500"
+        onError={(e) => {
+          console.log("Image failed to load:", images[currentImageIndex]);
+          e.currentTarget.src = "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center";
+        }}
+      />
+      <div className="absolute bottom-1 right-1 bg-black/50 text-white text-xs px-1 rounded">
+        {currentImageIndex + 1}/{images.length}
+      </div>
+    </div>
+  );
+};
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
@@ -45,7 +67,7 @@ export default function CustomerDashboard() {
         navigate("/customer/book-service", { state: { bookingFor: "others" } });
         break;
       case "contact":
-        toast.info("Contact feature coming soon!");
+        navigate("/contact");
         break;
       default:
         break;
@@ -57,6 +79,7 @@ export default function CustomerDashboard() {
   };
 
   const handleGetEstimation = () => {
+    console.log("Navigating to estimation page");
     navigate("/customer/estimation");
   };
 
@@ -66,7 +89,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=200&h=200&fit=crop&crop=center"
       ]
     },
     { 
@@ -74,7 +98,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=200&h=200&fit=crop&crop=center"
       ]
     },
     { 
@@ -82,7 +107,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1609010697446-11f2155278f0?w=200&h=200&fit=crop&crop=center"
       ]
     },
     { 
@@ -90,7 +116,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1616464654248-5bbdc3b4c101?w=200&h=200&fit=crop&crop=center"
       ]
     },
     { 
@@ -98,7 +125,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1609072053033-8e9e11eb6c17?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=200&h=200&fit=crop&crop=center"
       ]
     },
     { 
@@ -106,7 +134,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1565814636199-ae8133055c1c?w=200&h=200&fit=crop&crop=center"
       ]
     },
     { 
@@ -114,7 +143,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop&crop=center"
       ]
     },
     { 
@@ -122,7 +152,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=200&h=200&fit=crop&crop=center"
       ]
     },
     { 
@@ -130,7 +161,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1600298881974-6be191ceeda1?w=200&h=200&fit=crop&crop=center"
       ]
     },
     { 
@@ -138,7 +170,8 @@ export default function CustomerDashboard() {
       images: [
         "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center",
         "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=200&h=200&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center"
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=200&h=200&fit=crop&crop=center",
+        "https://images.unsplash.com/photo-1635247230951-8b1e62516b45?w=200&h=200&fit=crop&crop=center"
       ]
     }
   ];
@@ -212,28 +245,8 @@ export default function CustomerDashboard() {
             className="p-3 flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => handleServiceSelect(service.name)}
           >
-            <div className="w-full h-24 mb-2 rounded-lg overflow-hidden relative">
-              <Carousel className="w-full h-full">
-                <CarouselContent>
-                  {service.images.map((image, imgIndex) => (
-                    <CarouselItem key={imgIndex}>
-                      <img 
-                        src={image} 
-                        alt={`${service.name} ${imgIndex + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          console.log("Image failed to load:", image);
-                          e.currentTarget.src = "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=200&h=200&fit=crop&crop=center";
-                        }}
-                      />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="left-1 h-6 w-6" />
-                <CarouselNext className="right-1 h-6 w-6" />
-              </Carousel>
-            </div>
-            <h3 className="text-xs font-medium">{service.name}</h3>
+            <ServiceImageCarousel images={service.images} serviceName={service.name} />
+            <h3 className="text-xs font-medium mt-2">{service.name}</h3>
           </Card>
         ))}
       </div>

@@ -8,11 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, Calculator, MapPin, Phone, User, 
-  Clock, Wrench, Send, CheckCircle
+  Clock, Wrench, Send, CheckCircle, Star, Shield, Award
 } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
-import { Slider } from "@/components/ui/slider";
+import { LoadingSpinner } from "../ui/loading";
 
 interface EstimationForm {
   service: string;
@@ -22,12 +22,14 @@ interface EstimationForm {
   address: string;
   urgency: 'low' | 'medium' | 'high';
   preferredTime: string;
-  estimatedBudget: number[];
+  estimatedBudget: number;
 }
 
 export default function ServiceEstimation() {
   const navigate = useNavigate();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedService, setSelectedService] = useState("");
   const [estimationForm, setEstimationForm] = useState<EstimationForm>({
     service: "",
     description: "",
@@ -36,14 +38,27 @@ export default function ServiceEstimation() {
     address: "",
     urgency: "medium",
     preferredTime: "",
-    estimatedBudget: [500]
+    estimatedBudget: 500
   });
 
   const services = [
-    "Home Cleaning", "Plumbing", "Electrical", "Painting", 
-    "Carpentry", "Fridge Repair", "Washing Machine", 
-    "Appliances", "Pest Control", "AC Service"
+    { name: "Home Cleaning", price: "₹199 onwards", rating: 4.8, image: "🏠" },
+    { name: "Plumbing", price: "₹149 onwards", rating: 4.7, image: "🔧" },
+    { name: "Electrical", price: "₹199 onwards", rating: 4.9, image: "⚡" },
+    { name: "Painting", price: "₹299 onwards", rating: 4.6, image: "🎨" },
+    { name: "Carpentry", price: "₹249 onwards", rating: 4.8, image: "🔨" },
+    { name: "AC Service", price: "₹199 onwards", rating: 4.9, image: "❄️" },
+    { name: "Appliance Repair", price: "₹179 onwards", rating: 4.7, image: "🔧" },
+    { name: "Pest Control", price: "₹399 onwards", rating: 4.8, image: "🐛" },
   ];
+
+  const handleServiceSelect = (service: any) => {
+    setSelectedService(service.name);
+    setEstimationForm(prev => ({
+      ...prev,
+      service: service.name
+    }));
+  };
 
   const handleInputChange = (field: keyof EstimationForm, value: any) => {
     setEstimationForm(prev => ({
@@ -52,7 +67,7 @@ export default function ServiceEstimation() {
     }));
   };
 
-  const handleSubmitEstimation = () => {
+  const handleSubmitEstimation = async () => {
     // Validate required fields
     if (!estimationForm.service || !estimationForm.description || 
         !estimationForm.customerName || !estimationForm.customerPhone || 
@@ -61,22 +76,23 @@ export default function ServiceEstimation() {
       return;
     }
 
+    setIsLoading(true);
     console.log("Estimation request:", estimationForm);
-    setIsSubmitted(true);
-    toast.success("Estimation request submitted successfully!");
     
-    // Simulate sending to workers
+    // Simulate API call
     setTimeout(() => {
-      toast.info("We'll send you quotes from nearby workers soon!");
+      setIsLoading(false);
+      setIsSubmitted(true);
+      toast.success("Estimation request submitted successfully!");
     }, 2000);
   };
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'high': return 'text-red-600 bg-red-50 border-red-200';
-      case 'medium': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      case 'low': return 'text-green-600 bg-green-50 border-green-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'high': return 'border-red-500 bg-red-50 text-red-700';
+      case 'medium': return 'border-yellow-500 bg-yellow-50 text-yellow-700';
+      case 'low': return 'border-green-500 bg-green-50 text-green-700';
+      default: return 'border-gray-300 bg-gray-50 text-gray-700';
     }
   };
 
@@ -87,59 +103,107 @@ export default function ServiceEstimation() {
           <BackButton withLabel />
         </div>
         
-        <Card className="p-8 text-center">
-          <div className="mb-6">
-            <CheckCircle className="w-16 h-16 mx-auto text-green-500 mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Estimation Request Sent!</h2>
-            <p className="text-neutral-300">
-              We've sent your request to nearby workers. You'll receive quotes within 24 hours.
-            </p>
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+            <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
-          
-          <div className="space-y-3 mb-6">
-            <div className="bg-neutral-50 p-3 rounded-lg">
-              <h4 className="font-medium mb-1">Service Requested</h4>
-              <p className="text-sm text-neutral-300">{estimationForm.service}</p>
+          <h2 className="text-2xl font-bold mb-2">Request Sent!</h2>
+          <p className="text-gray-600">
+            We'll connect you with verified professionals shortly
+          </p>
+        </div>
+        
+        <Card className="p-6 mb-6">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Service</span>
+              <span className="font-medium">{estimationForm.service}</span>
             </div>
-            
-            <div className="bg-neutral-50 p-3 rounded-lg">
-              <h4 className="font-medium mb-1">Estimated Budget</h4>
-              <p className="text-sm text-neutral-300">₹{estimationForm.estimatedBudget[0]}</p>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Expected Budget</span>
+              <span className="font-medium text-primary">₹{estimationForm.estimatedBudget}</span>
             </div>
-            
-            <div className={`p-3 rounded-lg border ${getUrgencyColor(estimationForm.urgency)}`}>
-              <h4 className="font-medium mb-1">Priority</h4>
-              <p className="text-sm capitalize">{estimationForm.urgency}</p>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Priority</span>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getUrgencyColor(estimationForm.urgency)}`}>
+                {estimationForm.urgency}
+              </span>
             </div>
           </div>
-          
-          <div className="space-y-3">
-            <Button 
-              onClick={() => navigate("/customer/dashboard")}
-              className="w-full"
+        </Card>
+        
+        <div className="space-y-3">
+          <Button onClick={() => navigate("/customer/dashboard")} className="w-full">
+            Back to Dashboard
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => {
+              setIsSubmitted(false);
+              setSelectedService("");
+              setEstimationForm({
+                service: "",
+                description: "",
+                customerName: "",
+                customerPhone: "",
+                address: "",
+                urgency: "medium",
+                preferredTime: "",
+                estimatedBudget: 500
+              });
+            }}
+            className="w-full"
+          >
+            Get Another Estimation
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!selectedService) {
+    return (
+      <div className="w-full max-w-md mx-auto pb-10 animate-fade-in">
+        <div className="mb-4">
+          <BackButton withLabel />
+        </div>
+        
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold mb-2">Get Service Estimation</h1>
+          <p className="text-gray-600">Choose a service to get instant quotes from verified professionals</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 mb-6">
+          {services.map((service, index) => (
+            <Card
+              key={index}
+              className="p-4 cursor-pointer hover:shadow-lg transition-all duration-200 border-2 hover:border-primary"
+              onClick={() => handleServiceSelect(service)}
             >
-              Back to Dashboard
-            </Button>
-            
-            <Button 
-              variant="outline"
-              onClick={() => {
-                setIsSubmitted(false);
-                setEstimationForm({
-                  service: "",
-                  description: "",
-                  customerName: "",
-                  customerPhone: "",
-                  address: "",
-                  urgency: "medium",
-                  preferredTime: "",
-                  estimatedBudget: [500]
-                });
-              }}
-              className="w-full"
-            >
-              Request Another Estimation
-            </Button>
+              <div className="flex items-center space-x-4">
+                <div className="text-3xl">{service.image}</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">{service.name}</h3>
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                    <span>{service.rating}</span>
+                    <span>•</span>
+                    <span className="text-primary font-medium">{service.price}</span>
+                  </div>
+                </div>
+                <ArrowLeft className="w-5 h-5 text-gray-400 rotate-180" />
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <Card className="p-4 bg-blue-50 border-blue-200">
+          <div className="flex items-start space-x-3">
+            <Shield className="w-5 h-5 text-blue-600 mt-1" />
+            <div>
+              <h4 className="font-medium text-blue-900">100% Safe & Secure</h4>
+              <p className="text-sm text-blue-700">All professionals are background verified</p>
+            </div>
           </div>
         </Card>
       </div>
@@ -149,162 +213,152 @@ export default function ServiceEstimation() {
   return (
     <div className="w-full max-w-md mx-auto pb-10 animate-fade-in">
       <div className="mb-4">
-        <BackButton withLabel />
+        <Button variant="ghost" onClick={() => setSelectedService("")}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Services
+        </Button>
       </div>
       
-      <h1 className="text-2xl font-bold mb-2">Get Service Estimation</h1>
-      <p className="text-neutral-300 mb-6">
-        Tell us about your service needs and get quotes from qualified workers
-      </p>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">{selectedService}</h1>
+        <p className="text-gray-600">Tell us about your requirements</p>
+      </div>
       
-      <Card className="p-6 mb-6">
-        <div className="space-y-4">
-          {/* Service Selection */}
-          <div>
-            <Label htmlFor="service" className="text-sm font-medium mb-2 block">
-              Service Type *
-            </Label>
-            <select
-              id="service"
-              value={estimationForm.service}
-              onChange={(e) => handleInputChange('service', e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-            >
-              <option value="">Select a service</option>
-              {services.map((service) => (
-                <option key={service} value={service}>{service}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Description */}
-          <div>
-            <Label htmlFor="description" className="text-sm font-medium mb-2 block">
-              Service Description *
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="Describe what work needs to be done..."
-              value={estimationForm.description}
-              onChange={(e) => handleInputChange('description', e.target.value)}
-              className="min-h-[80px]"
-            />
-          </div>
-
-          {/* Customer Details */}
-          <div className="grid grid-cols-1 gap-4">
+      <div className="space-y-6">
+        <Card className="p-6">
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="customerName" className="text-sm font-medium mb-2 block">
-                Your Name *
+              <Label htmlFor="description" className="text-sm font-medium mb-2 block">
+                Describe your requirement *
               </Label>
-              <Input
-                id="customerName"
-                placeholder="Enter your full name"
-                value={estimationForm.customerName}
-                onChange={(e) => handleInputChange('customerName', e.target.value)}
+              <Textarea
+                id="description"
+                placeholder="What work needs to be done? Be specific about your requirements..."
+                value={estimationForm.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                className="min-h-[100px]"
               />
             </div>
-            
+
             <div>
-              <Label htmlFor="customerPhone" className="text-sm font-medium mb-2 block">
-                Phone Number *
+              <Label htmlFor="address" className="text-sm font-medium mb-2 block">
+                Service Location *
               </Label>
-              <Input
-                id="customerPhone"
-                placeholder="+91 xxxxx xxxxx"
-                value={estimationForm.customerPhone}
-                onChange={(e) => handleInputChange('customerPhone', e.target.value)}
-              />
+              <div className="relative">
+                <MapPin className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                <Textarea
+                  id="address"
+                  placeholder="Enter your complete address..."
+                  value={estimationForm.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  className="pl-10 min-h-[60px]"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Address */}
-          <div>
-            <Label htmlFor="address" className="text-sm font-medium mb-2 block">
-              Service Address *
-            </Label>
-            <Textarea
-              id="address"
-              placeholder="Enter your complete address..."
-              value={estimationForm.address}
-              onChange={(e) => handleInputChange('address', e.target.value)}
-              className="min-h-[60px]"
-            />
-          </div>
+            <div className="grid grid-cols-1 gap-4">
+              <div>
+                <Label htmlFor="customerName" className="text-sm font-medium mb-2 block">
+                  Your Name *
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <Input
+                    id="customerName"
+                    placeholder="Enter your full name"
+                    value={estimationForm.customerName}
+                    onChange={(e) => handleInputChange('customerName', e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="customerPhone" className="text-sm font-medium mb-2 block">
+                  Phone Number *
+                </Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                  <Input
+                    id="customerPhone"
+                    placeholder="+91 xxxxx xxxxx"
+                    value={estimationForm.customerPhone}
+                    onChange={(e) => handleInputChange('customerPhone', e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+            </div>
 
-          {/* Budget Range */}
-          <div>
-            <Label className="text-sm font-medium mb-2 block">
-              Expected Budget Range
-            </Label>
-            <div className="px-3">
-              <Slider
-                value={estimationForm.estimatedBudget}
-                onValueChange={(value) => handleInputChange('estimatedBudget', value)}
-                max={5000}
-                min={100}
-                step={50}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>₹100</span>
-                <span className="font-medium">₹{estimationForm.estimatedBudget[0]}</span>
-                <span>₹5000+</span>
+            <div>
+              <Label className="text-sm font-medium mb-3 block">When do you need this service?</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {(['low', 'medium', 'high'] as const).map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => handleInputChange('urgency', level)}
+                    className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                      estimationForm.urgency === level
+                        ? getUrgencyColor(level)
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    {level === 'low' && '📅 Within a week'}
+                    {level === 'medium' && '⚡ In 2-3 days'}
+                    {level === 'high' && '🚨 Urgent'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium mb-2 block">
+                Expected Budget Range
+              </Label>
+              <div className="space-y-2">
+                <Input
+                  type="range"
+                  min="100"
+                  max="5000"
+                  step="50"
+                  value={estimationForm.estimatedBudget}
+                  onChange={(e) => handleInputChange('estimatedBudget', parseInt(e.target.value))}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500">
+                  <span>₹100</span>
+                  <span className="font-medium text-primary">₹{estimationForm.estimatedBudget}</span>
+                  <span>₹5000+</span>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Urgency */}
-          <div>
-            <Label className="text-sm font-medium mb-2 block">Priority Level</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['low', 'medium', 'high'] as const).map((level) => (
-                <button
-                  key={level}
-                  onClick={() => handleInputChange('urgency', level)}
-                  className={`p-2 rounded-lg border text-sm font-medium transition-colors ${
-                    estimationForm.urgency === level
-                      ? getUrgencyColor(level)
-                      : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {level.charAt(0).toUpperCase() + level.slice(1)}
-                </button>
-              ))}
+        </Card>
+        
+        <Button 
+          onClick={handleSubmitEstimation}
+          disabled={isLoading}
+          className="w-full h-12 text-lg"
+        >
+          {isLoading ? (
+            <LoadingSpinner />
+          ) : (
+            <>
+              <Send className="w-5 h-5 mr-2" />
+              Get Free Quotes
+            </>
+          )}
+        </Button>
+        
+        <Card className="p-4 bg-green-50 border-green-200">
+          <div className="flex items-center space-x-3">
+            <Award className="w-5 h-5 text-green-600" />
+            <div>
+              <h4 className="font-medium text-green-900">Get Multiple Quotes</h4>
+              <p className="text-sm text-green-700">Compare prices from verified professionals</p>
             </div>
           </div>
-
-          {/* Preferred Time */}
-          <div>
-            <Label htmlFor="preferredTime" className="text-sm font-medium mb-2 block">
-              Preferred Time (Optional)
-            </Label>
-            <Input
-              id="preferredTime"
-              type="datetime-local"
-              value={estimationForm.preferredTime}
-              onChange={(e) => handleInputChange('preferredTime', e.target.value)}
-            />
-          </div>
-        </div>
-      </Card>
-      
-      <Button 
-        onClick={handleSubmitEstimation}
-        className="w-full h-12"
-      >
-        <Send className="w-4 h-4 mr-2" />
-        Submit Estimation Request
-      </Button>
-      
-      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-        <h4 className="font-medium text-blue-900 mb-1">How it works:</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• We'll send your request to nearby qualified workers</li>
-          <li>• You'll receive multiple quotes within 24 hours</li>
-          <li>• Compare prices and choose the best worker for you</li>
-          <li>• Book directly through the app</li>
-        </ul>
+        </Card>
       </div>
     </div>
   );

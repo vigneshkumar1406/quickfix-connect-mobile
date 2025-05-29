@@ -11,12 +11,17 @@ export default function LanguageSelector() {
   const { currentLanguage, changeLanguage, availableLanguages, t } = useLanguage();
   const [selectedLanguage, setSelectedLanguage] = useState(currentLanguage);
 
-  const handleLanguageSelect = (language) => {
+  const handleLanguageSelect = (language: any) => {
+    console.log("Language selected:", language);
     setSelectedLanguage(language.code);
     changeLanguage(language.code);
     
-    toast.success(`${t('selectLanguage')}: ${language.name}`);
-    navigate("/role-selection");
+    toast.success(`Language changed to: ${language.name}`);
+    
+    // Navigate after a short delay to show the toast
+    setTimeout(() => {
+      navigate("/role-selection");
+    }, 1000);
   };
 
   return (
@@ -40,7 +45,7 @@ export default function LanguageSelector() {
                 <p className="text-neutral-300 text-sm">{language.nativeName}</p>
               </div>
               {selectedLanguage === language.code && (
-                <div className="w-3 h-3 rounded-full bg-primary" />
+                <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
               )}
             </div>
           </Card>

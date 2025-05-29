@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,7 @@ import VerificationPage from "@/pages/VerificationPage";
 import GuestExplorerPage from "@/pages/GuestExplorerPage";
 import FAQPage from "@/pages/FAQPage";
 import AboutUsPage from "@/pages/AboutUsPage";
+import ContactPageWrapper from "./pages/ContactPage";
 
 // Customer Pages
 import CustomerDashboardPage from "@/pages/customer/CustomerDashboardPage";
@@ -54,6 +54,7 @@ function App() {
                   <Route path="/guest-explorer" element={<GuestExplorerPage />} />
                   <Route path="/faq" element={<FAQPage />} />
                   <Route path="/about" element={<AboutUsPage />} />
+                  <Route path="/contact" element={<ContactPageWrapper />} />
                   
                   {/* Customer Routes */}
                   <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
