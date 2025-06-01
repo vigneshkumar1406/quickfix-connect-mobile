@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { 
   ArrowLeft, 
   Calendar, 
@@ -16,12 +18,17 @@ import {
   User, 
   Users,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Navigation,
+  ArrowRight,
+  Calculator
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation as useLocationContext } from "@/contexts/LocationContext";
 import ContactBookModal from "./ContactBookModal";
+import BackButton from "@/components/BackButton";
+import MapPickerWithSearch from "./MapPickerWithSearch";
 
 const services = [
   "Plumbing",
@@ -218,7 +225,7 @@ export default function BookService() {
     setSelectedContact(contact);
     setCustomerName(contact.name);
     setCustomerPhone(contact.phone);
-    setBookingType("others");
+    setBookingFor("others");
     toast.success(`Booking for ${contact.name}`);
   };
 
@@ -280,7 +287,7 @@ export default function BookService() {
                 disabled={isLoadingLocation}
                 className="flex-1"
               >
-                <Map className="w-4 h-4 mr-2" />
+                <MapPin className="w-4 h-4 mr-2" />
                 Locate on Map
               </Button>
             </div>

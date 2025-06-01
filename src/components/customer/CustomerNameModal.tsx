@@ -28,7 +28,7 @@ export default function CustomerNameModal({ isOpen, onSubmit, loading = false }:
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" closeButton={false}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center text-xl">
             <User className="w-6 h-6 mr-2 text-primary" />
