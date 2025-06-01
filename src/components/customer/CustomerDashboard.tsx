@@ -33,9 +33,9 @@ const services = [
     rating: 4.8,
     bookings: 1200,
     images: [
-      "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400",
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400"
+      "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=300",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300"
     ]
   },
   {
@@ -46,9 +46,9 @@ const services = [
     rating: 4.7,
     bookings: 980,
     images: [
-      "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=400",
-      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400",
-      "https://images.unsplash.com/photo-1621905252472-e8592929c4c6?w=400"
+      "https://images.unsplash.com/photo-1621905251918-48416bd8575a?w=300",
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300",
+      "https://images.unsplash.com/photo-1621905252472-e8592929c4c6?w=300"
     ]
   },
   {
@@ -59,9 +59,9 @@ const services = [
     rating: 4.9,
     bookings: 1500,
     images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400",
-      "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=400",
-      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=400"
+      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300",
+      "https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=300",
+      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=300"
     ]
   },
   {
@@ -72,9 +72,9 @@ const services = [
     rating: 4.6,
     bookings: 750,
     images: [
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=400",
-      "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400"
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
+      "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=300",
+      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300"
     ]
   },
   {
@@ -85,9 +85,9 @@ const services = [
     rating: 4.8,
     bookings: 890,
     images: [
-      "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=400",
-      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=400",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=400"
+      "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=300",
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300",
+      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300"
     ]
   },
   {
@@ -98,9 +98,9 @@ const services = [
     rating: 4.7,
     bookings: 650,
     images: [
-      "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=400",
-      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=400",
-      "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=400"
+      "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=300",
+      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=300",
+      "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300"
     ]
   }
 ];
@@ -164,45 +164,47 @@ export default function CustomerDashboard() {
         loading={isLoadingName}
       />
 
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+      {/* Header - Mobile Optimized */}
+      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {customerName ? `Hi, ${customerName}! 👋` : 'Welcome to QuickFix! 👋'}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-bold text-gray-900 truncate">
+                {customerName ? `Hi, ${customerName}! 👋` : 'Welcome! 👋'}
               </h1>
-              <p className="text-gray-600">Find trusted professionals for all your home services</p>
+              <p className="text-xs text-gray-600 truncate">Find trusted professionals</p>
             </div>
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="sm">
-                <Bell className="w-5 h-5" />
+            <div className="flex items-center space-x-2 ml-2">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Bell className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/customer/wallet")}>
-                <Wallet className="w-5 h-5" />
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate("/customer/wallet")}>
+                <Wallet className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm">
-                <Settings className="w-5 h-5" />
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <Settings className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-md mx-auto px-4 py-4 space-y-4">
         {/* Location and Search */}
-        <div className="mb-6 space-y-4">
-          <div className="flex items-center space-x-2 text-gray-600">
-            <MapPin className="w-4 h-4" />
-            <span className="text-sm">
-              {currentLocation ? "Current Location" : "Location not set"}
-            </span>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-gray-600 min-w-0 flex-1">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span className="text-xs truncate">
+                {currentLocation ? "Current Location" : "Location not set"}
+              </span>
+            </div>
             {!currentLocation && (
               <Button 
                 variant="link" 
                 size="sm" 
                 onClick={getUserLocation}
-                className="text-primary p-0 h-auto"
+                className="text-primary p-0 h-auto text-xs flex-shrink-0"
               >
                 Set Location
               </Button>
@@ -210,97 +212,102 @@ export default function CustomerDashboard() {
           </div>
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               type="text"
               placeholder="Search for services..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4 py-3 text-lg border-gray-200 focus:border-primary"
+              className="pl-10 pr-4 py-2 text-sm border-gray-200 focus:border-primary"
             />
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-3">
             <Button 
               variant="outline" 
-              className="p-4 h-auto flex-col space-y-2"
+              className="p-3 h-auto flex-col space-y-1"
               onClick={handleGetEstimation}
             >
-              <Zap className="w-6 h-6 text-primary" />
-              <span className="text-sm font-medium">Get Estimation</span>
+              <Zap className="w-5 h-5 text-primary" />
+              <span className="text-xs font-medium">Get Estimation</span>
             </Button>
             <Button 
               variant="outline" 
-              className="p-4 h-auto flex-col space-y-2"
+              className="p-3 h-auto flex-col space-y-1"
               onClick={() => navigate("/customer/service-tracking")}
             >
-              <Clock className="w-6 h-6 text-orange-500" />
-              <span className="text-sm font-medium">Track Service</span>
+              <Clock className="w-5 h-5 text-orange-500" />
+              <span className="text-xs font-medium">Track Service</span>
             </Button>
             <Button 
               variant="outline" 
-              className="p-4 h-auto flex-col space-y-2"
+              className="p-3 h-auto flex-col space-y-1"
             >
-              <History className="w-6 h-6 text-green-500" />
-              <span className="text-sm font-medium">History</span>
+              <History className="w-5 h-5 text-green-500" />
+              <span className="text-xs font-medium">History</span>
             </Button>
             <Button 
               variant="outline" 
-              className="p-4 h-auto flex-col space-y-2"
+              className="p-3 h-auto flex-col space-y-1"
             >
-              <User className="w-6 h-6 text-purple-500" />
-              <span className="text-sm font-medium">Profile</span>
+              <User className="w-5 h-5 text-purple-500" />
+              <span className="text-xs font-medium">Profile</span>
             </Button>
           </div>
         </div>
 
-        {/* Services Grid */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Popular Services</h2>
+        {/* Services Grid - Mobile Optimized */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Popular Services</h2>
           
           {filteredServices.length === 0 ? (
-            <Card className="p-8 text-center">
-              <p className="text-gray-500">No services found matching your search.</p>
+            <Card className="p-6 text-center">
+              <p className="text-gray-500 text-sm">No services found matching your search.</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-4">
               {filteredServices.map((service) => (
                 <Card
                   key={service.id}
                   className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
                   onClick={() => handleServiceSelect(service)}
                 >
-                  <div className="aspect-square">
-                    <ServiceImageSlider 
-                      images={service.images} 
-                      serviceName={service.name}
-                    />
-                  </div>
-                  
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
-                        {service.name}
-                      </h3>
-                      <Badge variant="secondary" className="text-xs">
-                        <Star className="w-3 h-3 mr-1 fill-yellow-400 text-yellow-400" />
-                        {service.rating}
-                      </Badge>
+                  <div className="flex">
+                    {/* Image Section - Smaller */}
+                    <div className="w-20 h-20 flex-shrink-0">
+                      <ServiceImageSlider 
+                        images={service.images} 
+                        serviceName={service.name}
+                        className="h-full"
+                      />
                     </div>
                     
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                      {service.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-primary">{service.price}</span>
-                      <div className="flex items-center text-gray-500 text-xs">
-                        <Users className="w-3 h-3 mr-1" />
-                        {service.bookings} bookings
+                    {/* Content Section */}
+                    <div className="flex-1 p-3 min-w-0">
+                      <div className="flex items-start justify-between mb-1">
+                        <h3 className="font-semibold text-sm group-hover:text-primary transition-colors truncate">
+                          {service.name}
+                        </h3>
+                        <Badge variant="secondary" className="text-xs ml-2 flex-shrink-0">
+                          <Star className="w-3 h-3 mr-1 fill-yellow-400 text-yellow-400" />
+                          {service.rating}
+                        </Badge>
+                      </div>
+                      
+                      <p className="text-gray-600 text-xs mb-2 line-clamp-2">
+                        {service.description}
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-primary text-sm">{service.price}</span>
+                        <div className="flex items-center text-gray-500 text-xs">
+                          <Users className="w-3 h-3 mr-1" />
+                          {service.bookings}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -312,10 +319,10 @@ export default function CustomerDashboard() {
 
         {/* Emergency Services */}
         <Card className="bg-red-50 border-red-200">
-          <div className="p-6">
-            <h3 className="text-xl font-semibold text-red-800 mb-2">Emergency Services</h3>
-            <p className="text-red-600 mb-4">Need urgent help? We're available 24/7 for emergency services.</p>
-            <Button className="bg-red-600 hover:bg-red-700">
+          <div className="p-4">
+            <h3 className="text-lg font-semibold text-red-800 mb-2">Emergency Services</h3>
+            <p className="text-red-600 mb-3 text-sm">Need urgent help? We're available 24/7 for emergency services.</p>
+            <Button className="bg-red-600 hover:bg-red-700 w-full">
               Call Emergency Support
             </Button>
           </div>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,13 +28,14 @@ declare global {
 export default function GoogleMap({ 
   onLocationSelect, 
   initialLocation, 
-  height = "400px", 
+  height = "300px", 
   showControls = true 
 }: GoogleMapProps) {
   const [currentLocation, setCurrentLocation] = useState<Location | null>(initialLocation);
   const [isLoading, setIsLoading] = useState(true);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -46,11 +46,24 @@ export default function GoogleMap({
   const API_KEY = "AIzaSyD54BlvZV3leYYBSSZtbJKMinUtTJ7WSfQ";
 
   useEffect(() => {
+    setIsMounted(true);
     console.log("GoogleMap component mounting, loading maps...");
-    loadGoogleMaps();
+    
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      if (mapRef.current) {
+        console.log("Map container found, starting map load");
+        loadGoogleMaps();
+      } else {
+        console.log("Map container still not found after delay");
+        setLoadingError("Map container initialization failed");
+        setIsLoading(false);
+      }
+    }, 100);
     
     return () => {
       console.log("GoogleMap component unmounting");
+      clearTimeout(timer);
       if (mapInstanceRef.current) {
         mapInstanceRef.current = null;
       }
@@ -108,8 +121,14 @@ export default function GoogleMap({
   const initializeMap = () => {
     console.log("Initializing Google Maps...");
     
+    if (!isMounted) {
+      console.log("Component not mounted yet, waiting...");
+      setTimeout(initializeMap, 100);
+      return;
+    }
+    
     if (!mapRef.current) {
-      console.error("Map container not found");
+      console.error("Map container not found during initialization");
       setLoadingError("Map container not available");
       setIsLoading(false);
       return;
@@ -132,6 +151,7 @@ export default function GoogleMap({
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
+        gestureHandling: 'cooperative'
       });
 
       console.log("Map created successfully");
@@ -280,15 +300,18 @@ export default function GoogleMap({
 
   if (loadingError) {
     return (
-      <Card className="p-6">
+      <Card className="p-4">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{loadingError}</p>
-          <Button onClick={() => {
-            setLoadingError(null);
-            setIsLoading(true);
-            scriptLoadedRef.current = false;
-            loadGoogleMaps();
-          }}>
+          <p className="text-red-500 mb-4 text-sm">{loadingError}</p>
+          <Button 
+            size="sm"
+            onClick={() => {
+              setLoadingError(null);
+              setIsLoading(true);
+              scriptLoadedRef.current = false;
+              loadGoogleMaps();
+            }}
+          >
             Retry
           </Button>
         </div>
@@ -298,39 +321,39 @@ export default function GoogleMap({
 
   if (isLoading) {
     return (
-      <Card className="p-6">
+      <Card className="p-4">
         <div className="flex flex-col items-center justify-center" style={{ height }}>
           <Loading size="lg" />
-          <p className="mt-4 text-sm text-gray-500">Loading map...</p>
+          <p className="mt-2 text-xs text-gray-500">Loading map...</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full">
       {showControls && (
         <>
-          <h3 className="font-semibold text-lg mb-4 flex items-center">
-            <MapPin className="w-5 h-5 mr-2" />
+          <h3 className="font-semibold text-base mb-3 flex items-center">
+            <MapPin className="w-4 h-4 mr-2" />
             Select Location
           </h3>
           
           {/* Search Bar */}
-          <div className="relative mb-4">
+          <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               ref={searchInputRef}
               type="text"
               placeholder="Search places..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
         </>
       )}
       
       {/* Map Container */}
-      <Card className={`mb-4 overflow-hidden ${!showControls ? 'mb-0' : ''}`}>
+      <Card className={`mb-3 overflow-hidden ${!showControls ? 'mb-0' : ''}`}>
         <div 
           ref={mapRef}
           style={{ height }}
@@ -343,18 +366,19 @@ export default function GoogleMap({
           <Button 
             variant="outline" 
             onClick={getCurrentLocation}
-            className="w-full mb-4"
+            className="w-full mb-3"
             disabled={isLoading}
+            size="sm"
           >
             <Navigation className="w-4 h-4 mr-2" />
             {isLoading ? 'Getting Location...' : 'Use Current Location'}
           </Button>
           
           {currentLocation && (
-            <Card className="p-4">
+            <Card className="p-3">
               <div className="space-y-2">
-                <div className="flex items-center text-sm text-gray-600">
-                  <MapPin className="w-4 h-4 mr-2" />
+                <div className="flex items-center text-xs text-gray-600">
+                  <MapPin className="w-3 h-3 mr-2" />
                   Selected Location
                 </div>
                 <div className="text-xs text-gray-500">
