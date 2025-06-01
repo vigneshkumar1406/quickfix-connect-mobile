@@ -7,21 +7,31 @@ import { toast } from "sonner";
 import { Star, CheckCircle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import PaytmPayment from "@/components/Payments/PaytmPayment";
+import RazorpayPayment from "@/components/Payments/RazorpayPayment";
 
 export default function ReviewService() {
   const navigate = useNavigate();
   const [rating, setRating] = useState<number>(0);
   const [review, setReview] = useState("");
   const [paymentComplete, setPaymentComplete] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>("paytm");
+  
+  const totalAmount = 500;
   
   const handleRatingChange = (value: number) => {
     setRating(value);
   };
   
-  const handlePayment = () => {
-    // Simulate payment
+  const handlePaymentSuccess = (response: any) => {
+    console.log("Payment successful:", response);
     setPaymentComplete(true);
     toast.success("Payment completed successfully");
+  };
+
+  const handlePaymentFailure = (error: any) => {
+    console.error("Payment failed:", error);
+    toast.error("Payment failed. Please try again.");
   };
   
   const handleSubmitReview = () => {
@@ -68,16 +78,54 @@ export default function ReviewService() {
             
             <div className="border-t pt-3 flex justify-between items-center">
               <span className="font-semibold">Total Amount</span>
-              <span className="font-bold">₹500.00</span>
+              <span className="font-bold">₹{totalAmount}.00</span>
+            </div>
+          </div>
+
+          {/* Payment Method Selection */}
+          <div className="mb-4">
+            <h3 className="font-medium mb-3">Choose Payment Method</h3>
+            <div className="space-y-2">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="paytm"
+                  checked={selectedPaymentMethod === "paytm"}
+                  onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  className="mr-2"
+                />
+                <span>Paytm</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="razorpay"
+                  checked={selectedPaymentMethod === "razorpay"}
+                  onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  className="mr-2"
+                />
+                <span>Razorpay</span>
+              </label>
             </div>
           </div>
           
-          <Button 
-            onClick={handlePayment}
-            className="w-full"
-          >
-            Pay ₹500.00
-          </Button>
+          {selectedPaymentMethod === "paytm" ? (
+            <PaytmPayment
+              amount={totalAmount}
+              description="Service Payment - Plumbing"
+              onSuccess={handlePaymentSuccess}
+              onFailure={handlePaymentFailure}
+            />
+          ) : (
+            <RazorpayPayment
+              amount={totalAmount}
+              description="Service Payment - Plumbing"
+              onSuccess={handlePaymentSuccess}
+              onFailure={handlePaymentFailure}
+            />
+          )}
         </Card>
       ) : (
         <>
@@ -86,7 +134,7 @@ export default function ReviewService() {
               <CheckCircle className="w-10 h-10" />
             </div>
             <h2 className="text-center font-semibold text-green-700">Payment Successful</h2>
-            <p className="text-center text-sm text-green-600">Your payment of ₹500.00 was processed successfully</p>
+            <p className="text-center text-sm text-green-600">Your payment of ₹{totalAmount}.00 was processed successfully</p>
           </Card>
           
           <Card className="mb-6 p-4">

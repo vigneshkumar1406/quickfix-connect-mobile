@@ -5,22 +5,23 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import PaytmPayment from "@/components/Payments/PaytmPayment";
 
 export default function WorkerPayment() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   
-  const handlePayment = () => {
-    setIsLoading(true);
-    
-    // Simulate payment process
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Payment successful!");
-      navigate("/worker/dashboard");
-    }, 2000);
+  const registrationFee = 99;
+  
+  const handlePaymentSuccess = (response: any) => {
+    console.log("Registration payment successful:", response);
+    toast.success("Registration payment successful!");
+    navigate("/worker/dashboard");
+  };
+
+  const handlePaymentFailure = (error: any) => {
+    console.error("Registration payment failed:", error);
+    toast.error("Payment failed. Please try again.");
   };
   
   const handleSkip = () => {
@@ -42,7 +43,7 @@ export default function WorkerPayment() {
             <h3 className="font-medium">Registration Fee</h3>
             <p className="text-neutral-300 text-sm">One-time payment</p>
           </div>
-          <div className="text-xl font-bold">₹99.00</div>
+          <div className="text-xl font-bold">₹{registrationFee}.00</div>
         </div>
         
         <div className="bg-neutral-100 p-4 rounded-md mb-6">
@@ -66,39 +67,15 @@ export default function WorkerPayment() {
             </li>
           </ul>
         </div>
-        
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="card-number">Card Number</Label>
-            <Input id="card-number" placeholder="1234 5678 9012 3456" />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="expiry">Expiry Date</Label>
-              <Input id="expiry" placeholder="MM/YY" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cvv">CVV</Label>
-              <Input id="cvv" placeholder="123" />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="name">Card Holder Name</Label>
-            <Input id="name" placeholder="Name on card" />
-          </div>
-        </div>
       </Card>
       
       <div className="space-y-3">
-        <Button 
-          onClick={handlePayment} 
-          disabled={isLoading} 
-          className="w-full"
-        >
-          {isLoading ? "Processing..." : "Pay ₹99.00"}
-        </Button>
+        <PaytmPayment
+          amount={registrationFee}
+          description="Worker Registration Fee"
+          onSuccess={handlePaymentSuccess}
+          onFailure={handlePaymentFailure}
+        />
         
         <div className="text-center">
           <Button

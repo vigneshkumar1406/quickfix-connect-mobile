@@ -30,18 +30,20 @@ export { locationAPI as locationService };
 export { serviceAPI as serviceBookingService };
 export { notificationAPI as notificationService };
 
-// Payment API with Razorpay integration
+// Payment API with Paytm integration using your MID
+const PAYTM_MID = "zYpUGe55389849298154";
+
 export const paymentAPI = {
   createPaymentOrder: async (amount, currency = "INR", description) => {
     try {
-      // This would integrate with your payment processor
       return {
         success: true,
         order: {
           id: `pay_${Date.now()}`,
           amount,
           currency,
-          description
+          description,
+          paytm_mid: PAYTM_MID
         }
       };
     } catch (error) {
@@ -62,8 +64,9 @@ export const paymentAPI = {
         body: JSON.stringify({
           bookingId,
           amount,
-          paymentMethod: 'razorpay',
-          transactionId: paymentId
+          paymentMethod: 'paytm',
+          transactionId: paymentId,
+          paytm_mid: PAYTM_MID
         })
       });
       
@@ -72,6 +75,51 @@ export const paymentAPI = {
     } catch (error) {
       console.error("Error verifying payment:", error);
       return { success: false, message: "Failed to verify payment" };
+    }
+  },
+
+  // Paytm specific methods
+  createPaytmOrder: async (amount, description) => {
+    try {
+      const orderId = `PAYTM_${Date.now()}`;
+      
+      return {
+        success: true,
+        order: {
+          id: orderId,
+          amount,
+          description,
+          mid: PAYTM_MID,
+          // In production, you would call Paytm API to get transaction token
+          token: `TOKEN_${Date.now()}` // Mock token
+        }
+      };
+    } catch (error) {
+      console.error("Error creating Paytm order:", error);
+      return { success: false, message: "Failed to create Paytm order" };
+    }
+  },
+
+  verifyPaytmPayment: async (orderId, txnId, amount) => {
+    try {
+      // In production, verify with Paytm servers
+      console.log(`Verifying Paytm payment: Order ${orderId}, Transaction ${txnId}, Amount ${amount}`);
+      
+      return {
+        success: true,
+        message: "Paytm payment verified successfully",
+        payment: {
+          orderId,
+          txnId,
+          amount,
+          status: "completed",
+          method: "paytm",
+          mid: PAYTM_MID
+        }
+      };
+    } catch (error) {
+      console.error("Error verifying Paytm payment:", error);
+      return { success: false, message: "Failed to verify Paytm payment" };
     }
   }
 };
