@@ -74,7 +74,11 @@ export default function BookService() {
     
     if (location.state?.selectedService) {
       console.log("Pre-selected service:", location.state.selectedService);
-      setSelectedService(location.state.selectedService);
+      // Extract service name from object if it's an object, otherwise use as string
+      const serviceValue = typeof location.state.selectedService === 'object' 
+        ? location.state.selectedService.name 
+        : location.state.selectedService;
+      setSelectedService(serviceValue);
     }
     
     if (location.state?.bookingType) {
