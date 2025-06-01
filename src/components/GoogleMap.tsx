@@ -42,6 +42,7 @@ export default function GoogleMap({
   const autocompleteRef = useRef<any>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const scriptLoadedRef = useRef(false);
+  const initTimeoutRef = useRef<NodeJS.Timeout>();
 
   const API_KEY = "AIzaSyD54BlvZV3leYYBSSZtbJKMinUtTJ7WSfQ";
 
@@ -49,33 +50,46 @@ export default function GoogleMap({
     setIsMounted(true);
     console.log("GoogleMap component mounting, loading maps...");
     
-    // Small delay to ensure DOM is ready
-    const timer = setTimeout(() => {
-      if (mapRef.current) {
-        console.log("Map container found, starting map load");
+    // Wait for component to be fully mounted and DOM to be ready
+    const initTimer = setTimeout(() => {
+      if (mapRef.current && isMounted) {
+        console.log("Map container confirmed, starting map load");
         loadGoogleMaps();
       } else {
-        console.log("Map container still not found after delay");
-        setLoadingError("Map container initialization failed");
-        setIsLoading(false);
+        console.log("Map container still not available, retrying...");
+        setLoadingError("Map container initialization delayed");
+        // Retry after another delay
+        const retryTimer = setTimeout(() => {
+          if (mapRef.current && isMounted) {
+            loadGoogleMaps();
+          } else {
+            setLoadingError("Map container initialization failed");
+            setIsLoading(false);
+          }
+        }, 1000);
+        
+        return () => clearTimeout(retryTimer);
       }
-    }, 100);
+    }, 200);
     
     return () => {
       console.log("GoogleMap component unmounting");
-      clearTimeout(timer);
+      clearTimeout(initTimer);
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current = null;
       }
     };
-  }, []);
+  }, [isMounted]);
 
   const loadGoogleMaps = () => {
     console.log("Loading Google Maps...");
     
     if (window.google && window.google.maps) {
       console.log("Google Maps already loaded, initializing...");
-      initializeMap();
+      scheduleMapInit();
       return;
     }
 
@@ -87,7 +101,7 @@ export default function GoogleMap({
     const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
     if (existingScript) {
       console.log("Google Maps script already exists, waiting for load...");
-      existingScript.addEventListener('load', initializeMap);
+      existingScript.addEventListener('load', scheduleMapInit);
       existingScript.addEventListener('error', handleScriptError);
       return;
     }
@@ -100,7 +114,7 @@ export default function GoogleMap({
     script.async = true;
     script.defer = true;
     
-    window.initMap = initializeMap;
+    window.initMap = scheduleMapInit;
     
     script.addEventListener('load', () => {
       console.log("Google Maps script loaded successfully");
@@ -109,6 +123,18 @@ export default function GoogleMap({
     script.addEventListener('error', handleScriptError);
     
     document.head.appendChild(script);
+  };
+
+  const scheduleMapInit = () => {
+    // Clear any existing timeout
+    if (initTimeoutRef.current) {
+      clearTimeout(initTimeoutRef.current);
+    }
+    
+    // Schedule initialization with a small delay to ensure DOM is ready
+    initTimeoutRef.current = setTimeout(() => {
+      initializeMap();
+    }, 100);
   };
 
   const handleScriptError = () => {
@@ -122,8 +148,7 @@ export default function GoogleMap({
     console.log("Initializing Google Maps...");
     
     if (!isMounted) {
-      console.log("Component not mounted yet, waiting...");
-      setTimeout(initializeMap, 100);
+      console.log("Component not mounted, skipping initialization");
       return;
     }
     

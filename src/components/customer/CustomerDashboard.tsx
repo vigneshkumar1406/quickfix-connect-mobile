@@ -151,6 +151,26 @@ export default function CustomerDashboard() {
     navigate("/customer/estimation");
   };
 
+  const handleMultipleEstimation = () => {
+    navigate("/customer/multiple-estimation");
+  };
+
+  const handleNotifications = () => {
+    navigate("/customer/notifications");
+  };
+
+  const handleSettings = () => {
+    navigate("/customer/settings");
+  };
+
+  const handleProfile = () => {
+    navigate("/customer/profile");
+  };
+
+  const handleEmergencyCall = () => {
+    navigate("/customer/emergency");
+  };
+
   const filteredServices = services.filter(service =>
     service.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     service.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -175,13 +195,13 @@ export default function CustomerDashboard() {
               <p className="text-xs text-gray-600 truncate">Find trusted professionals</p>
             </div>
             <div className="flex items-center space-x-2 ml-2">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleNotifications}>
                 <Bell className="w-4 h-4" />
               </Button>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => navigate("/customer/wallet")}>
                 <Wallet className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={handleSettings}>
                 <Settings className="w-4 h-4" />
               </Button>
             </div>
@@ -246,13 +266,15 @@ export default function CustomerDashboard() {
             <Button 
               variant="outline" 
               className="p-3 h-auto flex-col space-y-1"
+              onClick={handleMultipleEstimation}
             >
               <History className="w-5 h-5 text-green-500" />
-              <span className="text-xs font-medium">History</span>
+              <span className="text-xs font-medium">Multiple Services</span>
             </Button>
             <Button 
               variant="outline" 
               className="p-3 h-auto flex-col space-y-1"
+              onClick={handleProfile}
             >
               <User className="w-5 h-5 text-purple-500" />
               <span className="text-xs font-medium">Profile</span>
@@ -322,7 +344,10 @@ export default function CustomerDashboard() {
           <div className="p-4">
             <h3 className="text-lg font-semibold text-red-800 mb-2">Emergency Services</h3>
             <p className="text-red-600 mb-3 text-sm">Need urgent help? We're available 24/7 for emergency services.</p>
-            <Button className="bg-red-600 hover:bg-red-700 w-full">
+            <Button 
+              className="bg-red-600 hover:bg-red-700 w-full"
+              onClick={handleEmergencyCall}
+            >
               Call Emergency Support
             </Button>
           </div>

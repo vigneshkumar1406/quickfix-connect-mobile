@@ -10,18 +10,19 @@ interface ServiceImageSliderProps {
 
 export default function ServiceImageSlider({ images, serviceName, className = "" }: ServiceImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    if (images.length <= 1) return;
+    if (images.length <= 1 || isHovered) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => 
         prevIndex === images.length - 1 ? 0 : prevIndex + 1
       );
-    }, 3000);
+    }, 4000); // Slower rotation to reduce blinking
 
     return () => clearInterval(interval);
-  }, [images.length]);
+  }, [images.length, isHovered]);
 
   const goToPrevious = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -47,19 +48,24 @@ export default function ServiceImageSlider({ images, serviceName, className = ""
   }
 
   return (
-    <div className={`relative overflow-hidden bg-gray-100 group ${className || "aspect-square"}`}>
+    <div 
+      className={`relative overflow-hidden bg-gray-100 group ${className || "aspect-square"}`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       {/* Main Image */}
       <img
         src={images[currentIndex]}
         alt={`${serviceName} ${currentIndex + 1}`}
-        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        className="w-full h-full object-cover transition-opacity duration-500 ease-in-out"
         onError={(e) => {
           const target = e.target as HTMLImageElement;
           target.src = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300";
         }}
+        loading="lazy"
       />
 
-      {/* Navigation Arrows - Only show if multiple images */}
+      {/* Navigation Arrows - Only show if multiple images and on hover */}
       {images.length > 1 && (
         <>
           <button
@@ -80,9 +86,9 @@ export default function ServiceImageSlider({ images, serviceName, className = ""
         </>
       )}
 
-      {/* Dots Indicator - Only show if multiple images */}
+      {/* Dots Indicator - Only show if multiple images and on hover */}
       {images.length > 1 && (
-        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-1">
+        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           {images.map((_, index) => (
             <button
               key={index}
@@ -97,9 +103,6 @@ export default function ServiceImageSlider({ images, serviceName, className = ""
           ))}
         </div>
       )}
-
-      {/* Loading overlay */}
-      <div className="absolute inset-0 bg-gray-200 animate-pulse opacity-0 transition-opacity duration-200" />
     </div>
   );
 }
