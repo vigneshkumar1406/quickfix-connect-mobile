@@ -34,6 +34,7 @@ const GoogleMap = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [map, setMap] = useState<any>(null);
+  const [error, setError] = useState<string>("");
   const mapInstanceRef = useRef<any>(null);
 
   const loadGoogleMaps = () => {
@@ -42,11 +43,16 @@ const GoogleMap = ({
       return;
     }
 
+    // Check if API key is available
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey) {
+      setError("Google Maps API key not configured. Please add VITE_GOOGLE_MAPS_API_KEY to your environment variables.");
+      return;
+    }
+
     console.log("Loading Google Maps...");
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${
-      import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-    }&libraries=places&callback=initMap&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap&loading=async`;
     script.async = true;
     script.defer = true;
 
@@ -57,9 +63,9 @@ const GoogleMap = ({
 
     script.onerror = () => {
       console.error("Failed to load Google Maps API");
+      setError("Failed to load Google Maps. Please check your internet connection and API key.");
     };
 
-    console.log("Creating new Google Maps script...");
     document.head.appendChild(script);
   };
 
@@ -87,11 +93,13 @@ const GoogleMap = ({
     
     if (!mapRef.current) {
       console.log("Map container not found during initialization");
+      setError("Map container not available");
       return;
     }
 
     if (!window.google || !window.google.maps) {
       console.log("Google Maps API not available");
+      setError("Google Maps API not loaded");
       return;
     }
 
@@ -150,30 +158,32 @@ const GoogleMap = ({
       });
 
       setIsMapLoaded(true);
+      setError("");
       console.log("Google Maps initialized successfully");
     } catch (error) {
       console.error("Error initializing map:", error);
+      setError("Failed to initialize Google Maps");
     }
   };
 
   useEffect(() => {
     console.log("GoogleMap component mounting, loading maps...");
     
-    // Use a longer delay to ensure the DOM is fully rendered
     const timer = setTimeout(() => {
       if (!mapRef.current) {
         console.log("Map container still not available, retrying...");
-        // Try again with a longer delay
         setTimeout(() => {
           if (mapRef.current) {
             loadGoogleMaps();
+          } else {
+            setError("Map container failed to load");
           }
         }, 500);
         return;
       }
       
       loadGoogleMaps();
-    }, 200);
+    }, 100);
 
     return () => {
       console.log("GoogleMap component unmounting");
@@ -195,6 +205,22 @@ const GoogleMap = ({
     }
   }, [initialLocation]);
 
+  if (error) {
+    return (
+      <div className={`relative ${className}`} style={{ height }}>
+        <div className="w-full h-full min-h-[300px] bg-gray-100 rounded-lg flex items-center justify-center p-4">
+          <div className="text-center">
+            <div className="text-red-500 mb-2">⚠️</div>
+            <p className="text-sm text-gray-600">{error}</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Please check your Google Maps configuration
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`relative ${className}`} style={{ height }}>
       <div
@@ -202,7 +228,7 @@ const GoogleMap = ({
         className="w-full h-full min-h-[300px] bg-gray-200 rounded-lg"
         id="map-container"
       />
-      {!isMapLoaded && (
+      {!isMapLoaded && !error && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-200 rounded-lg">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
