@@ -1,12 +1,14 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Bell, MapPin, Star, Clock, Phone, Settings } from "lucide-react";
+import { User, Bell, MapPin, Star, Clock, Phone, Settings, Wallet, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLocation as useLocationContext } from "@/contexts/LocationContext";
 import { useAuth } from "@/contexts/AuthContext";
 import CustomerNameModal from "./CustomerNameModal";
+import ServiceImageSlider from "./ServiceImageSlider";
 import { toast } from "sonner";
 
 const services = [
@@ -135,11 +137,14 @@ export default function CustomerDashboard() {
 
   const handleQuickAction = (action: string) => {
     switch (action) {
-      case 'emergency':
+      case 'call':
         navigate('/customer/emergency-support');
         break;
       case 'multiple':
         navigate('/customer/multiple-estimation');
+        break;
+      case 'wallet':
+        navigate('/customer/wallet');
         break;
       case 'profile':
         navigate('/customer/profile');
@@ -149,6 +154,25 @@ export default function CustomerDashboard() {
         break;
       default:
         toast.info(`${action} feature coming soon!`);
+    }
+  };
+
+  const handleContactAction = (type: string) => {
+    switch (type) {
+      case 'call-now':
+        window.open('tel:+919999900000', '_self');
+        break;
+      case 'mail':
+        window.open('mailto:support@quickfix.com', '_self');
+        break;
+      case 'whatsapp':
+        window.open('https://wa.me/919999900000', '_blank');
+        break;
+      case 'chat':
+        navigate('/customer/emergency-support');
+        break;
+      default:
+        break;
     }
   };
 
@@ -207,25 +231,80 @@ export default function CustomerDashboard() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-3 gap-3 mb-6">
           <Button 
             variant="outline" 
-            className="h-16 flex flex-col items-center justify-center bg-red-50 border-red-200 hover:bg-red-100"
-            onClick={() => handleQuickAction('emergency')}
+            className="h-16 flex flex-col items-center justify-center bg-green-50 border-green-200 hover:bg-green-100"
+            onClick={() => handleQuickAction('call')}
           >
-            <Phone className="w-5 h-5 mb-1 text-red-600" />
-            <span className="text-sm text-red-600">Emergency</span>
+            <Phone className="w-5 h-5 mb-1 text-green-600" />
+            <span className="text-sm text-green-600">Book via Call</span>
           </Button>
           
           <Button 
             variant="outline" 
-            className="h-16 flex flex-col items-center justify-center bg-green-50 border-green-200 hover:bg-green-100"
+            className="h-16 flex flex-col items-center justify-center bg-purple-50 border-purple-200 hover:bg-purple-100"
             onClick={() => handleQuickAction('multiple')}
           >
-            <Star className="w-5 h-5 mb-1 text-green-600" />
-            <span className="text-sm text-green-600">Multiple Services</span>
+            <Star className="w-5 h-5 mb-1 text-purple-600" />
+            <span className="text-sm text-purple-600">Multiple Services</span>
+          </Button>
+
+          <Button 
+            variant="outline" 
+            className="h-16 flex flex-col items-center justify-center bg-blue-50 border-blue-200 hover:bg-blue-100"
+            onClick={() => handleQuickAction('wallet')}
+          >
+            <Wallet className="w-5 h-5 mb-1 text-blue-600" />
+            <span className="text-sm text-blue-600">QuickFix Wallet</span>
           </Button>
         </div>
+
+        {/* Contact Support */}
+        <Card className="p-4 mb-6">
+          <h3 className="text-sm font-semibold mb-3 text-gray-700">Need Help? Contact Us</h3>
+          <div className="grid grid-cols-4 gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-12 flex flex-col items-center justify-center bg-red-50 border-red-200 hover:bg-red-100"
+              onClick={() => handleContactAction('call-now')}
+            >
+              <Phone className="w-4 h-4 mb-1 text-red-600" />
+              <span className="text-xs text-red-600">Call Now</span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-12 flex flex-col items-center justify-center bg-blue-50 border-blue-200 hover:bg-blue-100"
+              onClick={() => handleContactAction('mail')}
+            >
+              <Mail className="w-4 h-4 mb-1 text-blue-600" />
+              <span className="text-xs text-blue-600">Mail</span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-12 flex flex-col items-center justify-center bg-green-50 border-green-200 hover:bg-green-100"
+              onClick={() => handleContactAction('whatsapp')}
+            >
+              <Phone className="w-4 h-4 mb-1 text-green-600" />
+              <span className="text-xs text-green-600">WhatsApp</span>
+            </Button>
+
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-12 flex flex-col items-center justify-center bg-purple-50 border-purple-200 hover:bg-purple-100"
+              onClick={() => handleContactAction('chat')}
+            >
+              <Bell className="w-4 h-4 mb-1 text-purple-600" />
+              <span className="text-xs text-purple-600">Chat</span>
+            </Button>
+          </div>
+        </Card>
 
         {/* Services Grid */}
         <div>
@@ -237,14 +316,11 @@ export default function CustomerDashboard() {
                 className="p-4 cursor-pointer hover:shadow-lg transition-all duration-200 border-0 bg-white/80 backdrop-blur-sm"
                 onClick={() => handleServiceSelect(service)}
               >
-                <div className="aspect-square rounded-lg overflow-hidden mb-3 bg-gradient-to-br from-gray-100 to-gray-200">
-                  <img 
-                    src={service.images[0]} 
-                    alt={service.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </div>
+                <ServiceImageSlider 
+                  images={service.images} 
+                  serviceName={service.name}
+                  className="aspect-square rounded-lg overflow-hidden mb-3 bg-gradient-to-br from-gray-100 to-gray-200"
+                />
                 <h3 className="font-semibold text-gray-900 mb-1">{service.name}</h3>
                 <p className="text-xs text-gray-600 mb-2 line-clamp-2">{service.description}</p>
                 <div className="flex items-center justify-between mb-2">
