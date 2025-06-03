@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { User, Bell, MapPin, Star, Clock, Phone, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLocation as useLocationContext } from "@/contexts/LocationContext";
+import { useAuth } from "@/contexts/AuthContext";
 import CustomerNameModal from "./CustomerNameModal";
 import { toast } from "sonner";
 
@@ -67,29 +67,60 @@ const services = [
 export default function CustomerDashboard() {
   const navigate = useNavigate();
   const { selectedService, customerName, setSelectedService, setCustomerName } = useLocationContext();
+  const { user } = useAuth();
   const [showNameModal, setShowNameModal] = useState(false);
   const [isSubmittingName, setIsSubmittingName] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
 
-  // Check if customer name is set, if not show modal
+  // Check if this is a new user and needs name collection
   useEffect(() => {
-    if (!customerName || customerName.trim() === '') {
-      setShowNameModal(true);
-    }
-  }, [customerName]);
+    const checkUserStatus = () => {
+      // Check if user just registered (came from OTP verification)
+      const justRegistered = sessionStorage.getItem('just-registered');
+      const skippedVerification = sessionStorage.getItem('skipped-verification');
+      const savedName = localStorage.getItem('customerName');
+      
+      console.log('User status check:', { user, justRegistered, skippedVerification, savedName, customerName });
+      
+      // Only show name modal if:
+      // 1. User just registered (not skipped verification)
+      // 2. No saved name exists
+      // 3. CustomerName is not already set
+      if (justRegistered && !skippedVerification && !savedName && (!customerName || customerName.trim() === '')) {
+        setIsNewUser(true);
+        setShowNameModal(true);
+        // Clear the session flag
+        sessionStorage.removeItem('just-registered');
+      } else if (savedName && (!customerName || customerName.trim() === '')) {
+        // Load existing name if available
+        setCustomerName(savedName);
+      }
+    };
+
+    checkUserStatus();
+  }, [user, customerName, setCustomerName]);
 
   const handleNameSubmit = async (name: string) => {
     setIsSubmittingName(true);
     
     try {
-      // Save customer name
-      setCustomerName(name);
+      console.log('Saving customer name:', name);
       
-      // Here you would typically save to your backend/storage
+      // Save customer name to context and localStorage
+      setCustomerName(name);
       localStorage.setItem('customerName', name);
+      
+      // If user is authenticated, you could also save to backend here
+      if (user) {
+        console.log('User authenticated, could save to backend:', user.uid);
+        // TODO: Save to Supabase profiles table when needed
+      }
       
       toast.success(`Welcome ${name}! You're all set.`);
       setShowNameModal(false);
+      setIsNewUser(false);
     } catch (error) {
+      console.error('Error saving customer name:', error);
       toast.error("Failed to save your name. Please try again.");
     } finally {
       setIsSubmittingName(false);

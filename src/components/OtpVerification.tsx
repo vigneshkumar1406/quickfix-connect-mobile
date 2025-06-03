@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +37,9 @@ export default function OtpVerification() {
     setIsLoading(false);
     
     if (result.success) {
+      // Mark as just registered for new users
+      sessionStorage.setItem('just-registered', 'true');
+      
       // Navigate based on user role
       if (userRole === "worker") {
         navigate("/worker/registration");
@@ -48,6 +50,9 @@ export default function OtpVerification() {
   };
 
   const handleSkip = () => {
+    // Mark as skipped verification
+    sessionStorage.setItem('skipped-verification', 'true');
+    
     if (userRole === "worker") {
       navigate("/worker/registration");
     } else {
