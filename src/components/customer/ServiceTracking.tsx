@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
@@ -10,18 +10,30 @@ import { Phone, MapPin, MessageCircle, Clock, Star, ThumbsUp } from "lucide-reac
 
 export default function ServiceTracking() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentStatus, setCurrentStatus] = useState("accepted");
   const [timeRemaining, setTimeRemaining] = useState(10);
+  const [worker, setWorker] = useState<any>(null);
+  const [bookingDetails, setBookingDetails] = useState<any>(null);
+  
+  // Get data from navigation state
+  useEffect(() => {
+    if (location.state) {
+      setWorker(location.state.worker);
+      setBookingDetails(location.state.bookingDetails);
+      console.log("ServiceTracking received:", location.state);
+    }
+  }, [location.state]);
   
   // Mock service data - in a real app, this would come from an API
   const serviceData = {
-    serviceType: "Plumbing Repair",
-    issue: "Leaking tap",
-    workerName: "Rajesh K",
-    workerRating: 4.8,
-    location: "Adyar, Chennai",
-    estimatedTime: "15 min",
-    contactNumber: "+91 9876 543 210"
+    serviceType: bookingDetails?.service || "Plumbing Repair",
+    issue: bookingDetails?.description || "Service request",
+    workerName: worker?.name || "Rajesh K",
+    workerRating: worker?.rating || 4.8,
+    location: bookingDetails?.address || "Adyar, Chennai",
+    estimatedTime: worker?.eta ? `${worker.eta} min` : "15 min",
+    contactNumber: worker?.phone || "+91 9876 543 210"
   };
   
   // Simulate service progress
@@ -189,7 +201,7 @@ export default function ServiceTracking() {
               <Phone className="w-5 h-5 text-neutral-300 mr-2" />
               <span>{serviceData.contactNumber}</span>
             </div>
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="outline" onClick={() => window.open(`tel:${serviceData.contactNumber}`, '_self')}>
               Call
             </Button>
           </div>

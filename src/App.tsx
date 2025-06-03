@@ -65,7 +65,9 @@ function App() {
                   <Route path="/customer/book-service" element={<BookServicePage />} />
                   <Route path="/customer/finding-service" element={<FindingServicePage />} />
                   <Route path="/customer/service-estimation" element={<ServiceEstimationPage />} />
+                  <Route path="/customer/tracking" element={<ServiceTrackingPage />} />
                   <Route path="/customer/service-tracking" element={<ServiceTrackingPage />} />
+                  <Route path="/customer/review" element={<ReviewServicePage />} />
                   <Route path="/customer/review-service" element={<ReviewServicePage />} />
                   <Route path="/customer/profile" element={<CustomerProfilePage />} />
                   <Route path="/customer/settings" element={<CustomerSettingsPage />} />
