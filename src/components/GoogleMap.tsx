@@ -43,8 +43,8 @@ const GoogleMap = ({
       return;
     }
 
-    // Check if API key is available
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    // Use the provided API key
+    const apiKey = "AIzaSyD54BlvZV3leYYBSSZtbJKMinUtTJ7WSfQ";
     if (!apiKey) {
       setError("Google Maps API key not configured. Please add VITE_GOOGLE_MAPS_API_KEY to your environment variables.");
       return;

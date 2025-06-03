@@ -40,15 +40,15 @@ const services = [
   },
   {
     id: 3,
-    name: "Cleaning",
-    description: "Deep cleaning services for your home",
+    name: "Carpentry",
+    description: "Expert carpentry and woodwork services",
     price: "₹299 onwards",
-    rating: 4.9,
-    bookings: 1500,
+    rating: 4.6,
+    bookings: 850,
     images: [
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300",
-      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=300",
-      "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=300"
+      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=300",
+      "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=300",
+      "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300"
     ]
   },
   {
@@ -62,6 +62,84 @@ const services = [
       "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=300",
       "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=300",
       "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300"
+    ]
+  },
+  {
+    id: 5,
+    name: "Home Cleaning",
+    description: "Deep cleaning services for your home",
+    price: "₹299 onwards",
+    rating: 4.9,
+    bookings: 1500,
+    images: [
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300",
+      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=300",
+      "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=300"
+    ]
+  },
+  {
+    id: 6,
+    name: "Appliance Repair",
+    description: "General appliance repair services",
+    price: "₹399 onwards",
+    rating: 4.5,
+    bookings: 650,
+    images: [
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
+      "https://images.unsplash.com/photo-1621905252472-91b3222d6ca4?w=300"
+    ]
+  },
+  {
+    id: 7,
+    name: "Fridge Repair",
+    description: "Professional refrigerator repair services",
+    price: "₹449 onwards",
+    rating: 4.7,
+    bookings: 450,
+    images: [
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
+      "https://images.unsplash.com/photo-1621905252472-91b3222d6ca4?w=300"
+    ]
+  },
+  {
+    id: 8,
+    name: "Washing Machine",
+    description: "Washing machine repair and maintenance",
+    price: "₹349 onwards",
+    rating: 4.6,
+    bookings: 520,
+    images: [
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
+      "https://images.unsplash.com/photo-1621905252472-91b3222d6ca4?w=300"
+    ]
+  },
+  {
+    id: 9,
+    name: "Pest Control",
+    description: "Effective pest control solutions",
+    price: "₹499 onwards",
+    rating: 4.8,
+    bookings: 890,
+    images: [
+      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300",
+      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=300",
+      "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=300"
+    ]
+  },
+  {
+    id: 10,
+    name: "AC Service",
+    description: "Air conditioning service and repair",
+    price: "₹599 onwards",
+    rating: 4.7,
+    bookings: 1100,
+    images: [
+      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
+      "https://images.unsplash.com/photo-1621905252472-91b3222d6ca4?w=300",
+      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300"
     ]
   }
 ];
@@ -132,7 +210,7 @@ export default function CustomerDashboard() {
   const handleServiceSelect = (service: any) => {
     console.log("Service selected:", service);
     setSelectedService(service);
-    navigate("/customer/book-service");
+    navigate("/customer/book-service", { state: { selectedService: service } });
   };
 
   const handleQuickAction = (action: string) => {
@@ -234,11 +312,11 @@ export default function CustomerDashboard() {
         <div className="grid grid-cols-3 gap-3 mb-6">
           <Button 
             variant="outline" 
-            className="h-16 flex flex-col items-center justify-center bg-green-50 border-green-200 hover:bg-green-100"
+            className="h-16 flex flex-col items-center justify-center bg-orange-50 border-orange-200 hover:bg-orange-100"
             onClick={() => handleQuickAction('call')}
           >
-            <Phone className="w-5 h-5 mb-1 text-green-600" />
-            <span className="text-sm text-green-600">Book via Call</span>
+            <Phone className="w-5 h-5 mb-1 text-orange-600" />
+            <span className="text-sm text-orange-600">Book via Call</span>
           </Button>
           
           <Button 
