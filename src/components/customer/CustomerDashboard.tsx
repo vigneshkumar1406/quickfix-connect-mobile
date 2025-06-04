@@ -9,7 +9,8 @@ import { useLocation as useLocationContext } from "@/contexts/LocationContext";
 import { serviceAPI } from "@/services/supabaseAPI";
 import { 
   MapPin, Clock, User, Search, Bell, Wallet, Settings, 
-  Shield, Phone, Wrench, Zap, Home, Car, Brush, Droplets, ChevronRight
+  Shield, Phone, Wrench, Zap, Home, Car, Brush, Droplets, ChevronRight,
+  Hammer, Sparkles, Bug, Snowflake, Refrigerator, Shirt
 } from "lucide-react";
 
 export default function CustomerDashboard() {
@@ -20,12 +21,16 @@ export default function CustomerDashboard() {
   const [loading, setLoading] = useState(false);
 
   const services = [
-    { id: 1, name: "Plumbing", icon: Droplets, color: "text-blue-500", price: "₹299 onwards" },
+    { id: 1, name: "Plumbing", icon: Droplets, color: "text-blue-500", price: "₹149 onwards" },
     { id: 2, name: "Electrical", icon: Zap, color: "text-yellow-500", price: "₹199 onwards" },
-    { id: 3, name: "Cleaning", icon: Home, color: "text-green-500", price: "₹149 onwards" },
-    { id: 4, name: "Painting", icon: Brush, color: "text-purple-500", price: "₹399 onwards" },
-    { id: 5, name: "AC Repair", icon: Wrench, color: "text-red-500", price: "₹249 onwards" },
-    { id: 6, name: "Appliance", icon: Car, color: "text-orange-500", price: "₹179 onwards" }
+    { id: 3, name: "Carpentry", icon: Hammer, color: "text-brown-500", price: "₹249 onwards" },
+    { id: 4, name: "Painting", icon: Brush, color: "text-purple-500", price: "₹299 onwards" },
+    { id: 5, name: "Home Cleaning", icon: Sparkles, color: "text-green-500", price: "₹199 onwards" },
+    { id: 6, name: "Appliance Repair", icon: Wrench, color: "text-red-500", price: "₹179 onwards" },
+    { id: 7, name: "Fridge Repair", icon: Refrigerator, color: "text-blue-600", price: "₹199 onwards" },
+    { id: 8, name: "Washing Machine", icon: Shirt, color: "text-cyan-500", price: "₹149 onwards" },
+    { id: 9, name: "Pest Control", icon: Bug, color: "text-orange-500", price: "₹399 onwards" },
+    { id: 10, name: "AC Service", icon: Snowflake, color: "text-blue-400", price: "₹199 onwards" }
   ];
 
   useEffect(() => {
@@ -185,31 +190,31 @@ export default function CustomerDashboard() {
       {/* Services */}
       <div className="px-4 mb-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Services</h2>
+          <h2 className="text-lg font-semibold">All Services</h2>
           <Button 
             variant="ghost" 
             size="sm"
             onClick={() => navigate("/customer/book-service")}
           >
             <Search className="w-4 h-4 mr-1" />
-            View All
+            Book Now
           </Button>
         </div>
         
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {services.map((service) => {
             const IconComponent = service.icon;
             return (
               <Card 
                 key={service.id}
-                className="p-4 text-center cursor-pointer hover:shadow-md transition-shadow"
+                className="p-3 text-center cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => handleServiceSelect(service)}
               >
                 <div className="flex flex-col items-center">
-                  <div className="bg-neutral-100 p-3 rounded-full mb-2">
-                    <IconComponent className={`w-6 h-6 ${service.color}`} />
+                  <div className="bg-neutral-100 p-2 rounded-full mb-2">
+                    <IconComponent className={`w-5 h-5 ${service.color}`} />
                   </div>
-                  <h3 className="font-medium text-sm mb-1">{service.name}</h3>
+                  <h3 className="font-medium text-xs mb-1">{service.name}</h3>
                   <p className="text-xs text-neutral-500">{service.price}</p>
                 </div>
               </Card>

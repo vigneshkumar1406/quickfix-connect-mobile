@@ -1,11 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   ArrowLeft, Calculator, MapPin, Phone, User, 
   Clock, Wrench, Send, CheckCircle, Star, Shield, Award
@@ -27,6 +27,7 @@ interface EstimationForm {
 
 export default function ServiceEstimation() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedService, setSelectedService] = useState("");
@@ -41,6 +42,23 @@ export default function ServiceEstimation() {
     estimatedBudget: 500
   });
 
+  // Initialize form with booking details from previous page
+  useEffect(() => {
+    if (location.state?.bookingDetails) {
+      const details = location.state.bookingDetails;
+      console.log("Received booking details:", details);
+      
+      setSelectedService(details.service || "");
+      setEstimationForm(prev => ({
+        ...prev,
+        service: details.service || "",
+        address: details.address || "",
+        customerName: details.customerName || "",
+        customerPhone: details.customerPhone || ""
+      }));
+    }
+  }, [location.state]);
+
   const services = [
     { name: "Home Cleaning", price: "₹199 onwards", rating: 4.8, image: "🏠" },
     { name: "Plumbing", price: "₹149 onwards", rating: 4.7, image: "🔧" },
@@ -50,6 +68,8 @@ export default function ServiceEstimation() {
     { name: "AC Service", price: "₹199 onwards", rating: 4.9, image: "❄️" },
     { name: "Appliance Repair", price: "₹179 onwards", rating: 4.7, image: "🔧" },
     { name: "Pest Control", price: "₹399 onwards", rating: 4.8, image: "🐛" },
+    { name: "Fridge Repair", price: "₹199 onwards", rating: 4.8, image: "🧊" },
+    { name: "Washing Machine", price: "₹149 onwards", rating: 4.7, image: "👕" }
   ];
 
   const handleServiceSelect = (service: any) => {
