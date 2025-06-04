@@ -5,18 +5,26 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Bell, Shield, CreditCard, Globe, Moon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 
 export default function CustomerSettings() {
   const navigate = useNavigate();
+  const { currentLanguage, changeLanguage, availableLanguages } = useLanguage();
   const [notifications, setNotifications] = useState(true);
+  const [whatsappUpdates, setWhatsappUpdates] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState("English");
 
   const handleSaveSettings = () => {
     toast.success("Settings saved successfully!");
+  };
+
+  const handleLanguageChange = (languageCode: string) => {
+    changeLanguage(languageCode);
+    toast.success("Language updated successfully!");
   };
 
   return (
@@ -45,8 +53,12 @@ export default function CustomerSettings() {
                 />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="email-notifications">Email Updates</Label>
-                <Switch id="email-notifications" />
+                <Label htmlFor="whatsapp-updates">WhatsApp Updates</Label>
+                <Switch 
+                  id="whatsapp-updates" 
+                  checked={whatsappUpdates}
+                  onCheckedChange={setWhatsappUpdates}
+                />
               </div>
             </div>
           </Card>
@@ -59,12 +71,18 @@ export default function CustomerSettings() {
             <div className="space-y-3">
               <div>
                 <Label htmlFor="language">Language</Label>
-                <Input
-                  id="language"
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
-                  className="mt-1"
-                />
+                <Select value={currentLanguage} onValueChange={handleLanguageChange}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Select language" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableLanguages.map((lang) => (
+                      <SelectItem key={lang.code} value={lang.code}>
+                        {lang.name} ({lang.nativeName})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex items-center justify-between">
                 <Label htmlFor="dark-mode">Dark Mode</Label>
@@ -79,32 +97,22 @@ export default function CustomerSettings() {
 
           <Card className="p-4">
             <h3 className="font-semibold mb-3 flex items-center">
-              <Shield className="w-4 h-4 mr-2" />
-              Privacy & Security
-            </h3>
-            <div className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
-                Change Password
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Privacy Policy
-              </Button>
-              <Button variant="outline" className="w-full justify-start">
-                Terms of Service
-              </Button>
-            </div>
-          </Card>
-
-          <Card className="p-4">
-            <h3 className="font-semibold mb-3 flex items-center">
               <CreditCard className="w-4 h-4 mr-2" />
               Payment & Billing
             </h3>
             <div className="space-y-2">
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate('/customer/payment-methods')}
+              >
                 Payment Methods
               </Button>
-              <Button variant="outline" className="w-full justify-start">
+              <Button 
+                variant="outline" 
+                className="w-full justify-start"
+                onClick={() => navigate('/customer/billing-history')}
+              >
                 Billing History
               </Button>
             </div>

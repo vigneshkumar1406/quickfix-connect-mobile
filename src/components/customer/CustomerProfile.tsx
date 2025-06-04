@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, User, Book, HelpCircle, Wallet, Star, MapPin, CreditCard, Clock, Settings, Info, Gift, LogOut, Smartphone } from "lucide-react";
+import { ArrowLeft, User, Book, HelpCircle, Wallet, Star, MapPin, CreditCard, Clock, Settings, Info, Gift, LogOut, Smartphone, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -20,11 +20,10 @@ export default function CustomerProfile() {
   const handleMenuClick = (item: string) => {
     switch (item) {
       case 'bookings':
-        // Navigate to bookings page when implemented
-        toast.info("My Bookings - Coming soon");
+        navigate('/customer/my-bookings');
         break;
       case 'devices':
-        toast.info("Native Devices - Coming soon");
+        navigate('/customer/native-devices');
         break;
       case 'help':
         navigate('/customer/emergency-support');
@@ -36,16 +35,19 @@ export default function CustomerProfile() {
         toast.info("Manage Addresses - Coming soon");
         break;
       case 'payment':
-        toast.info("Payment Methods - Coming soon");
+        navigate('/customer/payment-methods');
         break;
       case 'billing':
-        toast.info("Billing History - Coming soon");
+        navigate('/customer/billing-history');
         break;
       case 'settings':
         navigate('/customer/settings');
         break;
       case 'about':
         navigate('/about');
+        break;
+      case 'rating':
+        navigate('/customer/my-ratings');
         break;
       case 'refer':
         toast.success("Referral link copied to clipboard!");
@@ -72,10 +74,19 @@ export default function CustomerProfile() {
         <div className="space-y-6">
           {/* Profile Header */}
           <Card className="p-6">
-            <div className="flex flex-col items-center text-center">
+            <div className="flex flex-col items-center text-center relative">
               <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center mb-4">
                 <User className="w-10 h-10 text-white" />
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="absolute top-2 right-2"
+                onClick={() => navigate('/customer/edit-profile')}
+              >
+                <Edit className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
               <h2 className="text-xl font-semibold">{profileData.name}</h2>
               <p className="text-sm text-gray-600">Member since {profileData.memberSince}</p>
             </div>

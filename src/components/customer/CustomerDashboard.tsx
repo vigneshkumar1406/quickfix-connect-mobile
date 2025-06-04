@@ -1,421 +1,284 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, Bell, MapPin, Star, Clock, Phone, Settings, Wallet, Mail } from "lucide-react";
+import { Star, MapPin, Phone, Mail, MessageCircle, Calendar, Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useLocation as useLocationContext } from "@/contexts/LocationContext";
-import { useAuth } from "@/contexts/AuthContext";
-import CustomerNameModal from "./CustomerNameModal";
-import ServiceImageSlider from "./ServiceImageSlider";
+import { useLocation } from "@/contexts/LocationContext";
 import { toast } from "sonner";
-
-const services = [
-  {
-    id: 1,
-    name: "Plumbing",
-    description: "Professional plumbing services for all your needs",
-    price: "₹199 onwards",
-    rating: 4.8,
-    bookings: 1200,
-    images: [
-      "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=300",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300"
-    ]
-  },
-  {
-    id: 2,
-    name: "Electrical",
-    description: "Expert electrical repairs and installations",
-    price: "₹249 onwards",
-    rating: 4.7,
-    bookings: 980,
-    images: [
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
-      "https://images.unsplash.com/photo-1621905252472-91b3222d6ca4?w=300",
-      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300"
-    ]
-  },
-  {
-    id: 3,
-    name: "Carpentry",
-    description: "Expert carpentry and woodwork services",
-    price: "₹299 onwards",
-    rating: 4.6,
-    bookings: 850,
-    images: [
-      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=300",
-      "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=300",
-      "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300"
-    ]
-  },
-  {
-    id: 4,
-    name: "Painting",
-    description: "Interior and exterior painting services",
-    price: "₹399 onwards",
-    rating: 4.6,
-    bookings: 750,
-    images: [
-      "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=300",
-      "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=300",
-      "https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=300"
-    ]
-  },
-  {
-    id: 5,
-    name: "Home Cleaning",
-    description: "Deep cleaning services for your home",
-    price: "₹299 onwards",
-    rating: 4.9,
-    bookings: 1500,
-    images: [
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300",
-      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=300",
-      "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=300"
-    ]
-  },
-  {
-    id: 6,
-    name: "Appliance Repair",
-    description: "General appliance repair services",
-    price: "₹399 onwards",
-    rating: 4.5,
-    bookings: 650,
-    images: [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
-      "https://images.unsplash.com/photo-1621905252472-91b3222d6ca4?w=300"
-    ]
-  },
-  {
-    id: 7,
-    name: "Fridge Repair",
-    description: "Professional refrigerator repair services",
-    price: "₹449 onwards",
-    rating: 4.7,
-    bookings: 450,
-    images: [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
-      "https://images.unsplash.com/photo-1621905252472-91b3222d6ca4?w=300"
-    ]
-  },
-  {
-    id: 8,
-    name: "Washing Machine",
-    description: "Washing machine repair and maintenance",
-    price: "₹349 onwards",
-    rating: 4.6,
-    bookings: 520,
-    images: [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
-      "https://images.unsplash.com/photo-1621905252472-91b3222d6ca4?w=300"
-    ]
-  },
-  {
-    id: 9,
-    name: "Pest Control",
-    description: "Effective pest control solutions",
-    price: "₹499 onwards",
-    rating: 4.8,
-    bookings: 890,
-    images: [
-      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300",
-      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=300",
-      "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=300"
-    ]
-  },
-  {
-    id: 10,
-    name: "AC Service",
-    description: "Air conditioning service and repair",
-    price: "₹599 onwards",
-    rating: 4.7,
-    bookings: 1100,
-    images: [
-      "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
-      "https://images.unsplash.com/photo-1621905252472-91b3222d6ca4?w=300",
-      "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=300"
-    ]
-  }
-];
+import ServiceImageSlider from "./ServiceImageSlider";
 
 export default function CustomerDashboard() {
   const navigate = useNavigate();
-  const { selectedService, customerName, setSelectedService, setCustomerName } = useLocationContext();
-  const { user } = useAuth();
-  const [showNameModal, setShowNameModal] = useState(false);
-  const [isSubmittingName, setIsSubmittingName] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
+  const { currentLocation } = useLocation();
+  const [selectedService, setSelectedService] = useState(null);
 
-  // Check if this is a new user and needs name collection
-  useEffect(() => {
-    const checkUserStatus = () => {
-      // Check if user just registered (came from OTP verification)
-      const justRegistered = sessionStorage.getItem('just-registered');
-      const skippedVerification = sessionStorage.getItem('skipped-verification');
-      const savedName = localStorage.getItem('customerName');
-      
-      console.log('User status check:', { user, justRegistered, skippedVerification, savedName, customerName });
-      
-      // Only show name modal if:
-      // 1. User just registered (not skipped verification)
-      // 2. No saved name exists
-      // 3. CustomerName is not already set
-      if (justRegistered && !skippedVerification && !savedName && (!customerName || customerName.trim() === '')) {
-        setIsNewUser(true);
-        setShowNameModal(true);
-        // Clear the session flag
-        sessionStorage.removeItem('just-registered');
-      } else if (savedName && (!customerName || customerName.trim() === '')) {
-        // Load existing name if available
-        setCustomerName(savedName);
-      }
-    };
-
-    checkUserStatus();
-  }, [user, customerName, setCustomerName]);
-
-  const handleNameSubmit = async (name: string) => {
-    setIsSubmittingName(true);
-    
-    try {
-      console.log('Saving customer name:', name);
-      
-      // Save customer name to context and localStorage
-      setCustomerName(name);
-      localStorage.setItem('customerName', name);
-      
-      // If user is authenticated, you could also save to backend here
-      if (user) {
-        console.log('User authenticated, could save to backend:', user.uid);
-        // TODO: Save to Supabase profiles table when needed
-      }
-      
-      toast.success(`Welcome ${name}! You're all set.`);
-      setShowNameModal(false);
-      setIsNewUser(false);
-    } catch (error) {
-      console.error('Error saving customer name:', error);
-      toast.error("Failed to save your name. Please try again.");
-    } finally {
-      setIsSubmittingName(false);
-    }
-  };
-
-  const handleServiceSelect = (service: any) => {
+  const handleServiceClick = (service: any) => {
     console.log("Service selected:", service);
     setSelectedService(service);
-    navigate("/customer/book-service", { state: { selectedService: service } });
+    
+    // Navigate to book service page with service data
+    navigate('/customer/book-service', { 
+      state: { 
+        selectedService: service 
+      } 
+    });
   };
 
-  const handleQuickAction = (action: string) => {
-    switch (action) {
-      case 'call':
-        navigate('/customer/emergency-support');
-        break;
-      case 'multiple':
-        navigate('/customer/multiple-estimation');
-        break;
-      case 'wallet':
-        navigate('/customer/wallet');
-        break;
-      case 'profile':
-        navigate('/customer/profile');
-        break;
-      case 'notifications':
-        navigate('/customer/notifications');
-        break;
-      default:
-        toast.info(`${action} feature coming soon!`);
+  // Mock services data - in a real app, this would come from an API
+  const services = [
+    {
+      id: 1,
+      name: "Plumbing",
+      description: "Pipe repairs, leak fixes, and installations",
+      price: "₹199 onwards",
+      rating: 4.8,
+      images: [
+        "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=300",
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300"
+      ]
+    },
+    {
+      id: 2,
+      name: "Electrical",
+      description: "Expert electrical repairs and installations",
+      price: "₹249 onwards",
+      rating: 4.7,
+      images: [
+        "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=300",
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300"
+      ]
+    },
+    {
+      id: 3,
+      name: "Carpentry",
+      description: "Furniture repairs and custom woodwork",
+      price: "₹299 onwards",
+      rating: 4.6,
+      images: [
+        "https://images.unsplash.com/photo-1504148455328-c376907d081c?w=300",
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300"
+      ]
+    },
+    {
+      id: 4,
+      name: "Painting",
+      description: "Interior and exterior painting services",
+      price: "₹399 onwards",
+      rating: 4.6,
+      images: [
+        "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=300",
+        "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=300"
+      ]
+    },
+    {
+      id: 5,
+      name: "Home Cleaning",
+      description: "Deep cleaning and regular maintenance",
+      price: "₹199 onwards",
+      rating: 4.9,
+      images: [
+        "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=300",
+        "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=300"
+      ]
+    },
+    {
+      id: 6,
+      name: "Appliance Repair",
+      description: "Kitchen and home appliance repairs",
+      price: "₹299 onwards",
+      rating: 4.7,
+      images: [
+        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300",
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300"
+      ]
+    },
+    {
+      id: 7,
+      name: "Fridge Repair",
+      description: "Professional refrigerator repair service",
+      price: "₹349 onwards",
+      rating: 4.8,
+      images: [
+        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=300",
+        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300"
+      ]
+    },
+    {
+      id: 8,
+      name: "Washing Machine",
+      description: "Washing machine repair and maintenance",
+      price: "₹279 onwards",
+      rating: 4.6,
+      images: [
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300",
+        "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=300"
+      ]
+    },
+    {
+      id: 9,
+      name: "Pest Control",
+      description: "Complete pest elimination service",
+      price: "₹199 onwards",
+      rating: 4.7,
+      images: [
+        "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
+        "https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=300"
+      ]
+    },
+    {
+      id: 10,
+      name: "AC Service",
+      description: "Air conditioner repair and maintenance",
+      price: "₹399 onwards",
+      rating: 4.8,
+      images: [
+        "https://images.unsplash.com/photo-1631545930683-c7c91dad5e4d?w=300",
+        "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300"
+      ]
     }
-  };
-
-  const handleContactAction = (type: string) => {
-    switch (type) {
-      case 'call-now':
-        window.open('tel:+919999900000', '_self');
-        break;
-      case 'mail':
-        window.open('mailto:support@quickfix.com', '_self');
-        break;
-      case 'whatsapp':
-        window.open('https://wa.me/919999900000', '_blank');
-        break;
-      case 'chat':
-        navigate('/customer/emergency-support');
-        break;
-      default:
-        break;
-    }
-  };
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <CustomerNameModal 
-        isOpen={showNameModal}
-        onSubmit={handleNameSubmit}
-        loading={isSubmittingName}
-      />
-      
-      <div className="max-w-md mx-auto px-4 py-6">
+      <div className="max-w-6xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/70 rounded-full flex items-center justify-center mr-3">
-              <User className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                Hello, {customerName || 'Guest'}!
-              </h1>
-              <p className="text-sm text-gray-600">How can we help you today?</p>
-            </div>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">QuickFix Dashboard</h1>
+            <p className="text-gray-600 flex items-center mt-1">
+              <MapPin className="w-4 h-4 mr-1" />
+              {currentLocation?.address || "Chennai, Tamil Nadu"}
+            </p>
           </div>
-          <div className="flex space-x-2">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => handleQuickAction('notifications')}
-            >
-              <Bell className="w-5 h-5" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => handleQuickAction('profile')}
-            >
-              <Settings className="w-5 h-5" />
-            </Button>
-          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/customer/profile')}
+            className="flex items-center gap-2"
+          >
+            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+              <span className="text-white text-sm font-semibold">JD</span>
+            </div>
+            Profile
+          </Button>
         </div>
-
-        {/* Location Banner */}
-        <Card className="p-4 mb-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-          <div className="flex items-center">
-            <MapPin className="w-5 h-5 mr-2" />
-            <div className="flex-1">
-              <p className="text-sm opacity-90">Service Location</p>
-              <p className="font-medium">T. Nagar, Chennai</p>
-            </div>
-            <Button variant="secondary" size="sm">
-              Change
-            </Button>
-          </div>
-        </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <Button 
-            variant="outline" 
-            className="h-16 flex flex-col items-center justify-center bg-orange-50 border-orange-200 hover:bg-orange-100"
-            onClick={() => handleQuickAction('call')}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card 
+            className="p-4 cursor-pointer hover:shadow-lg transition-shadow bg-red-50 border-red-200"
+            onClick={() => navigate('/customer/emergency-support')}
           >
-            <Phone className="w-5 h-5 mb-1 text-orange-600" />
-            <span className="text-sm text-orange-600">Book via Call</span>
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            className="h-16 flex flex-col items-center justify-center bg-purple-50 border-purple-200 hover:bg-purple-100"
-            onClick={() => handleQuickAction('multiple')}
-          >
-            <Star className="w-5 h-5 mb-1 text-purple-600" />
-            <span className="text-sm text-purple-600">Multiple Services</span>
-          </Button>
+            <div className="flex flex-col items-center text-center">
+              <Phone className="w-8 h-8 text-red-600 mb-2" />
+              <h3 className="font-semibold text-red-800">Book via Call</h3>
+              <p className="text-sm text-red-600">Immediate assistance</p>
+            </div>
+          </Card>
 
-          <Button 
-            variant="outline" 
-            className="h-16 flex flex-col items-center justify-center bg-blue-50 border-blue-200 hover:bg-blue-100"
-            onClick={() => handleQuickAction('wallet')}
+          <Card 
+            className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => window.open('tel:+911234567890', '_self')}
           >
-            <Wallet className="w-5 h-5 mb-1 text-blue-600" />
-            <span className="text-sm text-blue-600">QuickFix Wallet</span>
-          </Button>
+            <div className="flex flex-col items-center text-center">
+              <Phone className="w-8 h-8 text-primary mb-2" />
+              <h3 className="font-semibold">Call Now</h3>
+              <p className="text-sm text-gray-600">Direct call support</p>
+            </div>
+          </Card>
+
+          <Card 
+            className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => window.open('mailto:support@quickfix.com', '_blank')}
+          >
+            <div className="flex flex-col items-center text-center">
+              <Mail className="w-8 h-8 text-primary mb-2" />
+              <h3 className="font-semibold">Mail</h3>
+              <p className="text-sm text-gray-600">Email support</p>
+            </div>
+          </Card>
+
+          <Card 
+            className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => window.open('https://wa.me/911234567890', '_blank')}
+          >
+            <div className="flex flex-col items-center text-center">
+              <MessageCircle className="w-8 h-8 text-green-600 mb-2" />
+              <h3 className="font-semibold text-green-800">WhatsApp</h3>
+              <p className="text-sm text-green-600">Chat support</p>
+            </div>
+          </Card>
         </div>
 
-        {/* Contact Support */}
-        <Card className="p-4 mb-6">
-          <h3 className="text-sm font-semibold mb-3 text-gray-700">Need Help? Contact Us</h3>
-          <div className="grid grid-cols-4 gap-2">
+        {/* Chat with Support */}
+        <Card className="p-4 mb-8 bg-blue-50 border-blue-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <MessageCircle className="w-6 h-6 text-blue-600 mr-3" />
+              <div>
+                <h3 className="font-semibold text-blue-800">Chat with Support</h3>
+                <p className="text-sm text-blue-600">Get instant help from our support team</p>
+              </div>
+            </div>
             <Button 
-              variant="outline" 
-              size="sm"
-              className="h-12 flex flex-col items-center justify-center bg-red-50 border-red-200 hover:bg-red-100"
-              onClick={() => handleContactAction('call-now')}
+              onClick={() => toast.info("Chat support will be available soon")}
+              className="bg-blue-600 hover:bg-blue-700"
             >
-              <Phone className="w-4 h-4 mb-1 text-red-600" />
-              <span className="text-xs text-red-600">Call Now</span>
-            </Button>
-
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="h-12 flex flex-col items-center justify-center bg-blue-50 border-blue-200 hover:bg-blue-100"
-              onClick={() => handleContactAction('mail')}
-            >
-              <Mail className="w-4 h-4 mb-1 text-blue-600" />
-              <span className="text-xs text-blue-600">Mail</span>
-            </Button>
-
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="h-12 flex flex-col items-center justify-center bg-green-50 border-green-200 hover:bg-green-100"
-              onClick={() => handleContactAction('whatsapp')}
-            >
-              <Phone className="w-4 h-4 mb-1 text-green-600" />
-              <span className="text-xs text-green-600">WhatsApp</span>
-            </Button>
-
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="h-12 flex flex-col items-center justify-center bg-purple-50 border-purple-200 hover:bg-purple-100"
-              onClick={() => handleContactAction('chat')}
-            >
-              <Bell className="w-4 h-4 mb-1 text-purple-600" />
-              <span className="text-xs text-purple-600">Chat</span>
+              Start Chat
             </Button>
           </div>
         </Card>
 
         {/* Services Grid */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Popular Services</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <h2 className="text-xl font-semibold mb-6">Our Services</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
             {services.map((service) => (
               <Card 
-                key={service.id} 
-                className="p-4 cursor-pointer hover:shadow-lg transition-all duration-200 border-0 bg-white/80 backdrop-blur-sm"
-                onClick={() => handleServiceSelect(service)}
+                key={service.id}
+                className="p-3 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-105"
+                onClick={() => handleServiceClick(service)}
               >
-                <ServiceImageSlider 
-                  images={service.images} 
-                  serviceName={service.name}
-                  className="aspect-square rounded-lg overflow-hidden mb-3 bg-gradient-to-br from-gray-100 to-gray-200"
-                />
-                <h3 className="font-semibold text-gray-900 mb-1">{service.name}</h3>
-                <p className="text-xs text-gray-600 mb-2 line-clamp-2">{service.description}</p>
-                <div className="flex items-center justify-between mb-2">
+                <div className="aspect-square mb-3">
+                  <ServiceImageSlider
+                    images={service.images}
+                    serviceName={service.name}
+                    className="w-full h-full rounded-lg"
+                  />
+                </div>
+                <h3 className="font-semibold text-sm mb-1">{service.name}</h3>
+                <p className="text-xs text-gray-600 mb-2">{service.description}</p>
+                <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-primary">{service.price}</span>
                   <div className="flex items-center">
-                    <Star className="w-3 h-3 text-yellow-500 fill-current mr-1" />
-                    <span className="text-xs text-gray-600">{service.rating}</span>
+                    <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                    <span className="text-xs">{service.rating}</span>
                   </div>
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {service.bookings} bookings
-                </Badge>
               </Card>
             ))}
           </div>
         </div>
+
+        {/* QuickFix Wallet */}
+        <Card 
+          className="p-6 mb-6 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200 cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => navigate('/customer/wallet')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Wallet className="w-8 h-8 text-purple-600 mr-4" />
+              <div>
+                <h3 className="font-semibold text-purple-800 text-lg">QuickFix Wallet</h3>
+                <p className="text-purple-600">Manage your coins and payments</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-purple-800">2,450</p>
+              <p className="text-sm text-purple-600">QuickFix Coins</p>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );

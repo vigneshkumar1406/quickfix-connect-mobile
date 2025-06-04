@@ -70,6 +70,12 @@ function App() {
                   <Route path="/customer/review" element={<ReviewServicePage />} />
                   <Route path="/customer/review-service" element={<ReviewServicePage />} />
                   <Route path="/customer/profile" element={<CustomerProfilePage />} />
+                  <Route path="/customer/edit-profile" element={<EditableProfilePage />} />
+                  <Route path="/customer/my-bookings" element={<MyBookingsPage />} />
+                  <Route path="/customer/native-devices" element={<NativeDevicesPage />} />
+                  <Route path="/customer/my-ratings" element={<MyRatingsPage />} />
+                  <Route path="/customer/payment-methods" element={<PaymentMethodsPage />} />
+                  <Route path="/customer/billing-history" element={<BillingHistoryPage />} />
                   <Route path="/customer/settings" element={<CustomerSettingsPage />} />
                   <Route path="/customer/notifications" element={<CustomerNotificationsPage />} />
                   <Route path="/customer/emergency-support" element={<EmergencySupportPage />} />
