@@ -29,6 +29,12 @@ import CustomerNotificationsPage from "./pages/customer/CustomerNotificationsPag
 import EmergencySupportPage from "./pages/customer/EmergencySupportPage";
 import MultipleEstimationPage from "./pages/customer/MultipleEstimationPage";
 import QuickFixWalletPage from "./pages/customer/QuickFixWalletPage";
+import EditableProfilePage from "./pages/customer/EditableProfilePage";
+import MyBookingsPage from "./pages/customer/MyBookingsPage";
+import NativeDevicesPage from "./pages/customer/NativeDevicesPage";
+import MyRatingsPage from "./pages/customer/MyRatingsPage";
+import PaymentMethodsPage from "./pages/customer/PaymentMethodsPage";
+import BillingHistoryPage from "./pages/customer/BillingHistoryPage";
 
 // Worker pages
 import WorkerDashboardPage from "./pages/worker/WorkerDashboardPage";
