@@ -6,116 +6,156 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
-import { Phone, MapPin, MessageCircle, Clock, Star, ThumbsUp } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { serviceAPI, workerAPI } from "@/services/supabaseAPI";
+import { Phone, MapPin, MessageCircle, Clock, Star, User, CheckCircle } from "lucide-react";
 
 export default function ServiceTracking() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [currentStatus, setCurrentStatus] = useState("accepted");
-  const [timeRemaining, setTimeRemaining] = useState(10);
+  const { user } = useAuth();
+  const [booking, setBooking] = useState<any>(null);
   const [worker, setWorker] = useState<any>(null);
-  const [bookingDetails, setBookingDetails] = useState<any>(null);
-  
-  // Get data from navigation state
+  const [loading, setLoading] = useState(true);
+  const [bookingId, setBookingId] = useState<string | null>(null);
+
   useEffect(() => {
-    if (location.state) {
-      setWorker(location.state.worker);
-      setBookingDetails(location.state.bookingDetails);
-      console.log("ServiceTracking received:", location.state);
+    const id = location.state?.bookingId || location.state?.booking?.id;
+    if (id) {
+      setBookingId(id);
+      loadBookingDetails(id);
+    } else {
+      toast.error("No booking ID provided");
+      navigate("/customer/dashboard");
     }
   }, [location.state]);
-  
-  // Mock service data - in a real app, this would come from an API
-  const serviceData = {
-    serviceType: bookingDetails?.service || "Plumbing Repair",
-    issue: bookingDetails?.description || "Service request",
-    workerName: worker?.name || "Rajesh K",
-    workerRating: worker?.rating || 4.8,
-    location: bookingDetails?.address || "Adyar, Chennai",
-    estimatedTime: worker?.eta ? `${worker.eta} min` : "15 min",
-    contactNumber: worker?.phone || "+91 9876 543 210"
-  };
-  
-  // Simulate service progress
-  useEffect(() => {
-    // Only run the timer if status is "on_the_way"
-    if (currentStatus === "on_the_way") {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            setCurrentStatus("arrived");
-            clearInterval(timer);
-            toast.success("Worker has arrived!");
-            return 0;
+
+  const loadBookingDetails = async (id: string) => {
+    setLoading(true);
+    try {
+      const result = await serviceAPI.getBooking(id);
+      if (result.success && result.data) {
+        setBooking(result.data);
+        
+        if (result.data.worker_id) {
+          const workerResult = await workerAPI.getWorker(result.data.worker_id);
+          if (workerResult.success) {
+            setWorker(workerResult.data);
           }
-          return prev - 1;
-        });
-      }, 1000);
-      
-      return () => clearInterval(timer);
+        }
+      } else {
+        toast.error("Failed to load booking details");
+        navigate("/customer/dashboard");
+      }
+    } catch (error) {
+      console.error("Error loading booking:", error);
+      toast.error("Failed to load booking details");
+      navigate("/customer/dashboard");
+    } finally {
+      setLoading(false);
     }
-  }, [currentStatus]);
-  
-  // Handlers for status update
-  const handleStartService = () => {
-    setCurrentStatus("in_progress");
-    toast.info("Service has started");
   };
-  
-  const handleCompleteService = () => {
-    setCurrentStatus("completed");
-    toast.success("Service completed successfully!");
-    // In a real app, we would update the backend here
+
+  const updateBookingStatus = async (newStatus: string) => {
+    if (!bookingId) return;
+
+    try {
+      const result = await serviceAPI.updateBooking(bookingId, { status: newStatus });
+      if (result.success) {
+        setBooking(prev => ({ ...prev, status: newStatus }));
+        toast.success(`Status updated to ${newStatus.replace('_', ' ')}`);
+      } else {
+        toast.error("Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Failed to update status");
+    }
   };
-  
-  // Handler for worker arrival simulation
-  const simulateWorkerArrival = () => {
-    setCurrentStatus("on_the_way");
-    toast.info("Worker is on the way!");
+
+  const cancelBooking = async () => {
+    if (!bookingId) return;
+
+    try {
+      const result = await serviceAPI.updateBooking(bookingId, { status: 'cancelled' });
+      if (result.success) {
+        toast.success("Booking cancelled successfully");
+        navigate("/customer/dashboard");
+      } else {
+        toast.error("Failed to cancel booking");
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      toast.error("Failed to cancel booking");
+    }
   };
-  
-  const getStatusDisplay = () => {
-    switch (currentStatus) {
-      case "accepted":
+
+  const getStatusDisplay = (status: string) => {
+    switch (status) {
+      case "pending":
         return {
-          label: "Service Accepted",
-          description: "Worker has accepted your service request",
-          color: "text-primary"
+          label: "Finding Worker",
+          description: "Searching for available service providers",
+          color: "text-yellow-600"
         };
-      case "on_the_way":
+      case "assigned":
         return {
-          label: "On the Way",
-          description: `Arriving in approximately ${timeRemaining} minutes`,
-          color: "text-accent"
-        };
-      case "arrived":
-        return {
-          label: "Worker Arrived",
-          description: "Worker has arrived at your location",
-          color: "text-accent"
+          label: "Worker Assigned",
+          description: "A service provider has been assigned to your request",
+          color: "text-blue-600"
         };
       case "in_progress":
         return {
-          label: "In Progress",
-          description: "Your service is currently in progress",
-          color: "text-primary"
+          label: "Service In Progress",
+          description: "Your service is currently being completed",
+          color: "text-green-600"
         };
       case "completed":
         return {
-          label: "Completed",
-          description: "Your service has been completed",
-          color: "text-green-500"
+          label: "Service Completed",
+          description: "Your service has been completed successfully",
+          color: "text-green-700"
+        };
+      case "cancelled":
+        return {
+          label: "Booking Cancelled",
+          description: "This booking has been cancelled",
+          color: "text-red-600"
         };
       default:
         return {
           label: "Unknown Status",
           description: "",
-          color: "text-neutral-500"
+          color: "text-gray-600"
         };
     }
   };
-  
-  const status = getStatusDisplay();
+
+  if (loading) {
+    return (
+      <div className="w-full max-w-md mx-auto animate-fade-in p-6">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading booking details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <div className="w-full max-w-md mx-auto animate-fade-in p-6">
+        <div className="text-center">
+          <p className="text-red-600">Booking not found</p>
+          <Button onClick={() => navigate("/customer/dashboard")} className="mt-4">
+            Return to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const statusInfo = getStatusDisplay(booking.status);
 
   return (
     <div className="w-full max-w-md mx-auto animate-fade-in">
@@ -124,115 +164,107 @@ export default function ServiceTracking() {
       </div>
       
       <h1 className="text-2xl font-bold mb-2">Service Tracking</h1>
-      <p className="text-neutral-300 mb-6">Live updates for your service</p>
+      <p className="text-neutral-600 mb-6">Track your service request</p>
       
-      <Card className="p-4 mb-6 border-l-4" style={{ borderLeftColor: currentStatus === "completed" ? "#10b981" : "#2563eb" }}>
+      {/* Status Card */}
+      <Card className="p-4 mb-6 border-l-4 border-l-primary">
         <div className="flex justify-between items-start mb-4">
-          <h2 className="font-semibold text-lg">{serviceData.serviceType}</h2>
-          <span className={`font-medium ${status.color}`}>{status.label}</span>
+          <h2 className="font-semibold text-lg">{booking.service_type}</h2>
+          <span className={`font-medium ${statusInfo.color}`}>{statusInfo.label}</span>
         </div>
         
-        <p className="text-sm text-neutral-300 mb-4">{status.description}</p>
+        <p className="text-sm text-neutral-600 mb-4">{statusInfo.description}</p>
         
-        {(currentStatus === "accepted") && (
+        {booking.status === "completed" && (
           <Button 
-            onClick={simulateWorkerArrival} 
-            className="w-full mb-3"
-          >
-            Simulate Worker En Route
-          </Button>
-        )}
-        
-        {(currentStatus === "arrived") && (
-          <Button 
-            onClick={handleStartService} 
-            className="w-full mb-3"
-          >
-            Start Service
-          </Button>
-        )}
-        
-        {(currentStatus === "in_progress") && (
-          <Button 
-            onClick={handleCompleteService} 
-            className="w-full mb-3"
-          >
-            Complete Service
-          </Button>
-        )}
-        
-        {(currentStatus === "completed") && (
-          <Button 
-            onClick={() => navigate("/customer/review")} 
+            onClick={() => navigate("/customer/review-service", { 
+              state: { bookingId: booking.id, worker } 
+            })}
             className="w-full mb-3"
             variant="outline"
           >
             <Star className="mr-2 w-4 h-4" />
-            Rate Service
+            Rate & Review Service
           </Button>
         )}
       </Card>
       
-      <div className="h-48 bg-neutral-100 mb-6 rounded-lg flex items-center justify-center">
-        <p className="text-neutral-300">Live Location Map</p>
-      </div>
-      
+      {/* Booking Details */}
       <Card className="p-4 mb-6">
-        <h2 className="font-semibold mb-3">Worker Details</h2>
-        
-        <div className="flex items-center mb-4">
-          <div className="w-12 h-12 bg-neutral-100 rounded-full mr-3 flex items-center justify-center">
-            {serviceData.workerName.charAt(0)}
-          </div>
-          <div>
-            <p className="font-medium">{serviceData.workerName}</p>
-            <div className="flex items-center">
-              <Star className="w-4 h-4 text-yellow-400 mr-1" />
-              <span className="text-sm">{serviceData.workerRating}</span>
+        <h3 className="font-semibold mb-3">Booking Details</h3>
+        <div className="space-y-2 text-sm">
+          <div><strong>Service:</strong> {booking.service_type}</div>
+          <div><strong>Booking ID:</strong> #{booking.id.slice(-8)}</div>
+          {booking.description && (
+            <div><strong>Description:</strong> {booking.description}</div>
+          )}
+          <div><strong>Address:</strong> {booking.address}</div>
+          {booking.scheduled_date && (
+            <div>
+              <strong>Scheduled:</strong> {new Date(booking.scheduled_date).toLocaleDateString()} 
+              {booking.scheduled_time && ` at ${booking.scheduled_time}`}
             </div>
-          </div>
-        </div>
-        
-        <Separator className="my-3" />
-        
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <Phone className="w-5 h-5 text-neutral-300 mr-2" />
-              <span>{serviceData.contactNumber}</span>
-            </div>
-            <Button size="sm" variant="outline" onClick={() => window.open(`tel:${serviceData.contactNumber}`, '_self')}>
-              Call
-            </Button>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <MessageCircle className="w-5 h-5 text-neutral-300 mr-2" />
-              <span>Send Message</span>
-            </div>
-            <Button size="sm" variant="outline">
-              Chat
-            </Button>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <MapPin className="w-5 h-5 text-neutral-300 mr-2" />
-              <span>{serviceData.location}</span>
-            </div>
-            <Button size="sm" variant="outline">
-              Map
-            </Button>
-          </div>
-          
-          <div className="flex items-center">
-            <Clock className="w-5 h-5 text-neutral-300 mr-2" />
-            <span>ETA: {currentStatus === "on_the_way" ? `${timeRemaining} min` : serviceData.estimatedTime}</span>
-          </div>
+          )}
+          {booking.estimated_cost && (
+            <div><strong>Estimated Cost:</strong> ₹{booking.estimated_cost}</div>
+          )}
         </div>
       </Card>
       
+      {/* Worker Details */}
+      {worker && booking.status !== 'pending' && (
+        <Card className="p-4 mb-6">
+          <h3 className="font-semibold mb-3">Service Provider</h3>
+          
+          <div className="flex items-center mb-4">
+            <div className="w-12 h-12 bg-neutral-200 rounded-full mr-3 flex items-center justify-center">
+              <User className="w-6 h-6 text-neutral-600" />
+            </div>
+            <div>
+              <p className="font-medium">{worker.profiles?.full_name || 'Service Provider'}</p>
+              <div className="flex items-center">
+                <Star className="w-4 h-4 text-yellow-400 mr-1" />
+                <span className="text-sm">{worker.rating || '4.5'}</span>
+              </div>
+            </div>
+          </div>
+          
+          <Separator className="my-3" />
+          
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <Phone className="w-5 h-5 text-neutral-400 mr-2" />
+                <span>{worker.profiles?.phone_number || 'Contact Number'}</span>
+              </div>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => window.open(`tel:${worker.profiles?.phone_number}`, '_self')}
+              >
+                Call
+              </Button>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <MessageCircle className="w-5 h-5 text-neutral-400 mr-2" />
+                <span>Send Message</span>
+              </div>
+              <Button size="sm" variant="outline">
+                Chat
+              </Button>
+            </div>
+            
+            <div className="flex items-center">
+              <MapPin className="w-5 h-5 text-neutral-400 mr-2" />
+              <span>Track Location</span>
+            </div>
+          </div>
+        </Card>
+      )}
+      
+      {/* Action Buttons */}
       <div className="space-y-3">
         <Button 
           onClick={() => toast.info("Support will contact you soon")}
@@ -242,16 +274,13 @@ export default function ServiceTracking() {
           Contact Support
         </Button>
         
-        {currentStatus !== "completed" && (
+        {booking.status !== "completed" && booking.status !== "cancelled" && (
           <Button 
             variant="destructive" 
             className="w-full"
-            onClick={() => {
-              toast.error("Service cancelled");
-              navigate("/customer/dashboard");
-            }}
+            onClick={cancelBooking}
           >
-            Cancel Service
+            Cancel Booking
           </Button>
         )}
       </div>

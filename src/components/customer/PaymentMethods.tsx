@@ -1,32 +1,97 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, CreditCard, Smartphone } from "lucide-react";
+import { ArrowLeft, CreditCard, Smartphone, Plus, Trash2, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export default function PaymentMethods() {
   const navigate = useNavigate();
-  const [paymentMethods] = useState([
-    {
-      id: 1,
-      type: "paytm",
-      name: "Paytm Wallet",
-      details: "Linked to +91 9876543210",
-      isDefault: true
-    },
-    {
-      id: 2,
-      type: "card",
-      name: "Credit Card",
-      details: "**** **** **** 1234",
-      isDefault: false
+  const { user } = useAuth();
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [showAddMethod, setShowAddMethod] = useState(false);
+  const [newMethod, setNewMethod] = useState({
+    type: 'paytm',
+    name: '',
+    details: '',
+    isDefault: false
+  });
+
+  useEffect(() => {
+    loadPaymentMethods();
+  }, []);
+
+  const loadPaymentMethods = () => {
+    // Load from localStorage for now - in real app, this would be from API
+    const saved = localStorage.getItem(`payment_methods_${user?.id}`);
+    if (saved) {
+      setPaymentMethods(JSON.parse(saved));
+    } else {
+      // Default Paytm method
+      const defaultMethods = [
+        {
+          id: 1,
+          type: "paytm",
+          name: "Paytm Wallet",
+          details: user?.phone || "+91 9876543210",
+          isDefault: true
+        }
+      ];
+      setPaymentMethods(defaultMethods);
+      savePaymentMethods(defaultMethods);
     }
-  ]);
+  };
+
+  const savePaymentMethods = (methods: any[]) => {
+    localStorage.setItem(`payment_methods_${user?.id}`, JSON.stringify(methods));
+  };
 
   const addPaymentMethod = () => {
-    toast.info("Add payment method functionality will be implemented soon");
+    if (!newMethod.name || !newMethod.details) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
+    const method = {
+      id: Date.now(),
+      ...newMethod,
+      isDefault: paymentMethods.length === 0
+    };
+
+    const updatedMethods = [...paymentMethods, method];
+    setPaymentMethods(updatedMethods);
+    savePaymentMethods(updatedMethods);
+    
+    setNewMethod({
+      type: 'paytm',
+      name: '',
+      details: '',
+      isDefault: false
+    });
+    setShowAddMethod(false);
+    toast.success("Payment method added successfully");
+  };
+
+  const removePaymentMethod = (id: number) => {
+    const updatedMethods = paymentMethods.filter(method => method.id !== id);
+    setPaymentMethods(updatedMethods);
+    savePaymentMethods(updatedMethods);
+    toast.success("Payment method removed");
+  };
+
+  const setAsDefault = (id: number) => {
+    const updatedMethods = paymentMethods.map(method => ({
+      ...method,
+      isDefault: method.id === id
+    }));
+    setPaymentMethods(updatedMethods);
+    savePaymentMethods(updatedMethods);
+    toast.success("Default payment method updated");
   };
 
   return (
@@ -39,7 +104,7 @@ export default function PaymentMethods() {
           <h1 className="text-xl font-bold">Payment Methods</h1>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 mb-6">
           {paymentMethods.map((method) => (
             <Card key={method.id} className="p-4">
               <div className="flex items-center justify-between">
@@ -57,17 +122,83 @@ export default function PaymentMethods() {
                     )}
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
-                  Edit
-                </Button>
+                <div className="flex space-x-2">
+                  {!method.isDefault && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setAsDefault(method.id)}
+                    >
+                      Set Default
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => removePaymentMethod(method.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}
-
-          <Button onClick={addPaymentMethod} className="w-full" variant="outline">
-            Add New Payment Method
-          </Button>
         </div>
+
+        <Dialog open={showAddMethod} onOpenChange={setShowAddMethod}>
+          <DialogTrigger asChild>
+            <Button className="w-full" variant="outline">
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Payment Method
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Payment Method</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="type">Payment Type</Label>
+                <select
+                  id="type"
+                  value={newMethod.type}
+                  onChange={(e) => setNewMethod(prev => ({ ...prev, type: e.target.value }))}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="paytm">Paytm</option>
+                  <option value="card">Credit/Debit Card</option>
+                  <option value="upi">UPI</option>
+                </select>
+              </div>
+              <div>
+                <Label htmlFor="name">Method Name</Label>
+                <Input
+                  id="name"
+                  value={newMethod.name}
+                  onChange={(e) => setNewMethod(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g., My Paytm Wallet"
+                />
+              </div>
+              <div>
+                <Label htmlFor="details">Details</Label>
+                <Input
+                  id="details"
+                  value={newMethod.details}
+                  onChange={(e) => setNewMethod(prev => ({ ...prev, details: e.target.value }))}
+                  placeholder="e.g., +91 9876543210 or **** 1234"
+                />
+              </div>
+              <div className="flex space-x-2">
+                <Button onClick={addPaymentMethod} className="flex-1">
+                  Add Method
+                </Button>
+                <Button variant="outline" onClick={() => setShowAddMethod(false)} className="flex-1">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
