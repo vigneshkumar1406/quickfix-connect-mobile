@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -108,7 +109,7 @@ export default function BookService() {
       if (location) {
         // Get human-readable address
         const addressText = await reverseGeocode(location.lat, location.lng);
-        setAddress(addressText);
+        setAddress(addressText || "");
         toast.success("Current location fetched successfully");
       } else {
         throw new Error("Unable to get location");
@@ -123,7 +124,7 @@ export default function BookService() {
 
   const handleMapLocationSelect = (selectedLocation: { lat: number; lng: number; address: string }) => {
     console.log("Location selected from map:", selectedLocation);
-    setAddress(selectedLocation.address);
+    setAddress(selectedLocation.address || "");
     setShowMapPicker(false);
     toast.success("Location selected from map");
   };
@@ -139,14 +140,15 @@ export default function BookService() {
       return;
     }
 
-    if (!address.trim()) {
+    const addressValue = address || "";
+    if (!addressValue.trim()) {
       toast.error("Please provide a service address");
       return;
     }
 
     const bookingDetails = {
       service: selectedService,
-      address: address,
+      address: addressValue,
       bookingType: bookingType,
       scheduledDate: bookingType === "later" ? selectedDate : null,
       scheduledTime: bookingType === "later" ? selectedTime : null,
@@ -170,7 +172,8 @@ export default function BookService() {
       return;
     }
 
-    if (!address.trim()) {
+    const addressValue = address || "";
+    if (!addressValue.trim()) {
       toast.error("Please provide a service address");
       return;
     }
@@ -187,11 +190,13 @@ export default function BookService() {
     }
     
     if (bookingFor === "others") {
-      if (!customerName.trim()) {
+      const nameValue = customerName || "";
+      const phoneValue = customerPhone || "";
+      if (!nameValue.trim()) {
         toast.error("Please enter the customer name");
         return;
       }
-      if (!customerPhone.trim()) {
+      if (!phoneValue.trim()) {
         toast.error("Please enter the customer phone number");
         return;
       }
@@ -208,7 +213,7 @@ export default function BookService() {
       // Pass booking details to the next page
       const bookingDetails = {
         service: selectedService,
-        address: address,
+        address: addressValue,
         bookingType: bookingType,
         scheduledDate: bookingType === "later" ? selectedDate : null,
         scheduledTime: bookingType === "later" ? selectedTime : null,
@@ -227,10 +232,10 @@ export default function BookService() {
 
   const handleContactSelect = (contact: any) => {
     setSelectedContact(contact);
-    setCustomerName(contact.name);
-    setCustomerPhone(contact.phone);
+    setCustomerName(contact.name || "");
+    setCustomerPhone(contact.phone || "");
     setBookingFor("others");
-    toast.success(`Booking for ${contact.name}`);
+    toast.success(`Booking for ${contact.name || 'selected contact'}`);
   };
 
   if (showMapPicker) {
@@ -242,6 +247,8 @@ export default function BookService() {
       />
     );
   }
+
+  const addressValue = address || "";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
@@ -298,12 +305,12 @@ export default function BookService() {
             
             <Textarea
               placeholder="Enter your complete address including street, area, city, and pincode..."
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              value={addressValue}
+              onChange={(e) => setAddress(e.target.value || "")}
               className="min-h-[100px]"
             />
             
-            {address && (
+            {addressValue && (
               <div className="text-xs text-green-600 flex items-center">
                 <MapPin className="w-3 h-3 mr-1" />
                 Address ready for booking
@@ -455,7 +462,7 @@ export default function BookService() {
         <div className="space-y-3">
           <Button 
             onClick={handleBookService} 
-            disabled={isLoading || !selectedService || !address.trim()} 
+            disabled={isLoading || !selectedService || !addressValue.trim()} 
             className="w-full"
           >
             {isLoading ? "Processing..." : "Continue to Find Service Provider"}
@@ -465,7 +472,7 @@ export default function BookService() {
           <Button 
             variant="outline"
             onClick={handleGetEstimation}
-            disabled={!selectedService || !address.trim()}
+            disabled={!selectedService || !addressValue.trim()}
             className="w-full"
           >
             <Calculator className="w-4 h-4 mr-2" />
