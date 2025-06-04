@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
@@ -158,6 +159,22 @@ export const workerAPI = {
     }
   },
 
+  getWorker: async (workerId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('workers')
+        .select('*, profiles!workers_user_id_fkey(*)')
+        .eq('id', workerId)
+        .single();
+      
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error fetching worker:", error);
+      return { success: false, message: error.message };
+    }
+  },
+
   getWorkerByUserId: async (userId: string): Promise<Worker | null> => {
     try {
       const { data, error } = await supabase
@@ -296,10 +313,26 @@ export const serviceAPI = {
         .single();
       
       if (error) throw error;
-      return data;
-    } catch (error) {
+      return { success: true, data };
+    } catch (error: any) {
       console.error("Error fetching booking:", error);
-      return null;
+      return { success: false, message: error.message };
+    }
+  },
+
+  getBookings: async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('service_bookings')
+        .select('*, workers(*), profiles!service_bookings_customer_id_fkey(*)')
+        .eq('customer_id', userId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error: any) {
+      console.error("Error fetching bookings:", error);
+      return { success: false, message: error.message };
     }
   },
 
@@ -502,6 +535,36 @@ export const reviewAPI = {
       return { success: true, data };
     } catch (error: any) {
       console.error("Error fetching worker reviews:", error);
+      return { success: false, message: error.message };
+    }
+  },
+
+  getCustomerReviews: async (customerId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          *, 
+          service_bookings!reviews_booking_id_fkey(service_type, worker_id),
+          workers!reviews_worker_id_fkey(
+            *, 
+            profiles!workers_user_id_fkey(full_name)
+          )
+        `)
+        .eq('customer_id', customerId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Transform data to include worker_name
+      const transformedData = data?.map(review => ({
+        ...review,
+        worker_name: review.workers?.profiles?.full_name || 'Service Provider'
+      })) || [];
+      
+      return { success: true, data: transformedData };
+    } catch (error: any) {
+      console.error("Error fetching customer reviews:", error);
       return { success: false, message: error.message };
     }
   }

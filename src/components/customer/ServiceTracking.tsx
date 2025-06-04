@@ -10,6 +10,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { serviceAPI, workerAPI } from "@/services/supabaseAPI";
 import { Phone, MapPin, MessageCircle, Clock, Star, User, CheckCircle } from "lucide-react";
 
+type BookingStatus = "pending" | "completed" | "assigned" | "in_progress" | "cancelled";
+
 export default function ServiceTracking() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,7 +58,7 @@ export default function ServiceTracking() {
     }
   };
 
-  const updateBookingStatus = async (newStatus: string) => {
+  const updateBookingStatus = async (newStatus: BookingStatus) => {
     if (!bookingId) return;
 
     try {

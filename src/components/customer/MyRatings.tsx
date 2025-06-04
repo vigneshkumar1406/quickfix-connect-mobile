@@ -127,7 +127,7 @@ export default function MyRatings() {
                 )}
 
                 <div className="text-xs text-gray-500">
-                  <p>Booking ID: #{review.booking_id?.slice(-8) || 'N/A'}</p>
+                  <p>Booking ID: #{String(review.booking_id || 'N/A').slice(-8)}</p>
                 </div>
               </Card>
             ))}
