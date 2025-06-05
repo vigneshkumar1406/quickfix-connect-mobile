@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,16 +20,16 @@ export default function CustomerDashboard() {
   const [loading, setLoading] = useState(false);
 
   const services = [
-    { id: 1, name: "Plumbing", icon: Droplets, color: "text-blue-500", price: "₹149 onwards" },
-    { id: 2, name: "Electrical", icon: Zap, color: "text-yellow-500", price: "₹199 onwards" },
-    { id: 3, name: "Carpentry", icon: Hammer, color: "text-brown-500", price: "₹249 onwards" },
-    { id: 4, name: "Painting", icon: Brush, color: "text-purple-500", price: "₹299 onwards" },
-    { id: 5, name: "Home Cleaning", icon: Sparkles, color: "text-green-500", price: "₹199 onwards" },
-    { id: 6, name: "Appliance Repair", icon: Wrench, color: "text-red-500", price: "₹179 onwards" },
-    { id: 7, name: "Fridge Repair", icon: Refrigerator, color: "text-blue-600", price: "₹199 onwards" },
-    { id: 8, name: "Washing Machine", icon: Shirt, color: "text-cyan-500", price: "₹149 onwards" },
-    { id: 9, name: "Pest Control", icon: Bug, color: "text-orange-500", price: "₹399 onwards" },
-    { id: 10, name: "AC Service", icon: Snowflake, color: "text-blue-400", price: "₹199 onwards" }
+    { id: 1, name: "Plumbing", icon: Droplets, color: "text-blue-500", price: "₹149 onwards", route: "/customer/plumbing-estimation" },
+    { id: 2, name: "Electrical", icon: Zap, color: "text-yellow-500", price: "₹199 onwards", route: "/customer/electrical-estimation" },
+    { id: 3, name: "Carpentry", icon: Hammer, color: "text-brown-500", price: "₹249 onwards", route: "/customer/carpentry-estimation" },
+    { id: 4, name: "Painting", icon: Brush, color: "text-purple-500", price: "₹299 onwards", route: "/customer/painting-estimation" },
+    { id: 5, name: "Home Cleaning", icon: Sparkles, color: "text-green-500", price: "₹199 onwards", route: "/customer/cleaning-estimation" },
+    { id: 6, name: "Appliance Repair", icon: Wrench, color: "text-red-500", price: "₹179 onwards", route: "/customer/appliance-estimation" },
+    { id: 7, name: "Fridge Repair", icon: Refrigerator, color: "text-blue-600", price: "₹199 onwards", route: "/customer/fridge-estimation" },
+    { id: 8, name: "Washing Machine", icon: Shirt, color: "text-cyan-500", price: "₹149 onwards", route: "/customer/washing-estimation" },
+    { id: 9, name: "Pest Control", icon: Bug, color: "text-orange-500", price: "₹399 onwards", route: "/customer/pest-estimation" },
+    { id: 10, name: "AC Service", icon: Snowflake, color: "text-blue-400", price: "₹199 onwards", route: "/customer/ac-estimation" }
   ];
 
   useEffect(() => {
@@ -60,9 +59,15 @@ export default function CustomerDashboard() {
 
   const handleServiceSelect = (service: any) => {
     console.log("Service selected:", service);
-    navigate("/customer/book-service", { 
-      state: { selectedService: service.name }
-    });
+    
+    // Navigate to specific estimation page if available, otherwise use general booking
+    if (service.route) {
+      navigate(service.route);
+    } else {
+      navigate("/customer/book-service", { 
+        state: { selectedService: service.name }
+      });
+    }
   };
 
   const handleQuickAction = (action: string) => {

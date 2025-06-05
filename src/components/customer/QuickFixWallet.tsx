@@ -97,28 +97,36 @@ export default function QuickFixWallet() {
     // Implement payment gateway integration
   };
 
+  const handleUseCoinsForPayment = () => {
+    toast.success("QuickFix Coins selected as payment method!");
+    // Navigate back to payment selection or booking
+    navigate("/customer/book-service", { 
+      state: { paymentMethod: 'quickfix_coins', availableCoins: coins } 
+    });
+  };
+
   const handleUseForProducts = () => {
     toast.info("Redirecting to products section...");
-    // Navigate to products/marketplace section
     navigate("/customer/products");
   };
 
   const handleWithdraw = () => {
     toast.info("Withdrawal feature coming soon!");
-    // Implement withdrawal functionality
   };
 
   const copyReferralCode = () => {
-    navigator.clipboard.writeText(referralCode);
-    toast.success("Referral code copied!");
+    const referralLink = `https://quickfix.app/invite/${referralCode}`;
+    navigator.clipboard.writeText(referralLink);
+    toast.success("Referral link copied to clipboard!");
   };
 
   const shareReferralCode = () => {
+    const referralLink = `https://quickfix.app/invite/${referralCode}`;
     if (navigator.share) {
       navigator.share({
         title: 'Join QuickFix',
         text: `Use my referral code ${referralCode} and get 400 coins when you complete your first job!`,
-        url: window.location.origin
+        url: referralLink
       });
     } else {
       copyReferralCode();
@@ -131,6 +139,13 @@ export default function QuickFixWallet() {
       return;
     }
     
+    const referralLink = `https://quickfix.app/invite/${referralCode}`;
+    const message = `Hi! Join QuickFix using my referral link: ${referralLink} and get 400 coins when you complete your first job!`;
+    
+    // Send via WhatsApp
+    const whatsappUrl = `https://wa.me/${newReferralPhone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    
     const newReferral: Referral = {
       id: Date.now().toString(),
       name: "Pending User",
@@ -142,7 +157,7 @@ export default function QuickFixWallet() {
     
     setReferrals([...referrals, newReferral]);
     setNewReferralPhone("");
-    toast.success("Referral invitation sent!");
+    toast.success("Referral link sent via WhatsApp!");
   };
 
   const getStatusIcon = (status: string) => {
@@ -181,14 +196,18 @@ export default function QuickFixWallet() {
             <span className="text-sm ml-2 opacity-80">(₹{(coins / 10).toFixed(2)})</span>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={handleAddMoney} className="flex-1">
               <Plus className="w-4 h-4 mr-2" />
               Add Money
             </Button>
+            <Button variant="outline" size="sm" onClick={handleUseCoinsForPayment} className="flex-1 text-white border-white hover:bg-white hover:text-purple-600">
+              <Coins className="w-4 h-4 mr-2" />
+              Use Coins
+            </Button>
             <Button variant="outline" size="sm" onClick={handleUseForProducts} className="flex-1 text-white border-white hover:bg-white hover:text-purple-600">
               <ShoppingCart className="w-4 h-4 mr-2" />
-              Use for Products
+              Products
             </Button>
           </div>
         </div>
@@ -262,9 +281,13 @@ export default function QuickFixWallet() {
           <div className="space-y-4">
             {/* Referral Code Section */}
             <Card className="p-4">
-              <h3 className="font-semibold mb-3">Your Referral Code</h3>
+              <h3 className="font-semibold mb-3">Your Referral Link</h3>
               <div className="flex items-center gap-2 mb-3">
-                <Input value={referralCode} readOnly className="flex-1" />
+                <Input 
+                  value={`https://quickfix.app/invite/${referralCode}`} 
+                  readOnly 
+                  className="flex-1 text-xs" 
+                />
                 <Button size="sm" variant="outline" onClick={copyReferralCode}>
                   <Copy className="w-4 h-4" />
                 </Button>
@@ -272,15 +295,15 @@ export default function QuickFixWallet() {
                   <Share className="w-4 h-4" />
                 </Button>
               </div>
-              <p className="text-xs text-gray-600">Share this code with friends and earn 400 coins when they complete their first job!</p>
+              <p className="text-xs text-gray-600">Share this link with friends and earn 400 coins when they complete their first job!</p>
             </Card>
 
             {/* Send Referral */}
             <Card className="p-4">
-              <h3 className="font-semibold mb-3">Invite a Friend</h3>
+              <h3 className="font-semibold mb-3">Invite a Friend via WhatsApp</h3>
               <div className="flex gap-2">
                 <Input
-                  placeholder="Enter phone number"
+                  placeholder="Enter phone number with country code"
                   value={newReferralPhone}
                   onChange={(e) => setNewReferralPhone(e.target.value)}
                   className="flex-1"
