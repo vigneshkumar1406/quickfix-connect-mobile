@@ -149,11 +149,21 @@ export default function CustomerDashboard() {
   };
 
   const handleServiceClick = (service: any) => {
-    console.log("Service selected:", service);
+    console.log("Service selected:", service.name);
+    // Pass only serializable data
+    const serviceData = {
+      id: service.id,
+      name: service.name,
+      price: service.price,
+      rating: service.rating,
+      image: service.image,
+      color: service.color
+    };
+    
     navigate(service.route, {
       state: {
         selectedService: service.name,
-        serviceData: service
+        serviceData: serviceData
       }
     });
   };
