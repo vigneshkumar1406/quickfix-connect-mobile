@@ -20,16 +20,76 @@ export default function CustomerDashboard() {
   const [loading, setLoading] = useState(false);
 
   const services = [
-    { id: 1, name: "Plumbing", icon: Droplets, color: "text-blue-500", price: "₹149 onwards", route: "/customer/plumbing-estimation" },
-    { id: 2, name: "Electrical", icon: Zap, color: "text-yellow-500", price: "₹199 onwards", route: "/customer/electrical-estimation" },
-    { id: 3, name: "Carpentry", icon: Hammer, color: "text-brown-500", price: "₹249 onwards", route: "/customer/carpentry-estimation" },
-    { id: 4, name: "Painting", icon: Brush, color: "text-purple-500", price: "₹299 onwards", route: "/customer/painting-estimation" },
-    { id: 5, name: "Home Cleaning", icon: Sparkles, color: "text-green-500", price: "₹199 onwards", route: "/customer/cleaning-estimation" },
-    { id: 6, name: "Appliance Repair", icon: Wrench, color: "text-red-500", price: "₹179 onwards", route: "/customer/appliance-estimation" },
-    { id: 7, name: "Fridge Repair", icon: Refrigerator, color: "text-blue-600", price: "₹199 onwards", route: "/customer/fridge-estimation" },
-    { id: 8, name: "Washing Machine", icon: Shirt, color: "text-cyan-500", price: "₹149 onwards", route: "/customer/washing-estimation" },
-    { id: 9, name: "Pest Control", icon: Bug, color: "text-orange-500", price: "₹399 onwards", route: "/customer/pest-estimation" },
-    { id: 10, name: "AC Service", icon: Snowflake, color: "text-blue-400", price: "₹199 onwards", route: "/customer/ac-estimation" }
+    { 
+      name: "Home Cleaning", 
+      price: "₹199 onwards", 
+      rating: 4.8, 
+      image: "🏠",
+      route: "/customer/service-estimation"
+    },
+    { 
+      name: "Plumbing", 
+      price: "₹149 onwards", 
+      rating: 4.7, 
+      image: "🔧",
+      route: "/customer/plumbing-estimation"
+    },
+    { 
+      name: "Electrical", 
+      price: "₹199 onwards", 
+      rating: 4.9, 
+      image: "⚡",
+      route: "/customer/electrical-estimation"
+    },
+    { 
+      name: "Painting", 
+      price: "₹299 onwards", 
+      rating: 4.6, 
+      image: "🎨",
+      route: "/customer/service-estimation"
+    },
+    { 
+      name: "Carpentry", 
+      price: "₹249 onwards", 
+      rating: 4.8, 
+      image: "🔨",
+      route: "/customer/carpentry-estimation"
+    },
+    { 
+      name: "AC Service", 
+      price: "₹199 onwards", 
+      rating: 4.9, 
+      image: "❄️",
+      route: "/customer/service-estimation"
+    },
+    { 
+      name: "Appliance Repair", 
+      price: "₹179 onwards", 
+      rating: 4.7, 
+      image: "🔧",
+      route: "/customer/service-estimation"
+    },
+    { 
+      name: "Pest Control", 
+      price: "₹399 onwards", 
+      rating: 4.8, 
+      image: "🐛",
+      route: "/customer/service-estimation"
+    },
+    { 
+      name: "Fridge Repair", 
+      price: "₹199 onwards", 
+      rating: 4.8, 
+      image: "🧊",
+      route: "/customer/service-estimation"
+    },
+    { 
+      name: "Washing Machine", 
+      price: "₹149 onwards", 
+      rating: 4.7, 
+      image: "👕",
+      route: "/customer/service-estimation"
+    }
   ];
 
   useEffect(() => {
@@ -57,17 +117,14 @@ export default function CustomerDashboard() {
     }
   };
 
-  const handleServiceSelect = (service: any) => {
+  const handleServiceClick = (service: any) => {
     console.log("Service selected:", service);
-    
-    // Navigate to specific estimation page if available, otherwise use general booking
-    if (service.route) {
-      navigate(service.route);
-    } else {
-      navigate("/customer/book-service", { 
-        state: { selectedService: service.name }
-      });
-    }
+    navigate(service.route, {
+      state: {
+        selectedService: service.name,
+        serviceData: service
+      }
+    });
   };
 
   const handleQuickAction = (action: string) => {
@@ -213,7 +270,7 @@ export default function CustomerDashboard() {
               <Card 
                 key={service.id}
                 className="p-3 text-center cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleServiceSelect(service)}
+                onClick={() => handleServiceClick(service)}
               >
                 <div className="flex flex-col items-center">
                   <div className="bg-neutral-100 p-2 rounded-full mb-2">

@@ -35,6 +35,9 @@ import NativeDevicesPage from "./pages/customer/NativeDevicesPage";
 import MyRatingsPage from "./pages/customer/MyRatingsPage";
 import PaymentMethodsPage from "./pages/customer/PaymentMethodsPage";
 import BillingHistoryPage from "./pages/customer/BillingHistoryPage";
+import ElectricalServiceEstimationPage from "./pages/customer/ElectricalServiceEstimationPage";
+import CarpentryServiceEstimationPage from "./pages/customer/CarpentryServiceEstimationPage";
+import PlumbingServiceEstimationPage from "./pages/customer/PlumbingServiceEstimationPage";
 
 // Worker pages
 import WorkerDashboardPage from "./pages/worker/WorkerDashboardPage";
@@ -44,6 +47,7 @@ import WorkerPaymentPage from "./pages/worker/WorkerPaymentPage";
 import WorkerJobDetailsPage from "./pages/worker/WorkerJobDetailsPage";
 import WorkerEstimationCheckPage from "./pages/worker/WorkerEstimationCheckPage";
 import WorkerBillGenerationPage from "./pages/worker/WorkerBillGenerationPage";
+import AadhaarKYCVerificationPage from "./pages/worker/AadhaarKYCVerificationPage";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +75,9 @@ function App() {
                   <Route path="/customer/book-service" element={<BookServicePage />} />
                   <Route path="/customer/finding-service" element={<FindingServicePage />} />
                   <Route path="/customer/service-estimation" element={<ServiceEstimationPage />} />
+                  <Route path="/customer/electrical-estimation" element={<ElectricalServiceEstimationPage />} />
+                  <Route path="/customer/carpentry-estimation" element={<CarpentryServiceEstimationPage />} />
+                  <Route path="/customer/plumbing-estimation" element={<PlumbingServiceEstimationPage />} />
                   <Route path="/customer/tracking" element={<ServiceTrackingPage />} />
                   <Route path="/customer/service-tracking" element={<ServiceTrackingPage />} />
                   <Route path="/customer/review" element={<ReviewServicePage />} />
@@ -96,6 +103,7 @@ function App() {
                   <Route path="/worker/job-details" element={<WorkerJobDetailsPage />} />
                   <Route path="/worker/estimation-check" element={<WorkerEstimationCheckPage />} />
                   <Route path="/worker/bill-generation" element={<WorkerBillGenerationPage />} />
+                  <Route path="/worker/kyc-verification" element={<AadhaarKYCVerificationPage />} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
