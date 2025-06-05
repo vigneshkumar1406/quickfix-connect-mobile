@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { serviceAPI } from "@/services/supabaseAPI";
 import { 
   MapPin, Clock, User, Search, Bell, Wallet, Settings, 
   Shield, Phone, Wrench, Zap, Home, Car, Brush, Droplets, ChevronRight,
-  Hammer, Sparkles, Bug, Snowflake, Refrigerator, Shirt
+  Hammer, Sparkles, Bug, Snowflake, Refrigerator, Shirt, Calculator
 } from "lucide-react";
 
 export default function CustomerDashboard() {
@@ -244,6 +245,20 @@ export default function CustomerDashboard() {
             </span>
           </div>
         )}
+      </div>
+
+      {/* Get Estimation First Button */}
+      <div className="px-4 mb-6">
+        <Button 
+          onClick={() => navigate("/customer/estimation")}
+          className="w-full h-14 text-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white"
+        >
+          <Calculator className="w-6 h-6 mr-3" />
+          Get Estimation First
+        </Button>
+        <p className="text-center text-sm text-gray-600 mt-2">
+          Compare prices before booking
+        </p>
       </div>
 
       {/* Quick Actions */}

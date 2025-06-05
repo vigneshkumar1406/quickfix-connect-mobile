@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useNavigate, useLocation } from "react-router-dom";
 import { 
   ArrowLeft, Calculator, MapPin, Phone, User, 
-  Clock, Wrench, Send, CheckCircle, Star, Shield, Award
+  Clock, Wrench, Send, CheckCircle, Star, Shield, Award, Zap
 } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
@@ -107,6 +107,36 @@ export default function ServiceEstimation() {
     }, 2000);
   };
 
+  const handleBookNow = () => {
+    if (!estimationForm.service) {
+      toast.error("Please complete the estimation first");
+      return;
+    }
+
+    navigate("/customer/book-service", {
+      state: {
+        selectedService: estimationForm.service,
+        bookingType: "now",
+        estimationData: estimationForm
+      }
+    });
+  };
+
+  const handleBookLater = () => {
+    if (!estimationForm.service) {
+      toast.error("Please complete the estimation first");
+      return;
+    }
+
+    navigate("/customer/book-service", {
+      state: {
+        selectedService: estimationForm.service,
+        bookingType: "later",
+        estimationData: estimationForm
+      }
+    });
+  };
+
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'high': return 'border-red-500 bg-red-50 text-red-700';
@@ -127,9 +157,9 @@ export default function ServiceEstimation() {
           <div className="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
             <CheckCircle className="w-12 h-12 text-green-600" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Request Sent!</h2>
+          <h2 className="text-2xl font-bold mb-2">Estimation Ready!</h2>
           <p className="text-gray-600">
-            We'll connect you with verified professionals shortly
+            Your estimated cost is ₹{estimationForm.estimatedBudget}
           </p>
         </div>
         
@@ -153,28 +183,24 @@ export default function ServiceEstimation() {
         </Card>
         
         <div className="space-y-3">
-          <Button onClick={() => navigate("/customer/dashboard")} className="w-full">
-            Back to Dashboard
+          <Button onClick={handleBookNow} className="w-full h-12 text-lg">
+            <Zap className="w-5 h-5 mr-2" />
+            Book Now
           </Button>
           <Button 
             variant="outline"
-            onClick={() => {
-              setIsSubmitted(false);
-              setSelectedService("");
-              setEstimationForm({
-                service: "",
-                description: "",
-                customerName: "",
-                customerPhone: "",
-                address: "",
-                urgency: "medium",
-                preferredTime: "",
-                estimatedBudget: 500
-              });
-            }}
+            onClick={handleBookLater}
+            className="w-full h-12 text-lg"
+          >
+            <Clock className="w-5 h-5 mr-2" />
+            Book Later
+          </Button>
+          <Button 
+            variant="ghost"
+            onClick={() => navigate("/customer/dashboard")}
             className="w-full"
           >
-            Get Another Estimation
+            Back to Dashboard
           </Button>
         </div>
       </div>

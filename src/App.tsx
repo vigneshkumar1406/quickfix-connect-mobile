@@ -74,6 +74,7 @@ function App() {
                   <Route path="/customer/dashboard" element={<CustomerDashboardPage />} />
                   <Route path="/customer/book-service" element={<BookServicePage />} />
                   <Route path="/customer/finding-service" element={<FindingServicePage />} />
+                  <Route path="/customer/estimation" element={<ServiceEstimationPage />} />
                   <Route path="/customer/service-estimation" element={<ServiceEstimationPage />} />
                   <Route path="/customer/electrical-estimation" element={<ElectricalServiceEstimationPage />} />
                   <Route path="/customer/carpentry-estimation" element={<CarpentryServiceEstimationPage />} />

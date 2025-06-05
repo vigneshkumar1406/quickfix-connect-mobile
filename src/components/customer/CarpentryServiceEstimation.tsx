@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Hammer, Calculator, Plus, Minus } from "lucide-react";
+import { ArrowLeft, Hammer, Calculator, Plus, Minus, Clock, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
@@ -58,7 +58,7 @@ export default function CarpentryServiceEstimation() {
       .reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  const handleProceedToBooking = () => {
+  const handleBookNow = () => {
     const selectedItems = serviceItems.filter(item => item.selected);
     
     if (selectedItems.length === 0) {
@@ -75,11 +75,46 @@ export default function CarpentryServiceEstimation() {
         quantity: item.quantity,
         unitPrice: item.price,
         total: item.price * item.quantity
-      }))
+      })),
+      bookingType: "now"
     };
 
     navigate("/customer/book-service", { 
-      state: { estimationData } 
+      state: { 
+        estimationData,
+        selectedService: "Carpentry",
+        bookingType: "now"
+      } 
+    });
+  };
+
+  const handleBookLater = () => {
+    const selectedItems = serviceItems.filter(item => item.selected);
+    
+    if (selectedItems.length === 0) {
+      toast.error("Please select at least one service");
+      return;
+    }
+
+    const estimationData = {
+      serviceType: "Carpentry",
+      items: selectedItems,
+      grandTotal: calculateGrandTotal(),
+      breakdown: selectedItems.map(item => ({
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        total: item.price * item.quantity
+      })),
+      bookingType: "later"
+    };
+
+    navigate("/customer/book-service", { 
+      state: { 
+        estimationData,
+        selectedService: "Carpentry",
+        bookingType: "later"
+      } 
     });
   };
 
@@ -165,13 +200,26 @@ export default function CarpentryServiceEstimation() {
         </Card>
       )}
 
-      <Button 
-        onClick={handleProceedToBooking}
-        className="w-full h-12 text-lg"
-        disabled={!serviceItems.some(item => item.selected)}
-      >
-        Proceed to Booking
-      </Button>
+      <div className="space-y-3">
+        <Button 
+          onClick={handleBookNow}
+          className="w-full h-12 text-lg bg-primary hover:bg-primary/90"
+          disabled={!serviceItems.some(item => item.selected)}
+        >
+          <Zap className="w-5 h-5 mr-2" />
+          Book Now
+        </Button>
+        
+        <Button 
+          onClick={handleBookLater}
+          variant="outline"
+          className="w-full h-12 text-lg"
+          disabled={!serviceItems.some(item => item.selected)}
+        >
+          <Clock className="w-5 h-5 mr-2" />
+          Book Later
+        </Button>
+      </div>
 
       <Card className="p-4 mt-4 bg-yellow-50 border-yellow-200">
         <p className="text-sm text-yellow-800">
