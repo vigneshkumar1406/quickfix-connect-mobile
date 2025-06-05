@@ -21,74 +21,104 @@ export default function CustomerDashboard() {
 
   const services = [
     { 
+      id: '1',
       name: "Home Cleaning", 
       price: "₹199 onwards", 
       rating: 4.8, 
       image: "🏠",
-      route: "/customer/service-estimation"
+      route: "/customer/service-estimation",
+      icon: Home,
+      color: "text-blue-600"
     },
     { 
+      id: '2',
       name: "Plumbing", 
       price: "₹149 onwards", 
       rating: 4.7, 
       image: "🔧",
-      route: "/customer/plumbing-estimation"
+      route: "/customer/plumbing-estimation",
+      icon: Wrench,
+      color: "text-blue-600"
     },
     { 
+      id: '3',
       name: "Electrical", 
       price: "₹199 onwards", 
       rating: 4.9, 
       image: "⚡",
-      route: "/customer/electrical-estimation"
+      route: "/customer/electrical-estimation",
+      icon: Zap,
+      color: "text-yellow-600"
     },
     { 
+      id: '4',
       name: "Painting", 
       price: "₹299 onwards", 
       rating: 4.6, 
       image: "🎨",
-      route: "/customer/service-estimation"
+      route: "/customer/service-estimation",
+      icon: Brush,
+      color: "text-purple-600"
     },
     { 
+      id: '5',
       name: "Carpentry", 
       price: "₹249 onwards", 
       rating: 4.8, 
       image: "🔨",
-      route: "/customer/carpentry-estimation"
+      route: "/customer/carpentry-estimation",
+      icon: Hammer,
+      color: "text-orange-600"
     },
     { 
+      id: '6',
       name: "AC Service", 
       price: "₹199 onwards", 
       rating: 4.9, 
       image: "❄️",
-      route: "/customer/service-estimation"
+      route: "/customer/service-estimation",
+      icon: Snowflake,
+      color: "text-cyan-600"
     },
     { 
+      id: '7',
       name: "Appliance Repair", 
       price: "₹179 onwards", 
       rating: 4.7, 
       image: "🔧",
-      route: "/customer/service-estimation"
+      route: "/customer/service-estimation",
+      icon: Wrench,
+      color: "text-gray-600"
     },
     { 
+      id: '8',
       name: "Pest Control", 
       price: "₹399 onwards", 
       rating: 4.8, 
       image: "🐛",
-      route: "/customer/service-estimation"
+      route: "/customer/service-estimation",
+      icon: Bug,
+      color: "text-green-600"
     },
     { 
+      id: '9',
       name: "Fridge Repair", 
       price: "₹199 onwards", 
       rating: 4.8, 
       image: "🧊",
-      route: "/customer/service-estimation"
+      route: "/customer/service-estimation",
+      icon: Refrigerator,
+      color: "text-indigo-600"
     },
     { 
+      id: '10',
       name: "Washing Machine", 
       price: "₹149 onwards", 
       rating: 4.7, 
       image: "👕",
-      route: "/customer/service-estimation"
+      route: "/customer/service-estimation",
+      icon: Shirt,
+      color: "text-pink-600"
     }
   ];
 
