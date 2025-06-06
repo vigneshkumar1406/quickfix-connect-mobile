@@ -18,8 +18,8 @@ export default function FAQPage() {
       answer: "Simply select your service, choose your location, pick a time slot, and confirm your booking. A verified worker will be assigned to you within minutes."
     },
     {
-      question: "What are QuickFix Coins?",
-      answer: "QuickFix Coins are reward points you earn for using our platform. 10 coins = ₹1 and can be used to pay service charges. You earn coins through referrals, online payments, and milestone achievements."
+      question: "What are Fixsify Coins?",
+      answer: "Fixsify Coins are reward points you earn for using our platform. 10 coins = ₹1 and can be used to pay service charges. You earn coins through referrals, online payments, and milestone achievements."
     },
     {
       question: "How do I become a worker?",
@@ -39,7 +39,7 @@ export default function FAQPage() {
     },
     {
       question: "How do referrals work?",
-      answer: "Share your referral code with friends. When they complete their first service, you earn 400 QuickFix Coins as a reward."
+      answer: "Share your referral code with friends. When they complete their first service, you earn 400 Fixsify Coins as a reward."
     },
     {
       question: "Can I cancel a booking?",
@@ -47,7 +47,7 @@ export default function FAQPage() {
     },
     {
       question: "What languages are supported?",
-      answer: "QuickFix supports 6 languages: English, Tamil, Hindi, Telugu, Malayalam, and Kannada."
+      answer: "Fixsify supports 6 languages: English, Tamil, Hindi, Telugu, Malayalam, and Kannada."
     },
     {
       question: "How do I contact support?",
@@ -70,7 +70,7 @@ export default function FAQPage() {
           <HelpCircle className="w-6 h-6 mr-2" />
           <h1 className="text-2xl font-bold">Frequently Asked Questions</h1>
         </div>
-        <p className="opacity-90">Find answers to common questions about QuickFix</p>
+        <p className="opacity-90">Find answers to common questions about Fixsify</p>
       </div>
 
       <div className="space-y-4 mb-6">

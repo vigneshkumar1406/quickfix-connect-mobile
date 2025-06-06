@@ -31,7 +31,7 @@ export default function RoleSelector() {
 
   const handleRoleSelect = (role: string) => {
     // In a real app, you would store this in localStorage/context
-    localStorage.setItem("quickfix-role", role);
+    localStorage.setItem("fixsify-role", role);
     navigate("/verification");
   };
 
@@ -42,7 +42,7 @@ export default function RoleSelector() {
       </div>
       
       <h1 className="text-2xl font-bold mb-2 text-center">Choose your role</h1>
-      <p className="text-neutral-300 text-center mb-8">Select how you want to use QuickFix</p>
+      <p className="text-neutral-300 text-center mb-8">Select how you want to use Fixsify</p>
       
       <div className="grid grid-cols-1 gap-4">
         {roles.map((role) => (

@@ -46,7 +46,7 @@ const Index = () => {
               </Button>
 
               <Card className="p-6">
-                <h2 className="font-semibold mb-3">Why QuickFix?</h2>
+                <h2 className="font-semibold mb-3">Why Fixsify?</h2>
                 <ul className="space-y-2">
                   <li className="flex items-start">
                     <span className="text-primary mr-2">✓</span>
@@ -122,7 +122,7 @@ const Index = () => {
       </div>
 
       <footer className="p-6 text-center text-neutral-300 text-sm">
-        © 2025 QuickFix. All rights reserved.
+        © 2025 Fixsify. All rights reserved.
       </footer>
     </div>
   );

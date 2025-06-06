@@ -5,8 +5,8 @@ const RoleSelectionPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6">
       <div className="mb-10 text-center">
-        <h1 className="text-4xl font-bold mb-2 text-primary">QuickFix</h1>
-        <p className="text-neutral-300">Choose how you want to use QuickFix</p>
+        <h1 className="text-4xl font-bold mb-2 text-primary">Fixsify</h1>
+        <p className="text-neutral-300">Choose how you want to use Fixsify</p>
       </div>
       
       <RoleSelector />
