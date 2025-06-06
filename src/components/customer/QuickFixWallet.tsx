@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,7 +38,7 @@ export default function QuickFixWallet() {
   const [coins, setCoins] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
-  const [referralCode, setReferralCode] = useState("QFIX12345");
+  const [referralCode, setReferralCode] = useState("FIXSIFY12345");
   const [newReferralPhone, setNewReferralPhone] = useState("");
 
   // Mock data - replace with actual API calls
@@ -98,10 +99,10 @@ export default function QuickFixWallet() {
   };
 
   const handleUseCoinsForPayment = () => {
-    toast.success("QuickFix Coins selected as payment method!");
+    toast.success("Fixsify Coins selected as payment method!");
     // Navigate back to payment selection or booking
     navigate("/customer/book-service", { 
-      state: { paymentMethod: 'quickfix_coins', availableCoins: coins } 
+      state: { paymentMethod: 'fixsify_coins', availableCoins: coins } 
     });
   };
 
@@ -115,16 +116,16 @@ export default function QuickFixWallet() {
   };
 
   const copyReferralCode = () => {
-    const referralLink = `https://quickfix.app/invite/${referralCode}`;
+    const referralLink = `https://fixsify.app/invite/${referralCode}`;
     navigator.clipboard.writeText(referralLink);
     toast.success("Referral link copied to clipboard!");
   };
 
   const shareReferralCode = () => {
-    const referralLink = `https://quickfix.app/invite/${referralCode}`;
+    const referralLink = `https://fixsify.app/invite/${referralCode}`;
     if (navigator.share) {
       navigator.share({
-        title: 'Join QuickFix',
+        title: 'Join Fixsify',
         text: `Use my referral code ${referralCode} and get 400 coins when you complete your first job!`,
         url: referralLink
       });
@@ -139,8 +140,8 @@ export default function QuickFixWallet() {
       return;
     }
     
-    const referralLink = `https://quickfix.app/invite/${referralCode}`;
-    const message = `Hi! Join QuickFix using my referral link: ${referralLink} and get 400 coins when you complete your first job!`;
+    const referralLink = `https://fixsify.app/invite/${referralCode}`;
+    const message = `Hi! Join Fixsify using my referral link: ${referralLink} and get 400 coins when you complete your first job!`;
     
     // Send via WhatsApp
     const whatsappUrl = `https://wa.me/${newReferralPhone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
@@ -179,7 +180,7 @@ export default function QuickFixWallet() {
         <BackButton withLabel />
       </div>
       
-      <h1 className="text-2xl font-bold mb-6">QuickFix Wallet</h1>
+      <h1 className="text-2xl font-bold mb-6">Fixsify Wallet</h1>
       
       {/* Balance Card */}
       <Card className="p-6 mb-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
@@ -284,7 +285,7 @@ export default function QuickFixWallet() {
               <h3 className="font-semibold mb-3">Your Referral Link</h3>
               <div className="flex items-center gap-2 mb-3">
                 <Input 
-                  value={`https://quickfix.app/invite/${referralCode}`} 
+                  value={`https://fixsify.app/invite/${referralCode}`} 
                   readOnly 
                   className="flex-1 text-xs" 
                 />

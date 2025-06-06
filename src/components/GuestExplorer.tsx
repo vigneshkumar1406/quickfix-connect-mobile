@@ -35,7 +35,7 @@ export default function GuestExplorer() {
         <Card className="bg-white mt-6 p-4 rounded-lg text-foreground">
           <div className="flex items-center mb-3">
             <Coins className="w-5 h-5 text-yellow-500 mr-2" />
-            <h3 className="font-semibold">{t('quickfixCoins')} (Demo)</h3>
+            <h3 className="font-semibold">{t('fixsifyCoins')} (Demo)</h3>
           </div>
           
           <div className="flex justify-between items-center mb-4">

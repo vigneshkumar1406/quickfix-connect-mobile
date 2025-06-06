@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,9 +8,9 @@ import { toast } from "sonner";
 export default function EmergencySupport() {
   const navigate = useNavigate();
   const [isCallActive, setIsCallActive] = useState(false);
-  const handleEmergencyCall = () => {
+  const handleSupportCall = () => {
     setIsCallActive(true);
-    toast.success("Connecting to emergency support...");
+    toast.success("Connecting to support...");
 
     // Simulate call connection
     setTimeout(() => {
@@ -17,20 +18,20 @@ export default function EmergencySupport() {
       toast.info("Call ended");
     }, 5000);
   };
-  const emergencyContacts = [{
-    type: "Plumbing Emergency",
+  const supportContacts = [{
+    type: "Plumbing Support",
     phone: "+91 98765 43210",
     available: true
   }, {
-    type: "Electrical Emergency",
+    type: "Electrical Support",
     phone: "+91 98765 43211",
     available: true
   }, {
-    type: "General Emergency",
+    type: "General Support",
     phone: "+91 98765 43212",
     available: false
   }];
-  return <div className="min-h-screen bg-gradient-to-br from-red-50 to-white">
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
       <div className="max-w-md mx-auto px-4 py-4">
         <div className="flex items-center mb-6">
           <Button variant="ghost" onClick={() => navigate(-1)} className="mr-3">
@@ -39,13 +40,13 @@ export default function EmergencySupport() {
           <h1 className="text-xl font-bold text-blue-950">Customer Support</h1>
         </div>
 
-        {/* Main Emergency Call */}
-        <Card className="p-6 mb-6 border-red-200 bg-red-50">
+        {/* Main Support Call */}
+        <Card className="p-6 mb-6 border-blue-200 bg-blue-50">
           <div className="text-center">
-            <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-600" />
-            <h2 className="text-xl font-bold text-red-800 mb-2">24/7 Emergency</h2>
-            <p className="text-red-600 mb-6">
-              For urgent plumbing, electrical, or other emergency repairs
+            <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-blue-600" />
+            <h2 className="text-xl font-bold text-blue-800 mb-2">24/7 Support</h2>
+            <p className="text-blue-600 mb-6">
+              For urgent plumbing, electrical, or other support repairs
             </p>
             
             {isCallActive ? <div className="space-y-4">
@@ -56,17 +57,17 @@ export default function EmergencySupport() {
                 <Button variant="destructive" onClick={() => setIsCallActive(false)} className="w-full">
                   End Call
                 </Button>
-              </div> : <Button onClick={handleEmergencyCall} className="w-full bg-red-600 hover:bg-red-700 text-lg py-3">
+              </div> : <Button onClick={handleSupportCall} className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-3">
                 <Phone className="w-5 h-5 mr-2" />
-                Call Emergency: +91 99999 00000
+                Call Support: +91 99999 00000
               </Button>}
           </div>
         </Card>
 
-        {/* Service-Specific Emergency Numbers */}
+        {/* Service-Specific Support Numbers */}
         <div className="space-y-4 mb-6">
-          <h3 className="font-semibold text-gray-800">Service-Specific Emergency</h3>
-          {emergencyContacts.map((contact, index) => <Card key={index} className={`p-4 ${!contact.available ? 'opacity-50' : ''}`}>
+          <h3 className="font-semibold text-gray-800">Service-Specific Support</h3>
+          {supportContacts.map((contact, index) => <Card key={index} className={`p-4 ${!contact.available ? 'opacity-50' : ''}`}>
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">{contact.type}</h4>
@@ -105,7 +106,7 @@ export default function EmergencySupport() {
             <div>
               <h4 className="font-medium text-yellow-800">Important</h4>
               <p className="text-sm text-yellow-700">
-                Emergency services may have additional charges. 
+                Support services may have additional charges. 
                 Regular service hours: 8 AM - 8 PM
               </p>
             </div>
