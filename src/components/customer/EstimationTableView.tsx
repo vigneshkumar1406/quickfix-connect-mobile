@@ -8,6 +8,7 @@ import { Calculator, Plus, Minus, Clock, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ServiceItem {
   id: string;
@@ -24,6 +25,7 @@ interface EstimationTableViewProps {
 
 export default function EstimationTableView({ serviceType, items: initialItems }: EstimationTableViewProps) {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>(initialItems);
 
   const handleItemToggle = (itemId: string) => {
@@ -114,7 +116,7 @@ export default function EstimationTableView({ serviceType, items: initialItems }
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto pb-10 animate-fade-in">
+    <div className="w-full max-w-4xl mx-auto pb-10 animate-fade-in px-4">
       <div className="mb-4">
         <BackButton withLabel />
       </div>
@@ -124,91 +126,155 @@ export default function EstimationTableView({ serviceType, items: initialItems }
         <p className="text-gray-600">Select services and quantities for your estimate</p>
       </div>
 
-      {/* Table Header */}
-      <Card className="mb-4">
-        <div className="p-4">
-          <div className="grid grid-cols-7 gap-2 font-semibold text-sm text-gray-700 border-b pb-2">
-            <div className="text-center">Select</div>
-            <div className="text-center">S.No</div>
-            <div className="col-span-2">Work Name</div>
-            <div className="text-center">Price</div>
-            <div className="text-center">Quantity</div>
-            <div className="text-center">Total</div>
-          </div>
-          
-          {/* Table Rows */}
-          <div className="space-y-2 mt-4">
-            {serviceItems.map((item, index) => (
-              <div 
-                key={item.id} 
-                className={`grid grid-cols-7 gap-2 items-center py-3 border-b border-gray-100 transition-all ${
-                  item.selected ? 'bg-primary/5' : ''
-                }`}
-              >
-                {/* Select Checkbox */}
-                <div className="flex justify-center">
+      {isMobile ? (
+        // Mobile Card Layout
+        <div className="space-y-4 mb-6">
+          {serviceItems.map((item, index) => (
+            <Card 
+              key={item.id} 
+              className={`p-4 transition-all ${
+                item.selected ? 'bg-primary/5 border-primary' : ''
+              }`}
+            >
+              <div className="space-y-3">
+                {/* Header with checkbox and item name */}
+                <div className="flex items-start space-x-3">
                   <Checkbox
                     checked={item.selected}
                     onCheckedChange={() => handleItemToggle(item.id)}
+                    className="mt-1"
                   />
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <h3 className="font-medium text-sm">{item.name}</h3>
+                      <span className="text-xs text-gray-500">#{index + 1}</span>
+                    </div>
+                    <p className="text-lg font-semibold text-primary mt-1">₹{item.price}</p>
+                  </div>
                 </div>
-                
-                {/* S.No */}
-                <div className="text-center text-sm font-medium">
-                  {index + 1}
-                </div>
-                
-                {/* Work Name */}
-                <div className="col-span-2">
-                  <h3 className="font-medium text-sm">{item.name}</h3>
-                </div>
-                
-                {/* Price */}
-                <div className="text-center">
-                  <span className="font-semibold text-primary">₹{item.price}</span>
-                </div>
-                
-                {/* Quantity */}
-                <div className="flex items-center justify-center space-x-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                    disabled={item.quantity <= 1 || !item.selected}
-                    className="w-6 h-6 p-0"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </Button>
-                  <Input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 1)}
-                    disabled={!item.selected}
-                    className="w-12 h-6 text-center text-xs p-0"
-                    min="1"
-                  />
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                    disabled={!item.selected}
-                    className="w-6 h-6 p-0"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                </div>
-                
-                {/* Total */}
-                <div className="text-center">
-                  <span className="font-semibold text-primary">
-                    {item.selected ? `₹${item.price * item.quantity}` : '₹0'}
-                  </span>
+
+                {/* Quantity and Total */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-600">Qty:</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                      disabled={item.quantity <= 1 || !item.selected}
+                      className="w-8 h-8 p-0"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </Button>
+                    <Input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 1)}
+                      disabled={!item.selected}
+                      className="w-16 h-8 text-center text-sm p-0"
+                      min="1"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                      disabled={!item.selected}
+                      className="w-8 h-8 p-0"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-sm text-gray-600">Total:</span>
+                    <p className="font-semibold text-primary">
+                      {item.selected ? `₹${item.price * item.quantity}` : '₹0'}
+                    </p>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            </Card>
+          ))}
         </div>
-      </Card>
+      ) : (
+        // Desktop Table Layout
+        <Card className="mb-4">
+          <div className="p-4">
+            <div className="grid grid-cols-7 gap-2 font-semibold text-sm text-gray-700 border-b pb-2">
+              <div className="text-center">Select</div>
+              <div className="text-center">S.No</div>
+              <div className="col-span-2">Work Name</div>
+              <div className="text-center">Price</div>
+              <div className="text-center">Quantity</div>
+              <div className="text-center">Total</div>
+            </div>
+            
+            <div className="space-y-2 mt-4">
+              {serviceItems.map((item, index) => (
+                <div 
+                  key={item.id} 
+                  className={`grid grid-cols-7 gap-2 items-center py-3 border-b border-gray-100 transition-all ${
+                    item.selected ? 'bg-primary/5' : ''
+                  }`}
+                >
+                  <div className="flex justify-center">
+                    <Checkbox
+                      checked={item.selected}
+                      onCheckedChange={() => handleItemToggle(item.id)}
+                    />
+                  </div>
+                  
+                  <div className="text-center text-sm font-medium">
+                    {index + 1}
+                  </div>
+                  
+                  <div className="col-span-2">
+                    <h3 className="font-medium text-sm">{item.name}</h3>
+                  </div>
+                  
+                  <div className="text-center">
+                    <span className="font-semibold text-primary">₹{item.price}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-center space-x-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                      disabled={item.quantity <= 1 || !item.selected}
+                      className="w-6 h-6 p-0"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </Button>
+                    <Input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value) || 1)}
+                      disabled={!item.selected}
+                      className="w-12 h-6 text-center text-xs p-0"
+                      min="1"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                      disabled={!item.selected}
+                      className="w-6 h-6 p-0"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </Button>
+                  </div>
+                  
+                  <div className="text-center">
+                    <span className="font-semibold text-primary">
+                      {item.selected ? `₹${item.price * item.quantity}` : '₹0'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Grand Total */}
       {serviceItems.some(item => item.selected) && (
