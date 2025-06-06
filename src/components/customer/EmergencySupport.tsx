@@ -1,40 +1,42 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Phone, MessageCircle, AlertTriangle, Clock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
 export default function EmergencySupport() {
   const navigate = useNavigate();
   const [isCallActive, setIsCallActive] = useState(false);
-
   const handleEmergencyCall = () => {
     setIsCallActive(true);
     toast.success("Connecting to emergency support...");
-    
+
     // Simulate call connection
     setTimeout(() => {
       setIsCallActive(false);
       toast.info("Call ended");
     }, 5000);
   };
-
-  const emergencyContacts = [
-    { type: "Plumbing Emergency", phone: "+91 98765 43210", available: true },
-    { type: "Electrical Emergency", phone: "+91 98765 43211", available: true },
-    { type: "General Emergency", phone: "+91 98765 43212", available: false },
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white">
+  const emergencyContacts = [{
+    type: "Plumbing Emergency",
+    phone: "+91 98765 43210",
+    available: true
+  }, {
+    type: "Electrical Emergency",
+    phone: "+91 98765 43211",
+    available: true
+  }, {
+    type: "General Emergency",
+    phone: "+91 98765 43212",
+    available: false
+  }];
+  return <div className="min-h-screen bg-gradient-to-br from-red-50 to-white">
       <div className="max-w-md mx-auto px-4 py-4">
         <div className="flex items-center mb-6">
           <Button variant="ghost" onClick={() => navigate(-1)} className="mr-3">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-xl font-bold text-red-700">Emergency Support</h1>
+          <h1 className="text-xl font-bold text-blue-950">Customer Support</h1>
         </div>
 
         {/* Main Emergency Call */}
@@ -46,37 +48,25 @@ export default function EmergencySupport() {
               For urgent plumbing, electrical, or other emergency repairs
             </p>
             
-            {isCallActive ? (
-              <div className="space-y-4">
+            {isCallActive ? <div className="space-y-4">
                 <div className="flex items-center justify-center text-green-600">
                   <Phone className="w-5 h-5 mr-2 animate-pulse" />
                   <span>Connecting...</span>
                 </div>
-                <Button 
-                  variant="destructive" 
-                  onClick={() => setIsCallActive(false)}
-                  className="w-full"
-                >
+                <Button variant="destructive" onClick={() => setIsCallActive(false)} className="w-full">
                   End Call
                 </Button>
-              </div>
-            ) : (
-              <Button 
-                onClick={handleEmergencyCall}
-                className="w-full bg-red-600 hover:bg-red-700 text-lg py-3"
-              >
+              </div> : <Button onClick={handleEmergencyCall} className="w-full bg-red-600 hover:bg-red-700 text-lg py-3">
                 <Phone className="w-5 h-5 mr-2" />
                 Call Emergency: +91 99999 00000
-              </Button>
-            )}
+              </Button>}
           </div>
         </Card>
 
         {/* Service-Specific Emergency Numbers */}
         <div className="space-y-4 mb-6">
           <h3 className="font-semibold text-gray-800">Service-Specific Emergency</h3>
-          {emergencyContacts.map((contact, index) => (
-            <Card key={index} className={`p-4 ${!contact.available ? 'opacity-50' : ''}`}>
+          {emergencyContacts.map((contact, index) => <Card key={index} className={`p-4 ${!contact.available ? 'opacity-50' : ''}`}>
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-medium">{contact.type}</h4>
@@ -88,17 +78,11 @@ export default function EmergencySupport() {
                     </span>
                   </div>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  disabled={!contact.available}
-                  onClick={() => toast.success(`Calling ${contact.type}...`)}
-                >
+                <Button variant="outline" size="sm" disabled={!contact.available} onClick={() => toast.success(`Calling ${contact.type}...`)}>
                   <Phone className="w-4 h-4" />
                 </Button>
               </div>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Chat Support */}
@@ -108,10 +92,7 @@ export default function EmergencySupport() {
               <h4 className="font-medium">Chat with Support</h4>
               <p className="text-sm text-gray-600">Get help via text chat</p>
             </div>
-            <Button 
-              variant="outline"
-              onClick={() => toast.info("Opening chat support...")}
-            >
+            <Button variant="outline" onClick={() => toast.info("Opening chat support...")}>
               <MessageCircle className="w-4 h-4" />
             </Button>
           </div>
@@ -131,6 +112,5 @@ export default function EmergencySupport() {
           </div>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 }
