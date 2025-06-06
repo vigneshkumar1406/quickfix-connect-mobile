@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -60,24 +59,27 @@ export default function ServiceEstimation() {
   }, [location.state]);
 
   const services = [
-    { name: "Home Cleaning", price: "₹199 onwards", rating: 4.8, image: "🏠" },
-    { name: "Plumbing", price: "₹149 onwards", rating: 4.7, image: "🔧" },
-    { name: "Electrical", price: "₹199 onwards", rating: 4.9, image: "⚡" },
-    { name: "Painting", price: "₹299 onwards", rating: 4.6, image: "🎨" },
-    { name: "Carpentry", price: "₹249 onwards", rating: 4.8, image: "🔨" },
-    { name: "AC Service", price: "₹199 onwards", rating: 4.9, image: "❄️" },
-    { name: "Appliance Repair", price: "₹179 onwards", rating: 4.7, image: "🔧" },
-    { name: "Pest Control", price: "₹399 onwards", rating: 4.8, image: "🐛" },
-    { name: "Fridge Repair", price: "₹199 onwards", rating: 4.8, image: "🧊" },
-    { name: "Washing Machine", price: "₹149 onwards", rating: 4.7, image: "👕" }
+    { name: "Home Cleaning", price: "₹199 onwards", rating: 4.8, image: "🏠", route: "/customer/service-estimation" },
+    { name: "Plumbing", price: "₹149 onwards", rating: 4.7, image: "🔧", route: "/customer/plumbing-estimation" },
+    { name: "Electrical", price: "₹199 onwards", rating: 4.9, image: "⚡", route: "/customer/electrical-estimation" },
+    { name: "Painting", price: "₹299 onwards", rating: 4.6, image: "🎨", route: "/customer/service-estimation" },
+    { name: "Carpentry", price: "₹249 onwards", rating: 4.8, image: "🔨", route: "/customer/carpentry-estimation" },
+    { name: "AC Service", price: "₹199 onwards", rating: 4.9, image: "❄️", route: "/customer/service-estimation" },
+    { name: "Appliance Repair", price: "₹179 onwards", rating: 4.7, image: "🔧", route: "/customer/service-estimation" },
+    { name: "Pest Control", price: "₹399 onwards", rating: 4.8, image: "🐛", route: "/customer/service-estimation" },
+    { name: "Fridge Repair", price: "₹199 onwards", rating: 4.8, image: "🧊", route: "/customer/service-estimation" },
+    { name: "Washing Machine", price: "₹149 onwards", rating: 4.7, image: "👕", route: "/customer/service-estimation" }
   ];
 
   const handleServiceSelect = (service: any) => {
-    setSelectedService(service.name);
-    setEstimationForm(prev => ({
-      ...prev,
-      service: service.name
-    }));
+    console.log("Service selected:", service.name);
+    // Navigate to specific estimation page based on service
+    navigate(service.route, {
+      state: {
+        selectedService: service.name,
+        serviceData: service
+      }
+    });
   };
 
   const handleInputChange = (field: keyof EstimationForm, value: any) => {

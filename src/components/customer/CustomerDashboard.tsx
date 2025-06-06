@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,7 @@ export default function CustomerDashboard() {
       price: "₹199 onwards", 
       rating: 4.8, 
       image: "🏠",
-      route: "/customer/service-estimation",
+      route: "/customer/book-service",
       icon: Home,
       color: "text-blue-600"
     },
@@ -37,7 +36,7 @@ export default function CustomerDashboard() {
       price: "₹149 onwards", 
       rating: 4.7, 
       image: "🔧",
-      route: "/customer/plumbing-estimation",
+      route: "/customer/book-service",
       icon: Wrench,
       color: "text-blue-600"
     },
@@ -47,7 +46,7 @@ export default function CustomerDashboard() {
       price: "₹199 onwards", 
       rating: 4.9, 
       image: "⚡",
-      route: "/customer/electrical-estimation",
+      route: "/customer/book-service",
       icon: Zap,
       color: "text-yellow-600"
     },
@@ -57,7 +56,7 @@ export default function CustomerDashboard() {
       price: "₹299 onwards", 
       rating: 4.6, 
       image: "🎨",
-      route: "/customer/service-estimation",
+      route: "/customer/book-service",
       icon: Brush,
       color: "text-purple-600"
     },
@@ -67,7 +66,7 @@ export default function CustomerDashboard() {
       price: "₹249 onwards", 
       rating: 4.8, 
       image: "🔨",
-      route: "/customer/carpentry-estimation",
+      route: "/customer/book-service",
       icon: Hammer,
       color: "text-orange-600"
     },
@@ -77,7 +76,7 @@ export default function CustomerDashboard() {
       price: "₹199 onwards", 
       rating: 4.9, 
       image: "❄️",
-      route: "/customer/service-estimation",
+      route: "/customer/book-service",
       icon: Snowflake,
       color: "text-cyan-600"
     },
@@ -87,7 +86,7 @@ export default function CustomerDashboard() {
       price: "₹179 onwards", 
       rating: 4.7, 
       image: "🔧",
-      route: "/customer/service-estimation",
+      route: "/customer/book-service",
       icon: Wrench,
       color: "text-gray-600"
     },
@@ -97,7 +96,7 @@ export default function CustomerDashboard() {
       price: "₹399 onwards", 
       rating: 4.8, 
       image: "🐛",
-      route: "/customer/service-estimation",
+      route: "/customer/book-service",
       icon: Bug,
       color: "text-green-600"
     },
@@ -107,7 +106,7 @@ export default function CustomerDashboard() {
       price: "₹199 onwards", 
       rating: 4.8, 
       image: "🧊",
-      route: "/customer/service-estimation",
+      route: "/customer/book-service",
       icon: Refrigerator,
       color: "text-indigo-600"
     },
@@ -117,7 +116,7 @@ export default function CustomerDashboard() {
       price: "₹149 onwards", 
       rating: 4.7, 
       image: "👕",
-      route: "/customer/service-estimation",
+      route: "/customer/book-service",
       icon: Shirt,
       color: "text-pink-600"
     }
