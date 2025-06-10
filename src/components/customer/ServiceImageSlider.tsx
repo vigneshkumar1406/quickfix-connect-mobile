@@ -1,108 +1,134 @@
 
 import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface ServiceImage {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string;
+  is_featured: boolean;
+}
 
 interface ServiceImageSliderProps {
-  images: string[];
-  serviceName: string;
+  serviceType: string;
   className?: string;
 }
 
-export default function ServiceImageSlider({ images, serviceName, className = "" }: ServiceImageSliderProps) {
+export default function ServiceImageSlider({ serviceType, className = "" }: ServiceImageSliderProps) {
+  const [images, setImages] = useState<ServiceImage[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (images.length <= 1 || isHovered) return;
+    fetchServiceImages();
+  }, [serviceType]);
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => 
-        prevIndex === images.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 4000); // Slower rotation to reduce blinking
+  const fetchServiceImages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('service_galleries')
+        .select('*')
+        .eq('service_type', serviceType)
+        .order('display_order', { ascending: true });
 
-    return () => clearInterval(interval);
-  }, [images.length, isHovered]);
-
-  const goToPrevious = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex(currentIndex === 0 ? images.length - 1 : currentIndex - 1);
+      if (error) throw error;
+      
+      setImages(data || []);
+    } catch (error) {
+      console.error('Error fetching service images:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const goToNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex(currentIndex === images.length - 1 ? 0 : currentIndex + 1);
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
   };
 
-  const goToSlide = (index: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex(index);
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  if (images.length === 0) {
+  if (loading) {
     return (
-      <div className={`bg-gray-200 flex items-center justify-center ${className || "aspect-square"}`}>
-        <span className="text-gray-500 text-xs">{serviceName}</span>
-      </div>
+      <Card className={`p-4 ${className}`}>
+        <div className="animate-pulse">
+          <div className="bg-gray-200 rounded-lg h-48 mb-3"></div>
+          <div className="bg-gray-200 rounded h-4 mb-2"></div>
+          <div className="bg-gray-200 rounded h-3"></div>
+        </div>
+      </Card>
     );
   }
 
+  if (images.length === 0) {
+    return null;
+  }
+
+  const currentImage = images[currentIndex];
+
   return (
-    <div 
-      className={`relative overflow-hidden bg-gray-100 group ${className || "aspect-square"}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Main Image */}
-      <img
-        src={images[currentIndex]}
-        alt={`${serviceName} ${currentIndex + 1}`}
-        className="w-full h-full object-cover transition-opacity duration-500 ease-in-out"
-        onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.src = "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=300";
-        }}
-        loading="lazy"
-      />
+    <Card className={`overflow-hidden ${className}`}>
+      <div className="relative">
+        <img
+          src={currentImage.image_url}
+          alt={currentImage.title}
+          className="w-full h-48 sm:h-56 object-cover"
+        />
+        
+        {images.length > 1 && (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </>
+        )}
 
-      {/* Navigation Arrows - Only show if multiple images and on hover */}
-      {images.length > 1 && (
-        <>
-          <button
-            onClick={goToPrevious}
-            className="absolute left-1 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-black/70"
-            aria-label="Previous image"
-          >
-            <ChevronLeft className="w-3 h-3" />
-          </button>
+        {currentImage.is_featured && (
+          <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 rounded-full text-xs font-medium">
+            Featured
+          </div>
+        )}
 
-          <button
-            onClick={goToNext}
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-black/70"
-            aria-label="Next image"
-          >
-            <ChevronRight className="w-3 h-3" />
-          </button>
-        </>
-      )}
+        {images.length > 1 && (
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1">
+            {images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`w-2 h-2 rounded-full ${
+                  index === currentIndex ? 'bg-white' : 'bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
-      {/* Dots Indicator - Only show if multiple images and on hover */}
-      {images.length > 1 && (
-        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          {images.map((_, index) => (
-            <button
-              key={index}
-              onClick={(e) => goToSlide(index, e)}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
-                index === currentIndex 
-                  ? "bg-white scale-110" 
-                  : "bg-white/60 hover:bg-white/80"
-              }`}
-              aria-label={`Go to image ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+      <div className="p-4">
+        <h3 className="font-semibold text-sm mb-1">{currentImage.title}</h3>
+        {currentImage.description && (
+          <p className="text-xs text-gray-600">{currentImage.description}</p>
+        )}
+      </div>
+    </Card>
   );
 }

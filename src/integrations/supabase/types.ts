@@ -271,6 +271,39 @@ export type Database = {
           },
         ]
       }
+      service_galleries: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          is_featured: boolean | null
+          service_type: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          is_featured?: boolean | null
+          service_type: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          is_featured?: boolean | null
+          service_type?: string
+          title?: string
+        }
+        Relationships: []
+      }
       user_locations: {
         Row: {
           address: string | null
@@ -393,6 +426,53 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      worker_portfolios: {
+        Row: {
+          completion_date: string | null
+          created_at: string
+          customer_rating: number | null
+          description: string | null
+          id: string
+          image_url: string | null
+          service_type: string
+          title: string
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          completion_date?: string | null
+          created_at?: string
+          customer_rating?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          service_type: string
+          title: string
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          completion_date?: string | null
+          created_at?: string
+          customer_rating?: number | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          service_type?: string
+          title?: string
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_portfolios_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
             referencedColumns: ["id"]
           },
         ]

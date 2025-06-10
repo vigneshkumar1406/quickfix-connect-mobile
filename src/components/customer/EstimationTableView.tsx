@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BackButton from "../BackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
+import ServiceImageSlider from "./ServiceImageSlider";
 
 interface ServiceItem {
   id: string;
@@ -124,6 +124,11 @@ export default function EstimationTableView({ serviceType, items: initialItems }
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">{serviceType} Services</h1>
         <p className="text-gray-600">Select services and quantities for your estimate</p>
+      </div>
+
+      {/* Service Image Gallery */}
+      <div className="mb-6">
+        <ServiceImageSlider serviceType={serviceType} className="w-full" />
       </div>
 
       {isMobile ? (

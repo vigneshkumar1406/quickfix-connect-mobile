@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { Database } from "@/integrations/supabase/types";
@@ -20,6 +19,9 @@ type UserLocation = Database['public']['Tables']['user_locations']['Row'];
 type UserLocationInsert = Database['public']['Tables']['user_locations']['Insert'];
 
 type NotificationInsert = Database['public']['Tables']['notifications']['Insert'];
+
+type ServiceGallery = Database['public']['Tables']['service_galleries']['Row'];
+type WorkerPortfolio = Database['public']['Tables']['worker_portfolios']['Row'];
 
 // Authentication API
 export const authAPI = {
@@ -570,6 +572,117 @@ export const reviewAPI = {
   }
 };
 
+// Service Gallery API
+export const serviceGalleryAPI = {
+  getServiceImages: async (serviceType: string): Promise<ServiceGallery[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('service_galleries')
+        .select('*')
+        .eq('service_type', serviceType)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching service images:', error);
+      return [];
+    }
+  },
+
+  getAllServiceImages: async (): Promise<ServiceGallery[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('service_galleries')
+        .select('*')
+        .order('service_type', { ascending: true })
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching all service images:', error);
+      return [];
+    }
+  },
+
+  getFeaturedImages: async (): Promise<ServiceGallery[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('service_galleries')
+        .select('*')
+        .eq('is_featured', true)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching featured images:', error);
+      return [];
+    }
+  }
+};
+
+// Worker Portfolio API
+export const portfolioAPI = {
+  getWorkerPortfolios: async (workerId: string): Promise<WorkerPortfolio[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('worker_portfolios')
+        .select('*')
+        .eq('worker_id', workerId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching worker portfolios:', error);
+      return [];
+    }
+  },
+
+  getPortfoliosByServiceType: async (serviceType: string): Promise<WorkerPortfolio[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('worker_portfolios')
+        .select(`
+          *,
+          workers!inner(
+            id,
+            rating,
+            total_jobs,
+            profiles!inner(full_name)
+          )
+        `)
+        .eq('service_type', serviceType)
+        .order('customer_rating', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error('Error fetching portfolios by service type:', error);
+      return [];
+    }
+  },
+
+  createPortfolio: async (portfolio: Omit<WorkerPortfolio, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      const { data, error } = await supabase
+        .from('worker_portfolios')
+        .insert(portfolio)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error: any) {
+      console.error('Error creating portfolio:', error);
+      return { success: false, message: error.message };
+    }
+  }
+};
+
 // Service Categories API - Using fallback data until types are updated
 export const serviceCategoryAPI = {
   getCategories: async () => {
@@ -602,4 +715,4 @@ export const serviceCategoryAPI = {
 };
 
 // Export types for use in other files
-export type { Profile, Worker, ServiceBooking, UserLocation };
+export type { Profile, Worker, ServiceBooking, UserLocation, ServiceGallery, WorkerPortfolio };
