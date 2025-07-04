@@ -9,6 +9,7 @@ import BackButton from "../BackButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { serviceAPI, workerAPI } from "@/services/supabaseAPI";
 import { Phone, MapPin, MessageCircle, Clock, Star, User, CheckCircle } from "lucide-react";
+import LocationTracker from "./LocationTracker";
 
 type BookingStatus = "pending" | "completed" | "assigned" | "in_progress" | "cancelled";
 
@@ -257,13 +258,26 @@ export default function ServiceTracking() {
                 Chat
               </Button>
             </div>
-            
-            <div className="flex items-center">
-              <MapPin className="w-5 h-5 text-neutral-400 mr-2" />
-              <span>Track Location</span>
-            </div>
           </div>
         </Card>
+      )}
+      
+      {/* Real-time Location Tracking */}
+      {worker && (booking.status === 'assigned' || booking.status === 'in_progress') && (
+        <div className="mb-6">
+          <LocationTracker
+            bookingId={booking.id}
+            workerId={worker.id}
+            customerLocation={
+              booking.latitude && booking.longitude
+                ? { lat: booking.latitude, lng: booking.longitude }
+                : undefined
+            }
+            onLocationUpdate={(location) => {
+              console.log('Worker location updated:', location);
+            }}
+          />
+        </div>
       )}
       
       {/* Action Buttons */}

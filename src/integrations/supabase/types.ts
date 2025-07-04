@@ -9,6 +9,63 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      location_tracking: {
+        Row: {
+          accuracy: number | null
+          booking_id: string
+          created_at: string
+          heading: number | null
+          id: string
+          is_active: boolean | null
+          latitude: number
+          longitude: number
+          speed: number | null
+          timestamp: string
+          worker_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          booking_id: string
+          created_at?: string
+          heading?: number | null
+          id?: string
+          is_active?: boolean | null
+          latitude: number
+          longitude: number
+          speed?: number | null
+          timestamp?: string
+          worker_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          booking_id?: string
+          created_at?: string
+          heading?: number | null
+          id?: string
+          is_active?: boolean | null
+          latitude?: number
+          longitude?: number
+          speed?: number | null
+          timestamp?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_tracking_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "service_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "location_tracking_worker_id_fkey"
+            columns: ["worker_id"]
+            isOneToOne: false
+            referencedRelation: "workers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -211,7 +268,10 @@ export type Database = {
           scheduled_time: string | null
           service_type: string
           status: Database["public"]["Enums"]["service_status"] | null
+          tracking_enabled: boolean | null
           updated_at: string
+          worker_distance: number | null
+          worker_eta: string | null
           worker_id: string | null
         }
         Insert: {
@@ -231,7 +291,10 @@ export type Database = {
           scheduled_time?: string | null
           service_type: string
           status?: Database["public"]["Enums"]["service_status"] | null
+          tracking_enabled?: boolean | null
           updated_at?: string
+          worker_distance?: number | null
+          worker_eta?: string | null
           worker_id?: string | null
         }
         Update: {
@@ -251,7 +314,10 @@ export type Database = {
           scheduled_time?: string | null
           service_type?: string
           status?: Database["public"]["Enums"]["service_status"] | null
+          tracking_enabled?: boolean | null
           updated_at?: string
+          worker_distance?: number | null
+          worker_eta?: string | null
           worker_id?: string | null
         }
         Relationships: [
@@ -541,7 +607,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_distance: {
+        Args: { lat1: number; lon1: number; lat2: number; lon2: number }
+        Returns: number
+      }
     }
     Enums: {
       notification_type:

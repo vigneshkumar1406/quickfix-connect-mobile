@@ -9,12 +9,18 @@ import { Phone, MapPin, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import LocationSharing from "./LocationSharing";
 
 export default function WorkerJobDetails() {
   const navigate = useNavigate();
   const [jobCompleted, setJobCompleted] = useState(false);
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
+  
+  // Mock data - in real app, this would come from props or API
+  const bookingId = "sample-booking-id";
+  const workerId = "sample-worker-id";
+  const isJobActive = true;
   
   const handleCompleteJob = () => {
     setJobCompleted(true);
@@ -95,6 +101,14 @@ export default function WorkerJobDetails() {
               </div>
             </div>
           </Card>
+          
+          <div className="mb-6">
+            <LocationSharing
+              bookingId={bookingId}
+              workerId={workerId}
+              isJobActive={isJobActive}
+            />
+          </div>
           
           <div className="h-48 bg-neutral-100 mb-6 rounded-lg flex items-center justify-center">
             <p className="text-neutral-300">Map View</p>
