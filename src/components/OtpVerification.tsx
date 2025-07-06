@@ -14,7 +14,7 @@ export default function OtpVerification() {
   const navigate = useNavigate();
   const { sendOTP, verifyOTP } = useAuth();
   
-  const userRole = localStorage.getItem("quickfix-role") || "customer";
+  const userRole = localStorage.getItem("fixsify-role") || "customer";
 
   const handleSendOtp = async () => {
     if (phone.length < 10) {
