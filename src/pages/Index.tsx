@@ -97,6 +97,16 @@ const Index = () => {
                   Already have an account? Log in
                 </Button>
               </div>
+
+              <div className="text-center pt-4 border-t">
+                <Button 
+                  variant="link" 
+                  onClick={() => navigate("/admin/login")}
+                  className="text-xs text-muted-foreground"
+                >
+                  Admin Portal
+                </Button>
+              </div>
             </div>
           </>
         )}

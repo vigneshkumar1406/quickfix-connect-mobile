@@ -49,6 +49,11 @@ import WorkerEstimationCheckPage from "./pages/worker/WorkerEstimationCheckPage"
 import WorkerBillGenerationPage from "./pages/worker/WorkerBillGenerationPage";
 import AadhaarKYCVerificationPage from "./pages/worker/AadhaarKYCVerificationPage";
 
+// Admin pages
+import AdminLoginPage from "./pages/admin/AdminLoginPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import CallCenterDashboardPage from "./pages/callcenter/CallCenterDashboardPage";
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -105,6 +110,11 @@ function App() {
                   <Route path="/worker/estimation-check" element={<WorkerEstimationCheckPage />} />
                   <Route path="/worker/bill-generation" element={<WorkerBillGenerationPage />} />
                   <Route path="/worker/kyc-verification" element={<AadhaarKYCVerificationPage />} />
+                  
+                  {/* Admin routes */}
+                  <Route path="/admin/login" element={<AdminLoginPage />} />
+                  <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+                  <Route path="/call-center/dashboard" element={<CallCenterDashboardPage />} />
                   
                   <Route path="*" element={<NotFound />} />
                 </Routes>
