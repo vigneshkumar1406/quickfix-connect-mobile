@@ -271,7 +271,7 @@ export default function CustomerDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 gap-4 mb-6 px-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-6 px-4">
         <Card 
           className="p-4 cursor-pointer hover:shadow-md transition-shadow"
           onClick={() => handleQuickAction("emergency")}
