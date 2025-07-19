@@ -39,30 +39,35 @@ const OlaMap = ({
   const mapInstanceRef = useRef<any>(null);
 
   const loadOlaMaps = () => {
+    console.log("Starting to load Ola Maps...");
+    
     if (window.olaMaps) {
+      console.log("Ola Maps already loaded, initializing...");
       initializeMap();
       return;
     }
 
-    // Ola Maps credentials
-    const apiKey = "1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S";
-    const projectId = "898e2a02-e295-4bfa-aa47-9cea36f37d3b";
-    
-    console.log("Loading Ola Maps...");
+    // Try a simpler approach first - use Mapbox GL JS with Ola Maps tiles
+    console.log("Loading Mapbox GL JS for Ola Maps tiles...");
     const script = document.createElement("script");
-    script.src = `https://apis.olamaps.io/api/maps/sdk.js?api_key=${apiKey}&project_id=${projectId}&callback=initOlaMap`;
+    script.src = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js";
     script.async = true;
     script.defer = true;
 
-    window.initOlaMap = () => {
-      console.log("Ola Maps script loaded successfully");
-      window.olaMaps = (window as any).OlaMaps;
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css";
+    document.head.appendChild(css);
+
+    script.onload = () => {
+      console.log("Mapbox GL JS loaded successfully");
+      window.olaMaps = (window as any).mapboxgl;
       initializeMap();
     };
 
     script.onerror = () => {
-      console.error("Failed to load Ola Maps API");
-      setError("Failed to load Ola Maps. Please check your internet connection.");
+      console.error("Failed to load Mapbox GL JS");
+      setError("Failed to load map library. Please check your internet connection.");
     };
 
     document.head.appendChild(script);
@@ -114,27 +119,50 @@ const OlaMap = ({
         }
       }
 
-      const mapOptions = {
-        center: [centerLocation.lng, centerLocation.lat], // Ola Maps uses [lng, lat] format
-        zoom: 15,
+      // Use Mapbox GL with Ola Maps tiles
+      console.log("Creating map with center:", centerLocation);
+      
+      const mapInstance = new window.olaMaps.Map({
         container: mapRef.current,
-        style: 'https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json'
-      };
+        style: {
+          version: 8,
+          sources: {
+            'ola-tiles': {
+              type: 'raster',
+              tiles: [
+                `https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/{z}/{x}/{y}.png?api_key=1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S`
+              ],
+              tileSize: 256
+            }
+          },
+          layers: [
+            {
+              id: 'ola-layer',
+              type: 'raster',
+              source: 'ola-tiles'
+            }
+          ]
+        },
+        center: [centerLocation.lng, centerLocation.lat],
+        zoom: 15
+      });
 
-      const mapInstance = new window.olaMaps.Map(mapOptions);
       mapInstanceRef.current = mapInstance;
       setMap(mapInstance);
 
-      // Wait for map to load
       mapInstance.on('load', () => {
+        console.log("Map loaded successfully");
+        
         // Add marker
         const marker = new window.olaMaps.Marker({
-          lngLat: [centerLocation.lng, centerLocation.lat],
           draggable: true
-        }).addTo(mapInstance);
+        })
+        .setLngLat([centerLocation.lng, centerLocation.lat])
+        .addTo(mapInstance);
 
-        const handleLocationChange = async (lngLat: [number, number]) => {
-          const [lng, lat] = lngLat;
+        const handleLocationChange = async (lngLat: { lng: number; lat: number }) => {
+          const { lng, lat } = lngLat;
+          console.log("Location changed to:", lat, lng);
           const address = await reverseGeocode(lat, lng);
           const location: Location = { lat, lng, address };
           
@@ -148,13 +176,13 @@ const OlaMap = ({
 
         marker.on('dragend', () => {
           const lngLat = marker.getLngLat();
-          handleLocationChange([lngLat.lng, lngLat.lat]);
+          handleLocationChange(lngLat);
         });
 
         mapInstance.on('click', (e: any) => {
           const lngLat = e.lngLat;
           marker.setLngLat([lngLat.lng, lngLat.lat]);
-          handleLocationChange([lngLat.lng, lngLat.lat]);
+          handleLocationChange(lngLat);
         });
 
         setIsMapLoaded(true);
@@ -163,13 +191,13 @@ const OlaMap = ({
       });
 
       mapInstance.on('error', (e: any) => {
-        console.error("Ola Maps error:", e);
-        setError("Failed to load Ola Maps");
+        console.error("Map error:", e);
+        setError("Failed to load map tiles");
       });
 
     } catch (error) {
       console.error("Error initializing map:", error);
-      setError("Failed to initialize Ola Maps");
+      setError("Failed to initialize Ola Maps: " + (error as Error).message);
     }
   };
 
