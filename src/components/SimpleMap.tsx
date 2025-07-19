@@ -1,5 +1,5 @@
 
-import GoogleMap from "./GoogleMap";
+import OlaMap from "./OlaMap";
 
 interface Location {
   lat: number;
@@ -14,7 +14,7 @@ interface SimpleMapProps {
 
 export default function SimpleMap({ onLocationSelect, initialLocation }: SimpleMapProps) {
   return (
-    <GoogleMap 
+    <OlaMap 
       onLocationSelect={onLocationSelect}
       initialLocation={initialLocation}
       height="400px"

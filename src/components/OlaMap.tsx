@@ -7,7 +7,7 @@ interface Location {
   address: string;
 }
 
-interface GoogleMapProps {
+interface OlaMapProps {
   initialLocation?: Location | { lat: number; lng: number } | null;
   onLocationSelect?: (location: Location) => void;
   onLocationChange?: (location: { lat: number; lng: number }) => void;
@@ -18,52 +18,51 @@ interface GoogleMapProps {
 
 declare global {
   interface Window {
-    google: any;
-    initMap: () => void;
+    olaMaps: any;
+    OlaMaps: any;
+    initOlaMap: () => void;
   }
 }
 
-const GoogleMap = ({ 
+const OlaMap = ({ 
   initialLocation, 
   onLocationSelect, 
   onLocationChange, 
   className = "", 
   height = "300px",
   showControls = false 
-}: GoogleMapProps) => {
+}: OlaMapProps) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [map, setMap] = useState<any>(null);
   const [error, setError] = useState<string>("");
   const mapInstanceRef = useRef<any>(null);
 
-  const loadGoogleMaps = () => {
-    if (window.google && window.google.maps) {
+  const loadOlaMaps = () => {
+    if (window.olaMaps) {
       initializeMap();
       return;
     }
 
-    // Use the provided API key
-    const apiKey = "AIzaSyD54BlvZV3leYYBSSZtbJKMinUtTJ7WSfQ";
-    if (!apiKey) {
-      setError("Google Maps API key not configured. Please add VITE_GOOGLE_MAPS_API_KEY to your environment variables.");
-      return;
-    }
-
-    console.log("Loading Google Maps...");
+    // Ola Maps credentials
+    const apiKey = "1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S";
+    const projectId = "898e2a02-e295-4bfa-aa47-9cea36f37d3b";
+    
+    console.log("Loading Ola Maps...");
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initMap&loading=async`;
+    script.src = `https://apis.olamaps.io/api/maps/sdk.js?api_key=${apiKey}&project_id=${projectId}&callback=initOlaMap`;
     script.async = true;
     script.defer = true;
 
-    window.initMap = () => {
-      console.log("Google Maps script loaded successfully");
+    window.initOlaMap = () => {
+      console.log("Ola Maps script loaded successfully");
+      window.olaMaps = (window as any).OlaMaps;
       initializeMap();
     };
 
     script.onerror = () => {
-      console.error("Failed to load Google Maps API");
-      setError("Failed to load Google Maps. Please check your internet connection and API key.");
+      console.error("Failed to load Ola Maps API");
+      setError("Failed to load Ola Maps. Please check your internet connection.");
     };
 
     document.head.appendChild(script);
@@ -89,7 +88,7 @@ const GoogleMap = ({
   };
 
   const initializeMap = async () => {
-    console.log("Initializing Google Maps...");
+    console.log("Initializing Ola Maps...");
     
     if (!mapRef.current) {
       console.log("Map container not found during initialization");
@@ -97,9 +96,9 @@ const GoogleMap = ({
       return;
     }
 
-    if (!window.google || !window.google.maps) {
-      console.log("Google Maps API not available");
-      setError("Google Maps API not loaded");
+    if (!window.olaMaps) {
+      console.log("Ola Maps API not available");
+      setError("Ola Maps API not loaded");
       return;
     }
 
@@ -116,65 +115,73 @@ const GoogleMap = ({
       }
 
       const mapOptions = {
-        center: centerLocation,
+        center: [centerLocation.lng, centerLocation.lat], // Ola Maps uses [lng, lat] format
         zoom: 15,
-        mapTypeControl: showControls,
-        streetViewControl: showControls,
-        fullscreenControl: showControls,
+        container: mapRef.current,
+        style: 'https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/style.json'
       };
 
-      const mapInstance = new window.google.maps.Map(mapRef.current, mapOptions);
+      const mapInstance = new window.olaMaps.Map(mapOptions);
       mapInstanceRef.current = mapInstance;
       setMap(mapInstance);
 
-      const marker = new window.google.maps.Marker({
-        position: mapOptions.center,
-        map: mapInstance,
-        draggable: true,
+      // Wait for map to load
+      mapInstance.on('load', () => {
+        // Add marker
+        const marker = new window.olaMaps.Marker({
+          lngLat: [centerLocation.lng, centerLocation.lat],
+          draggable: true
+        }).addTo(mapInstance);
+
+        const handleLocationChange = async (lngLat: [number, number]) => {
+          const [lng, lat] = lngLat;
+          const address = await reverseGeocode(lat, lng);
+          const location: Location = { lat, lng, address };
+          
+          if (onLocationSelect) {
+            onLocationSelect(location);
+          }
+          if (onLocationChange) {
+            onLocationChange({ lat, lng });
+          }
+        };
+
+        marker.on('dragend', () => {
+          const lngLat = marker.getLngLat();
+          handleLocationChange([lngLat.lng, lngLat.lat]);
+        });
+
+        mapInstance.on('click', (e: any) => {
+          const lngLat = e.lngLat;
+          marker.setLngLat([lngLat.lng, lngLat.lat]);
+          handleLocationChange([lngLat.lng, lngLat.lat]);
+        });
+
+        setIsMapLoaded(true);
+        setError("");
+        console.log("Ola Maps initialized successfully");
       });
 
-      const handleLocationChange = async (lat: number, lng: number) => {
-        const address = await reverseGeocode(lat, lng);
-        const location: Location = { lat, lng, address };
-        
-        if (onLocationSelect) {
-          onLocationSelect(location);
-        }
-        if (onLocationChange) {
-          onLocationChange({ lat, lng });
-        }
-      };
-
-      marker.addListener("dragend", () => {
-        const position = marker.getPosition();
-        if (position) {
-          handleLocationChange(position.lat(), position.lng());
-        }
+      mapInstance.on('error', (e: any) => {
+        console.error("Ola Maps error:", e);
+        setError("Failed to load Ola Maps");
       });
 
-      mapInstance.addListener("click", (e: any) => {
-        marker.setPosition(e.latLng);
-        handleLocationChange(e.latLng.lat(), e.latLng.lng());
-      });
-
-      setIsMapLoaded(true);
-      setError("");
-      console.log("Google Maps initialized successfully");
     } catch (error) {
       console.error("Error initializing map:", error);
-      setError("Failed to initialize Google Maps");
+      setError("Failed to initialize Ola Maps");
     }
   };
 
   useEffect(() => {
-    console.log("GoogleMap component mounting, loading maps...");
+    console.log("OlaMap component mounting, loading maps...");
     
     const timer = setTimeout(() => {
       if (!mapRef.current) {
         console.log("Map container still not available, retrying...");
         setTimeout(() => {
           if (mapRef.current) {
-            loadGoogleMaps();
+            loadOlaMaps();
           } else {
             setError("Map container failed to load");
           }
@@ -182,17 +189,17 @@ const GoogleMap = ({
         return;
       }
       
-      loadGoogleMaps();
+      loadOlaMaps();
     }, 100);
 
     return () => {
-      console.log("GoogleMap component unmounting");
+      console.log("OlaMap component unmounting");
       clearTimeout(timer);
     };
   }, []);
 
   useEffect(() => {
-    if (initialLocation && mapInstanceRef.current && window.google) {
+    if (initialLocation && mapInstanceRef.current && window.olaMaps) {
       let newLocation;
       if ('address' in initialLocation) {
         newLocation = { lat: initialLocation.lat, lng: initialLocation.lng };
@@ -200,8 +207,7 @@ const GoogleMap = ({
         newLocation = initialLocation;
       }
       
-      const newLatLng = new window.google.maps.LatLng(newLocation.lat, newLocation.lng);
-      mapInstanceRef.current.setCenter(newLatLng);
+      mapInstanceRef.current.setCenter([newLocation.lng, newLocation.lat]);
     }
   }, [initialLocation]);
 
@@ -213,7 +219,7 @@ const GoogleMap = ({
             <div className="text-red-500 mb-2">⚠️</div>
             <p className="text-sm text-gray-600">{error}</p>
             <p className="text-xs text-gray-500 mt-1">
-              Please check your Google Maps configuration
+              Please check your Ola Maps configuration
             </p>
           </div>
         </div>
@@ -237,4 +243,4 @@ const GoogleMap = ({
   );
 };
 
-export default GoogleMap;
+export default OlaMap;

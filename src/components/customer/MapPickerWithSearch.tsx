@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import GoogleMap from "@/components/GoogleMap";
+import OlaMap from "@/components/OlaMap";
 
 interface Location {
   lat: number;
@@ -45,7 +45,7 @@ export default function MapPickerWithSearch({
         </div>
         
         <div className="p-4">
-          <GoogleMap 
+          <OlaMap 
             onLocationSelect={handleLocationSelect}
             initialLocation={initialLocation}
             height="500px"
