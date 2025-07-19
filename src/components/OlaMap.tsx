@@ -47,27 +47,27 @@ const OlaMap = ({
       return;
     }
 
-    // Try a simpler approach first - use Mapbox GL JS with Ola Maps tiles
-    console.log("Loading Mapbox GL JS for Ola Maps tiles...");
+    // Load Ola Maps SDK
+    console.log("Loading Ola Maps SDK...");
     const script = document.createElement("script");
-    script.src = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js";
+    script.src = "https://api.olamaps.io/tiles/v1/sdk/olamaps-js-sdk.umd.js";
     script.async = true;
     script.defer = true;
 
     const css = document.createElement("link");
     css.rel = "stylesheet";
-    css.href = "https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css";
+    css.href = "https://api.olamaps.io/tiles/v1/sdk/olamaps-js-sdk.css";
     document.head.appendChild(css);
 
     script.onload = () => {
-      console.log("Mapbox GL JS loaded successfully");
-      window.olaMaps = (window as any).mapboxgl;
+      console.log("Ola Maps SDK loaded successfully");
+      window.olaMaps = (window as any).OlaMapsSDK;
       initializeMap();
     };
 
     script.onerror = () => {
-      console.error("Failed to load Mapbox GL JS");
-      setError("Failed to load map library. Please check your internet connection.");
+      console.error("Failed to load Ola Maps SDK");
+      setError("Failed to load Ola Maps SDK. Please check your internet connection.");
     };
 
     document.head.appendChild(script);
@@ -119,32 +119,15 @@ const OlaMap = ({
         }
       }
 
-      // Use Mapbox GL with Ola Maps tiles
+      // Initialize Ola Maps with proper authentication
       console.log("Creating map with center:", centerLocation);
       
-      const mapInstance = new window.olaMaps.Map({
+      const mapInstance = new window.olaMaps.OlaMap({
+        apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
         container: mapRef.current,
-        style: {
-          version: 8,
-          sources: {
-            'ola-tiles': {
-              type: 'raster',
-              tiles: [
-                `https://api.olamaps.io/tiles/vector/v1/styles/default-light-standard/{z}/{x}/{y}.png?api_key=1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S`
-              ],
-              tileSize: 256
-            }
-          },
-          layers: [
-            {
-              id: 'ola-layer',
-              type: 'raster',
-              source: 'ola-tiles'
-            }
-          ]
-        },
         center: [centerLocation.lng, centerLocation.lat],
-        zoom: 15
+        zoom: 15,
+        style: 'default-light-standard'
       });
 
       mapInstanceRef.current = mapInstance;
