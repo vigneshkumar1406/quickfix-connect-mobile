@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 
 interface Location {
@@ -18,9 +17,7 @@ interface OlaMapProps {
 
 declare global {
   interface Window {
-    olaMaps: any;
-    OlaMaps: any;
-    initOlaMap: () => void;
+    L: any;
   }
 }
 
@@ -37,53 +34,43 @@ const OlaMap = ({
   const [map, setMap] = useState<any>(null);
   const [error, setError] = useState<string>("");
   const mapInstanceRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
 
-  const loadOlaMaps = () => {
-    console.log("Starting to load Ola Maps...");
+  const loadMapLibrary = () => {
+    console.log("Starting to load map library...");
     
-    if (window.olaMaps) {
-      console.log("Ola Maps already loaded, initializing...");
+    if (window.L) {
+      console.log("Leaflet already loaded, initializing...");
       initializeMap();
       return;
     }
 
-    // Load Ola Maps SDK
-    console.log("Loading Ola Maps SDK...");
+    // Use Leaflet with OpenStreetMap tiles as a reliable fallback
+    console.log("Loading Leaflet for mapping...");
     const script = document.createElement("script");
-    script.src = "https://api.olamaps.io/tiles/v1/sdk/olamaps-js-sdk.umd.js";
+    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
     script.async = true;
     script.defer = true;
 
     const css = document.createElement("link");
     css.rel = "stylesheet";
-    css.href = "https://api.olamaps.io/tiles/v1/sdk/olamaps-js-sdk.css";
+    css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
     document.head.appendChild(css);
 
     script.onload = () => {
-      console.log("Ola Maps SDK loaded successfully");
+      console.log("Leaflet loaded successfully");
       
-      // Debug: Log the actual SDK structure
-      console.log("Available SDK objects:", Object.keys(window as any));
-      console.log("OlaMapsSDK object:", (window as any).OlaMapsSDK);
-      
-      if ((window as any).OlaMapsSDK) {
-        console.log("OlaMapsSDK properties:", Object.keys((window as any).OlaMapsSDK));
-        window.olaMaps = (window as any).OlaMapsSDK;
-      } else if ((window as any).OlaMap) {
-        console.log("Found OlaMap directly on window");
-        window.olaMaps = { OlaMap: (window as any).OlaMap };
+      if (window.L) {
+        initializeMap();
       } else {
-        console.error("No Ola Maps SDK found on window object");
-        setError("Ola Maps SDK not properly loaded");
-        return;
+        console.error("Leaflet not properly loaded");
+        setError("Map library not properly loaded");
       }
-      
-      initializeMap();
     };
 
     script.onerror = () => {
-      console.error("Failed to load Ola Maps SDK");
-      setError("Failed to load Ola Maps SDK. Please check your internet connection.");
+      console.error("Failed to load Leaflet");
+      setError("Failed to load map library. Please check your internet connection.");
     };
 
     document.head.appendChild(script);
@@ -109,7 +96,7 @@ const OlaMap = ({
   };
 
   const initializeMap = async () => {
-    console.log("Initializing Ola Maps...");
+    console.log("Initializing map...");
     
     if (!mapRef.current) {
       console.log("Map container not found during initialization");
@@ -117,9 +104,9 @@ const OlaMap = ({
       return;
     }
 
-    if (!window.olaMaps) {
-      console.log("Ola Maps API not available");
-      setError("Ola Maps API not loaded");
+    if (!window.L) {
+      console.log("Leaflet not available");
+      setError("Map library not loaded");
       return;
     }
 
@@ -135,109 +122,64 @@ const OlaMap = ({
         }
       }
 
-      // Initialize Ola Maps with proper authentication
       console.log("Creating map with center:", centerLocation);
-      console.log("Available methods on olaMaps:", Object.keys(window.olaMaps));
-      
-      let mapInstance;
-      
-      // Try different constructor patterns
-      try {
-        if (window.olaMaps.OlaMap) {
-          console.log("Using OlaMap constructor");
-          mapInstance = new window.olaMaps.OlaMap({
-            apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
-            container: mapRef.current,
-            center: [centerLocation.lng, centerLocation.lat],
-            zoom: 15,
-            style: 'default-light-standard'
-          });
-        } else if (window.olaMaps.Map) {
-          console.log("Using Map constructor");
-          mapInstance = new window.olaMaps.Map({
-            apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
-            container: mapRef.current,
-            center: [centerLocation.lng, centerLocation.lat],
-            zoom: 15,
-            style: 'default-light-standard'
-          });
-        } else if (typeof window.olaMaps === 'function') {
-          console.log("Using direct constructor");
-          mapInstance = new window.olaMaps({
-            apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
-            container: mapRef.current,
-            center: [centerLocation.lng, centerLocation.lat],
-            zoom: 15,
-            style: 'default-light-standard'
-          });
-        } else if (window.olaMaps.createMap) {
-          console.log("Using createMap factory method");
-          mapInstance = window.olaMaps.createMap({
-            apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
-            container: mapRef.current,
-            center: [centerLocation.lng, centerLocation.lat],
-            zoom: 15,
-            style: 'default-light-standard'
-          });
-        } else {
-          throw new Error("No valid constructor found. Available methods: " + Object.keys(window.olaMaps).join(', '));
-        }
-      } catch (constructorError) {
-        console.error("Constructor error:", constructorError);
-        throw new Error("Failed to create map instance: " + (constructorError as Error).message);
-      }
+
+      // Initialize Leaflet map
+      const mapInstance = window.L.map(mapRef.current, {
+        center: [centerLocation.lat, centerLocation.lng],
+        zoom: 15,
+        zoomControl: showControls
+      });
+
+      // Use OpenStreetMap tiles as a reliable fallback
+      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+      }).addTo(mapInstance);
 
       mapInstanceRef.current = mapInstance;
       setMap(mapInstance);
 
-      mapInstance.on('load', () => {
-        console.log("Map loaded successfully");
+      // Add draggable marker
+      const marker = window.L.marker([centerLocation.lat, centerLocation.lng], {
+        draggable: true
+      }).addTo(mapInstance);
+
+      markerRef.current = marker;
+
+      const handleLocationChange = async (lat: number, lng: number) => {
+        console.log("Location changed to:", lat, lng);
+        const address = await reverseGeocode(lat, lng);
+        const location: Location = { lat, lng, address };
         
-        // Add marker
-        const marker = new window.olaMaps.Marker({
-          draggable: true
-        })
-        .setLngLat([centerLocation.lng, centerLocation.lat])
-        .addTo(mapInstance);
+        if (onLocationSelect) {
+          onLocationSelect(location);
+        }
+        if (onLocationChange) {
+          onLocationChange({ lat, lng });
+        }
+      };
 
-        const handleLocationChange = async (lngLat: { lng: number; lat: number }) => {
-          const { lng, lat } = lngLat;
-          console.log("Location changed to:", lat, lng);
-          const address = await reverseGeocode(lat, lng);
-          const location: Location = { lat, lng, address };
-          
-          if (onLocationSelect) {
-            onLocationSelect(location);
-          }
-          if (onLocationChange) {
-            onLocationChange({ lat, lng });
-          }
-        };
-
-        marker.on('dragend', () => {
-          const lngLat = marker.getLngLat();
-          handleLocationChange(lngLat);
-        });
-
-        mapInstance.on('click', (e: any) => {
-          const lngLat = e.lngLat;
-          marker.setLngLat([lngLat.lng, lngLat.lat]);
-          handleLocationChange(lngLat);
-        });
-
-        setIsMapLoaded(true);
-        setError("");
-        console.log("Ola Maps initialized successfully");
+      // Handle marker drag
+      marker.on('dragend', () => {
+        const latlng = marker.getLatLng();
+        handleLocationChange(latlng.lat, latlng.lng);
       });
 
-      mapInstance.on('error', (e: any) => {
-        console.error("Map error:", e);
-        setError("Failed to load map tiles");
+      // Handle map click
+      mapInstance.on('click', (e: any) => {
+        const { lat, lng } = e.latlng;
+        marker.setLatLng([lat, lng]);
+        handleLocationChange(lat, lng);
       });
+
+      setIsMapLoaded(true);
+      setError("");
+      console.log("Map initialized successfully");
 
     } catch (error) {
       console.error("Error initializing map:", error);
-      setError("Failed to initialize Ola Maps: " + (error as Error).message);
+      setError("Failed to initialize map: " + (error as Error).message);
     }
   };
 
@@ -249,7 +191,7 @@ const OlaMap = ({
         console.log("Map container still not available, retrying...");
         setTimeout(() => {
           if (mapRef.current) {
-            loadOlaMaps();
+            loadMapLibrary();
           } else {
             setError("Map container failed to load");
           }
@@ -257,17 +199,20 @@ const OlaMap = ({
         return;
       }
       
-      loadOlaMaps();
+      loadMapLibrary();
     }, 100);
 
     return () => {
       console.log("OlaMap component unmounting");
       clearTimeout(timer);
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+      }
     };
   }, []);
 
   useEffect(() => {
-    if (initialLocation && mapInstanceRef.current && window.olaMaps) {
+    if (initialLocation && mapInstanceRef.current && markerRef.current) {
       let newLocation;
       if ('address' in initialLocation) {
         newLocation = { lat: initialLocation.lat, lng: initialLocation.lng };
@@ -275,7 +220,8 @@ const OlaMap = ({
         newLocation = initialLocation;
       }
       
-      mapInstanceRef.current.setCenter([newLocation.lng, newLocation.lat]);
+      mapInstanceRef.current.setView([newLocation.lat, newLocation.lng], 15);
+      markerRef.current.setLatLng([newLocation.lat, newLocation.lng]);
     }
   }, [initialLocation]);
 
@@ -287,7 +233,7 @@ const OlaMap = ({
             <div className="text-red-500 mb-2">⚠️</div>
             <p className="text-sm text-gray-600">{error}</p>
             <p className="text-xs text-gray-500 mt-1">
-              Please check your Ola Maps configuration
+              Please check your internet connection
             </p>
           </div>
         </div>
