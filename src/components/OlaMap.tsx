@@ -61,7 +61,23 @@ const OlaMap = ({
 
     script.onload = () => {
       console.log("Ola Maps SDK loaded successfully");
-      window.olaMaps = (window as any).OlaMapsSDK;
+      
+      // Debug: Log the actual SDK structure
+      console.log("Available SDK objects:", Object.keys(window as any));
+      console.log("OlaMapsSDK object:", (window as any).OlaMapsSDK);
+      
+      if ((window as any).OlaMapsSDK) {
+        console.log("OlaMapsSDK properties:", Object.keys((window as any).OlaMapsSDK));
+        window.olaMaps = (window as any).OlaMapsSDK;
+      } else if ((window as any).OlaMap) {
+        console.log("Found OlaMap directly on window");
+        window.olaMaps = { OlaMap: (window as any).OlaMap };
+      } else {
+        console.error("No Ola Maps SDK found on window object");
+        setError("Ola Maps SDK not properly loaded");
+        return;
+      }
+      
       initializeMap();
     };
 
@@ -121,14 +137,55 @@ const OlaMap = ({
 
       // Initialize Ola Maps with proper authentication
       console.log("Creating map with center:", centerLocation);
+      console.log("Available methods on olaMaps:", Object.keys(window.olaMaps));
       
-      const mapInstance = new window.olaMaps.OlaMap({
-        apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
-        container: mapRef.current,
-        center: [centerLocation.lng, centerLocation.lat],
-        zoom: 15,
-        style: 'default-light-standard'
-      });
+      let mapInstance;
+      
+      // Try different constructor patterns
+      try {
+        if (window.olaMaps.OlaMap) {
+          console.log("Using OlaMap constructor");
+          mapInstance = new window.olaMaps.OlaMap({
+            apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
+            container: mapRef.current,
+            center: [centerLocation.lng, centerLocation.lat],
+            zoom: 15,
+            style: 'default-light-standard'
+          });
+        } else if (window.olaMaps.Map) {
+          console.log("Using Map constructor");
+          mapInstance = new window.olaMaps.Map({
+            apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
+            container: mapRef.current,
+            center: [centerLocation.lng, centerLocation.lat],
+            zoom: 15,
+            style: 'default-light-standard'
+          });
+        } else if (typeof window.olaMaps === 'function') {
+          console.log("Using direct constructor");
+          mapInstance = new window.olaMaps({
+            apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
+            container: mapRef.current,
+            center: [centerLocation.lng, centerLocation.lat],
+            zoom: 15,
+            style: 'default-light-standard'
+          });
+        } else if (window.olaMaps.createMap) {
+          console.log("Using createMap factory method");
+          mapInstance = window.olaMaps.createMap({
+            apiKey: '1mfBr5ce50Pg77zlRdw6LDZZMSzJgQyftn5sQa4S',
+            container: mapRef.current,
+            center: [centerLocation.lng, centerLocation.lat],
+            zoom: 15,
+            style: 'default-light-standard'
+          });
+        } else {
+          throw new Error("No valid constructor found. Available methods: " + Object.keys(window.olaMaps).join(', '));
+        }
+      } catch (constructorError) {
+        console.error("Constructor error:", constructorError);
+        throw new Error("Failed to create map instance: " + (constructorError as Error).message);
+      }
 
       mapInstanceRef.current = mapInstance;
       setMap(mapInstance);
