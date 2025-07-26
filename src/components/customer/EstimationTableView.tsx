@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import BackButton from "../BackButton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ServiceImageSlider from "./ServiceImageSlider";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ServiceItem {
   id: string;
@@ -26,6 +27,7 @@ interface EstimationTableViewProps {
 export default function EstimationTableView({ serviceType, items: initialItems }: EstimationTableViewProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
   const [serviceItems, setServiceItems] = useState<ServiceItem[]>(initialItems);
 
   const handleItemToggle = (itemId: string) => {
@@ -59,7 +61,7 @@ export default function EstimationTableView({ serviceType, items: initialItems }
     const selectedItems = serviceItems.filter(item => item.selected);
     
     if (selectedItems.length === 0) {
-      toast.error("Please select at least one service");
+      toast.error(t('selectAtLeastOneService'));
       return;
     }
 
@@ -89,7 +91,7 @@ export default function EstimationTableView({ serviceType, items: initialItems }
     const selectedItems = serviceItems.filter(item => item.selected);
     
     if (selectedItems.length === 0) {
-      toast.error("Please select at least one service");
+      toast.error(t('selectAtLeastOneService'));
       return;
     }
 
@@ -122,8 +124,8 @@ export default function EstimationTableView({ serviceType, items: initialItems }
       </div>
       
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">{serviceType} Services</h1>
-        <p className="text-gray-600">Select services and quantities for your estimate</p>
+        <h1 className="text-2xl font-bold mb-2">{serviceType} {t('services')}</h1>
+        <p className="text-gray-600">{t('selectServicesAndQuantities')}</p>
       </div>
 
       {/* Service Image Gallery */}
@@ -205,12 +207,12 @@ export default function EstimationTableView({ serviceType, items: initialItems }
         <Card className="mb-4">
           <div className="p-4">
             <div className="grid grid-cols-7 gap-2 font-semibold text-sm text-gray-700 border-b pb-2">
-              <div className="text-center">Select</div>
+              <div className="text-center">{t('select')}</div>
               <div className="text-center">S.No</div>
-              <div className="col-span-2">Work Name</div>
-              <div className="text-center">Price</div>
-              <div className="text-center">Quantity</div>
-              <div className="text-center">Total</div>
+              <div className="col-span-2">{t('workName')}</div>
+              <div className="text-center">{t('price')}</div>
+              <div className="text-center">{t('quantity')}</div>
+              <div className="text-center">{t('total')}</div>
             </div>
             
             <div className="space-y-2 mt-4">
@@ -287,7 +289,7 @@ export default function EstimationTableView({ serviceType, items: initialItems }
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <Calculator className="w-5 h-5 mr-2" />
-              <span className="text-lg font-semibold">Grand Total</span>
+              <span className="text-lg font-semibold">{t('grandTotal')}</span>
             </div>
             <span className="text-2xl font-bold">₹{calculateGrandTotal()}</span>
           </div>
@@ -302,7 +304,7 @@ export default function EstimationTableView({ serviceType, items: initialItems }
           disabled={!serviceItems.some(item => item.selected)}
         >
           <Zap className="w-5 h-5 mr-2" />
-          Book Now
+          {t('bookNow')}
         </Button>
         
         <Button 
@@ -312,13 +314,13 @@ export default function EstimationTableView({ serviceType, items: initialItems }
           disabled={!serviceItems.some(item => item.selected)}
         >
           <Clock className="w-5 h-5 mr-2" />
-          Book Later
+          {t('bookLater')}
         </Button>
       </div>
 
       <Card className="p-4 mt-4 bg-yellow-50 border-yellow-200">
         <p className="text-sm text-yellow-800">
-          <strong>Note:</strong> Prices are base rates. Final charges may vary based on complexity and materials required. All work comes with a 30-day warranty.
+          <strong>{t('note')}:</strong> {t('priceNote')}
         </p>
       </Card>
     </div>

@@ -1,5 +1,6 @@
 
 import EstimationTableView from "./EstimationTableView";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const plumbingItems = [
   { id: '1', name: 'Tap Installation', price: 149, selected: false, quantity: 1 },
@@ -15,5 +16,7 @@ const plumbingItems = [
 ];
 
 export default function PlumbingServiceEstimation() {
-  return <EstimationTableView serviceType="Plumbing" items={plumbingItems} />;
+  const { t } = useLanguage();
+  
+  return <EstimationTableView serviceType={t('plumbing') || "Plumbing"} items={plumbingItems} />;
 }

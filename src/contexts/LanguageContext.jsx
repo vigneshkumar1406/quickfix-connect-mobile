@@ -33,6 +33,31 @@ const translations = {
     delete: "Delete",
     confirm: "Confirm",
     
+    // Service Types
+    plumbing: "Plumbing",
+    electrical: "Electrical", 
+    carpentry: "Carpentry",
+    painting: "Painting",
+    homeCleaning: "Home Cleaning",
+    applianceRepair: "Appliance Repair",
+    pestControl: "Pest Control",
+    
+    // Estimation Page
+    selectServices: "Select Services",
+    selectQuantity: "Select Quantity",
+    selectServicesAndQuantities: "Select services and quantities for your estimate",
+    select: "Select",
+    workName: "Work Name",
+    price: "Price",
+    quantity: "Quantity",
+    total: "Total",
+    grandTotal: "Grand Total",
+    bookNow: "Book Now",
+    bookLater: "Book Later",
+    note: "Note",
+    priceNote: "Prices are base rates. Final charges may vary based on complexity and materials required. All work comes with a 30-day warranty.",
+    selectAtLeastOneService: "Please select at least one service",
+
     // Navigation
     dashboard: "Dashboard",
     profile: "Profile",
