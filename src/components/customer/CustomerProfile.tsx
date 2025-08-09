@@ -202,7 +202,7 @@ export default function CustomerProfile() {
             >
               <div className="flex items-center mb-2">
                 <Gift className="w-5 h-5 text-green-600 mr-2" />
-                <span className="font-semibold text-green-800">Refer & Earn 400 QuickFix Coins</span>
+                <span className="font-semibold text-green-800">Refer & Earn 400 Fixsify Coins</span>
               </div>
               <p className="text-sm text-green-700 mb-3">
                 When your friend completes their first booking

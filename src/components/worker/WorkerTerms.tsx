@@ -33,17 +33,17 @@ export default function WorkerTerms() {
       <Card className="mb-6">
         <ScrollArea className="h-64 rounded-md border p-4">
           <div className="space-y-4">
-            <h2 className="font-semibold">QuickFix Worker Terms of Service</h2>
+            <h2 className="font-semibold">Fixsify Worker Terms of Service</h2>
             
-            <p>These Terms of Service ("Terms") govern your access to and use of the QuickFix platform as a service provider ("Worker"). By accessing or using the QuickFix platform, you agree to be bound by these Terms.</p>
+            <p>These Terms of Service ("Terms") govern your access to and use of the Fixsify platform as a service provider ("Worker"). By accessing or using the Fixsify platform, you agree to be bound by these Terms.</p>
             
             <h3 className="font-semibold mt-4">1. Eligibility</h3>
-            <p>To be eligible to use QuickFix as a Worker, you must:</p>
+            <p>To be eligible to use Fixsify as a Worker, you must:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Be at least 18 years of age</li>
               <li>Have the legal capacity to enter into these Terms</li>
               <li>Have the necessary skills, experience, and qualifications to provide the services you offer</li>
-              <li>Complete the registration process and be approved by QuickFix</li>
+              <li>Complete the registration process and be approved by Fixsify</li>
             </ul>
             
             <h3 className="font-semibold mt-4">2. Worker Responsibilities</h3>
@@ -58,21 +58,21 @@ export default function WorkerTerms() {
             </ul>
             
             <h3 className="font-semibold mt-4">3. Fees and Payments</h3>
-            <p>By using QuickFix as a Worker, you agree to:</p>
+            <p>By using Fixsify as a Worker, you agree to:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Pay a one-time registration fee of ₹99</li>
-              <li>QuickFix will retain a service fee of 10% from each completed job</li>
+              <li>Fixsify will retain a service fee of 10% from each completed job</li>
               <li>Payments will be processed within 3-5 business days after job completion</li>
               <li>You are responsible for reporting and paying all applicable taxes</li>
             </ul>
             
             <h3 className="font-semibold mt-4">4. Termination</h3>
-            <p>QuickFix reserves the right to terminate a Worker's account for:</p>
+            <p>Fixsify reserves the right to terminate a Worker's account for:</p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Violation of these Terms</li>
               <li>Consistent poor customer ratings</li>
               <li>Fraudulent activity</li>
-              <li>Any other reason determined by QuickFix in its sole discretion</li>
+              <li>Any other reason determined by Fixsify in its sole discretion</li>
             </ul>
           </div>
         </ScrollArea>

@@ -9,7 +9,7 @@ export const useLanguage = () => useContext(LanguageContext);
 const translations = {
   en: {
     // Home Page
-    appTitle: "QuickFix",
+    appTitle: "Fixsify",
     appSubtitle: "Home services, simplified",
     selectLanguage: "Select your language",
     chooseRole: "Choose your role",
@@ -68,7 +68,7 @@ const translations = {
     logout: "Sign Out",
     
     // Wallet
-    quickfixCoins: "QuickFix Coins",
+    quickfixCoins: "Fixsify Coins",
     availableBalance: "Available Balance",
     transactionHistory: "Transaction History",
     referralEarnings: "Referral Earnings",
@@ -90,7 +90,7 @@ const translations = {
   
   ta: {
     // Tamil translations
-    appTitle: "குயிக்ஃபிக்ஸ்",
+    appTitle: "Fixsify",
     appSubtitle: "வீட்டு சேவைகள், எளிமையாக்கப்பட்டது",
     selectLanguage: "உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்",
     chooseRole: "உங்கள் பாத்திரத்தைத் தேர்ந்தெடுக்கவும்",
@@ -117,7 +117,7 @@ const translations = {
     settings: "அமைப்புகள்",
     logout: "வெளியேறு",
     
-    quickfixCoins: "குயிக்ஃபிக்ஸ் நாணயங்கள்",
+    quickfixCoins: "Fixsify நாணயங்கள்",
     availableBalance: "கிடைக்கும் இருப்பு",
     transactionHistory: "பரிவர்த்தனை வரலாறு",
     referralEarnings: "பரிந்துரை வருமானம்",
@@ -133,7 +133,7 @@ const translations = {
   
   hi: {
     // Hindi translations
-    appTitle: "क्विकफिक्स",
+    appTitle: "Fixsify",
     appSubtitle: "घरेलू सेवाएं, सरल",
     selectLanguage: "अपनी भाषा चुनें",
     chooseRole: "अपनी भूमिका चुनें",
@@ -160,7 +160,7 @@ const translations = {
     settings: "सेटिंग्स",
     logout: "साइन आउट",
     
-    quickfixCoins: "क्विकफिक्स कॉइन्स",
+    quickfixCoins: "Fixsify कॉइन्स",
     availableBalance: "उपलब्ध शेष",
     transactionHistory: "लेनदेन इतिहास",
     referralEarnings: "रेफरल कमाई",
@@ -176,7 +176,7 @@ const translations = {
   
   te: {
     // Telugu translations
-    appTitle: "క్విక్‌ఫిక్స్",
+    appTitle: "Fixsify",
     appSubtitle: "ఇంటి సేవలు, సరళీకృతం",
     selectLanguage: "మీ భాషను ఎంచుకోండి",
     chooseRole: "మీ పాత్రను ఎంచుకోండి",
@@ -203,7 +203,7 @@ const translations = {
     settings: "సెట్టింగ్‌లు",
     logout: "సైన్ అవుట్",
     
-    quickfixCoins: "క్విక్‌ఫిక్స్ కాయిన్‌లు",
+    quickfixCoins: "Fixsify కాయిన్‌లు",
     availableBalance: "అందుబాటులో ఉన్న బ్యాలెన్స్",
     transactionHistory: "లావాదేవీ చరిత్ర",
     referralEarnings: "రెఫరల్ ఆదాయాలు",
@@ -219,7 +219,7 @@ const translations = {
   
   ml: {
     // Malayalam translations
-    appTitle: "ക്വിക്ക്ഫിക്സ്",
+    appTitle: "Fixsify",
     appSubtitle: "ഗൃഹസേവനങ്ങൾ, ലളിതമാക്കിയത്",
     selectLanguage: "നിങ്ങളുടെ ഭാഷ തിരഞ്ഞെടുക്കുക",
     chooseRole: "നിങ്ങളുടെ റോൾ തിരഞ്ഞെടുക്കുക",
@@ -246,7 +246,7 @@ const translations = {
     settings: "ക്രമീകരണങ്ങൾ",
     logout: "സൈൻ ഔട്ട്",
     
-    quickfixCoins: "ക്വിക്ക്ഫിക്സ് കോയിനുകൾ",
+    quickfixCoins: "Fixsify കോയിനുകൾ",
     availableBalance: "ലഭ്യമായ ബാലൻസ്",
     transactionHistory: "ഇടപാട് ചരിത്രം",
     referralEarnings: "റഫറൽ വരുമാനം",
@@ -262,7 +262,7 @@ const translations = {
   
   kn: {
     // Kannada translations
-    appTitle: "ಕ್ವಿಕ್‌ಫಿಕ್ಸ್",
+    appTitle: "Fixsify",
     appSubtitle: "ಮನೆಯ ಸೇವೆಗಳು, ಸರಳೀಕೃತ",
     selectLanguage: "ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
     chooseRole: "ನಿಮ್ಮ ಪಾತ್ರವನ್ನು ಆಯ್ಕೆಮಾಡಿ",
@@ -289,7 +289,7 @@ const translations = {
     settings: "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
     logout: "ಸೈನ್ ಔಟ್",
     
-    quickfixCoins: "ಕ್ವಿಕ್‌ಫಿಕ್ಸ್ ನಾಣ್ಯಗಳು",
+    quickfixCoins: "Fixsify ನಾಣ್ಯಗಳು",
     availableBalance: "ಲಭ್ಯವಿರುವ ಬ್ಯಾಲೆನ್ಸ್",
     transactionHistory: "ವಹಿವಾಟು ಇತಿಹಾಸ",
     referralEarnings: "ರೆಫರಲ್ ಆದಾಯ",

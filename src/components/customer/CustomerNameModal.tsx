@@ -31,7 +31,7 @@ export default function CustomerNameModal({ isOpen, onSubmit, loading = false }:
         <DialogHeader>
           <DialogTitle className="flex items-center text-xl">
             <User className="w-6 h-6 mr-2 text-primary" />
-            Welcome to QuickFix!
+            Welcome to Fixsify!
           </DialogTitle>
           <DialogDescription>
             We'd love to know your name to personalize your experience

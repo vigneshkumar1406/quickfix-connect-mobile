@@ -41,13 +41,13 @@ export default function ContactPage() {
         window.open('tel:+918888888888', '_self');
         break;
       case 'whatsapp':
-        window.open('https://wa.me/918888888888?text=Hi, I need help with QuickFix services', '_blank');
+        window.open('https://wa.me/918888888888?text=Hi, I need help with Fixsify services', '_blank');
         break;
       case 'email':
-        window.open('mailto:support@quickfix.com?subject=QuickFix Support Request', '_self');
+        window.open('mailto:support@quickfix.com?subject=Fixsify Support Request', '_self');
         break;
       case 'sms':
-        window.open('sms:+918888888888?body=Hi, I need help with QuickFix services', '_self');
+        window.open('sms:+918888888888?body=Hi, I need help with Fixsify services', '_self');
         break;
       default:
         break;

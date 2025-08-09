@@ -47,24 +47,24 @@ export default function AboutUsPage() {
       </div>
 
       <div className="bg-primary text-white p-6 rounded-b-3xl mb-6">
-        <h1 className="text-2xl font-bold mb-1">About QuickFix</h1>
+        <h1 className="text-2xl font-bold mb-1">About Fixsify</h1>
         <p className="opacity-90">Connecting skilled professionals with customers who need their services</p>
       </div>
 
       <Card className="p-6 mb-6">
         <h2 className="text-xl font-bold mb-4">Our Mission</h2>
         <p className="text-neutral-600 leading-relaxed mb-4">
-          QuickFix is revolutionizing the way people access home services. We connect customers with skilled, 
+          Fixsify is revolutionizing the way people access home services. We connect customers with skilled, 
           verified professionals in their local area, making it easier than ever to get quality work done quickly and safely.
         </p>
         <p className="text-neutral-600 leading-relaxed">
           Whether you need a plumber, electrician, cleaner, or any other home service professional, 
-          QuickFix ensures you get reliable, professional service with complete transparency and fair pricing.
+          Fixsify ensures you get reliable, professional service with complete transparency and fair pricing.
         </p>
       </Card>
 
       <div className="mb-6">
-        <h2 className="text-xl font-bold mb-4">Why Choose QuickFix?</h2>
+        <h2 className="text-xl font-bold mb-4">Why Choose Fixsify?</h2>
         <div className="grid grid-cols-1 gap-4">
           {features.map((feature, index) => (
             <Card key={index} className="p-4">

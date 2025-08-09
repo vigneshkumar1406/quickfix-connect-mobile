@@ -302,7 +302,7 @@ const KYCVerification = ({ onComplete }) => {
           
           <div className="pt-4">
             <p className="text-sm text-neutral-300 mb-4">
-              I confirm that all the information provided is accurate and authentic. QuickFix may verify this information with government databases.
+              I confirm that all the information provided is accurate and authentic. Fixsify may verify this information with government databases.
             </p>
             
             <div className="flex space-x-2">

@@ -33,7 +33,7 @@ const RazorpayPayment = ({ amount, description, onSuccess, onFailure }) => {
         orderResponse.order.id,
         amount,
         'INR',
-        'QuickFix',
+        'Fixsify',
         description,
         {
           name: 'Customer Name', 
