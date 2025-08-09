@@ -44,7 +44,7 @@ export default function ContactPage() {
         window.open('https://wa.me/918888888888?text=Hi, I need help with Fixsify services', '_blank');
         break;
       case 'email':
-        window.open('mailto:support@quickfix.com?subject=Fixsify Support Request', '_self');
+        window.open('mailto:support@fixsify.com?subject=Fixsify Support Request', '_self');
         break;
       case 'sms':
         window.open('sms:+918888888888?body=Hi, I need help with Fixsify services', '_self');
@@ -102,7 +102,7 @@ export default function ContactPage() {
               <Mail className="w-6 h-6 text-white" />
             </div>
             <h3 className="font-semibold text-purple-800">Email</h3>
-            <p className="text-sm text-purple-600">support@quickfix.com</p>
+            <p className="text-sm text-purple-600">support@fixsify.com</p>
           </div>
         </Card>
 

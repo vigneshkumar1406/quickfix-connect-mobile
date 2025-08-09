@@ -310,9 +310,12 @@ export const LanguageProvider = ({ children }) => {
   
   // Load saved language on mount
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('quickfix-language');
+    const savedLanguage = localStorage.getItem('fixsify-language') || localStorage.getItem('quickfix-language');
     if (savedLanguage && translations[savedLanguage]) {
       setCurrentLanguage(savedLanguage);
+      // Migrate legacy key
+      localStorage.setItem('fixsify-language', savedLanguage);
+      localStorage.removeItem('quickfix-language');
     }
   }, []);
   
@@ -320,7 +323,8 @@ export const LanguageProvider = ({ children }) => {
     if (translations[languageCode]) {
       setLoading(true);
       setCurrentLanguage(languageCode);
-      localStorage.setItem('quickfix-language', languageCode);
+      localStorage.setItem('fixsify-language', languageCode);
+      localStorage.removeItem('quickfix-language');
       
       // Simulate loading time for language switch
       setTimeout(() => {

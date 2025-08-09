@@ -27,14 +27,18 @@ export default function ContactBookModal({ isOpen, onClose, onSelectContact }: C
 
   useEffect(() => {
     // Load contacts from localStorage
-    const savedContacts = localStorage.getItem('quickfix_contacts');
+    const savedContacts = localStorage.getItem('fixsify_contacts') || localStorage.getItem('quickfix_contacts');
     if (savedContacts) {
       setContacts(JSON.parse(savedContacts));
+      // migrate legacy key if needed
+      localStorage.setItem('fixsify_contacts', savedContacts);
+      localStorage.removeItem('quickfix_contacts');
     }
   }, []);
 
   const saveContacts = (updatedContacts: Contact[]) => {
-    localStorage.setItem('quickfix_contacts', JSON.stringify(updatedContacts));
+    localStorage.setItem('fixsify_contacts', JSON.stringify(updatedContacts));
+    localStorage.removeItem('quickfix_contacts');
     setContacts(updatedContacts);
   };
 

@@ -154,15 +154,17 @@ export const LocationProvider = ({ children }) => {
     );
     
     // Store watchId for cleanup
-    localStorage.setItem('quickfix_location_watchId', watchId.toString());
+    localStorage.setItem('fixsify_location_watchId', watchId.toString());
+    localStorage.removeItem('quickfix_location_watchId');
   };
   
   // Stop location tracking
   const stopTracking = () => {
     console.log("Stopping location tracking...");
-    const watchId = localStorage.getItem('quickfix_location_watchId');
+    const watchId = localStorage.getItem('fixsify_location_watchId') || localStorage.getItem('quickfix_location_watchId');
     if (watchId) {
       navigator.geolocation.clearWatch(parseInt(watchId));
+      localStorage.removeItem('fixsify_location_watchId');
       localStorage.removeItem('quickfix_location_watchId');
     }
     
@@ -282,7 +284,7 @@ export const LocationProvider = ({ children }) => {
   
   // Initialize location on mount if tracking was enabled
   useEffect(() => {
-    const wasTracking = localStorage.getItem('quickfix_tracking_enabled') === 'true';
+    const wasTracking = (localStorage.getItem('fixsify_tracking_enabled') ?? localStorage.getItem('quickfix_tracking_enabled')) === 'true';
     
     if (wasTracking && isAuthenticated) {
       console.log("Restoring location tracking on mount");
@@ -306,7 +308,8 @@ export const LocationProvider = ({ children }) => {
   
   // Save tracking status when it changes
   useEffect(() => {
-    localStorage.setItem('quickfix_tracking_enabled', trackingEnabled.toString());
+    localStorage.setItem('fixsify_tracking_enabled', trackingEnabled.toString());
+    localStorage.removeItem('quickfix_tracking_enabled');
   }, [trackingEnabled]);
   
   const value = {

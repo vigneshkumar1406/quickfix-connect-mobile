@@ -25,10 +25,12 @@ export const AuthProvider = ({ children }) => {
         };
         setUser(userObject);
         setIsAuthenticated(true);
-        localStorage.setItem('quickfix_user', JSON.stringify(userObject));
+        localStorage.setItem('fixsify_user', JSON.stringify(userObject));
       } else {
         setUser(null);
         setIsAuthenticated(false);
+        localStorage.removeItem('fixsify_user');
+        localStorage.removeItem('fixsify_token');
         localStorage.removeItem('quickfix_user');
         localStorage.removeItem('quickfix_token');
       }
@@ -36,6 +38,20 @@ export const AuthProvider = ({ children }) => {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  // Migrate legacy localStorage keys from QuickFix -> Fixsify
+  useEffect(() => {
+    const legacyUser = localStorage.getItem('quickfix_user');
+    if (legacyUser && !localStorage.getItem('fixsify_user')) {
+      localStorage.setItem('fixsify_user', legacyUser);
+      localStorage.removeItem('quickfix_user');
+    }
+    const legacyToken = localStorage.getItem('quickfix_token');
+    if (legacyToken && !localStorage.getItem('fixsify_token')) {
+      localStorage.setItem('fixsify_token', legacyToken);
+      localStorage.removeItem('quickfix_token');
+    }
   }, []);
   
   // Firebase OTP Authentication

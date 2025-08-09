@@ -140,7 +140,8 @@ export default function WorkerBillGeneration() {
       };
 
       // Store bill data (in real app, send to backend)
-      localStorage.setItem('quickfix_worker_bill', JSON.stringify(billData));
+      localStorage.setItem('fixsify_worker_bill', JSON.stringify(billData));
+      localStorage.removeItem('quickfix_worker_bill');
 
       setBillGenerated(true);
       toast.success("Bill generated successfully!");
