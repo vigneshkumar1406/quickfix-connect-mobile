@@ -55,12 +55,9 @@ export default function CallCenterDashboardPage() {
     try {
       const { data, error } = await supabase
         .from('workers')
-        .select(`
-          *,
-          profiles!workers_user_id_fkey(full_name, phone_number)
-        `)
-        .eq('status', 'verified')
-        .eq('available', true);
+        .select('*, profiles!workers_user_id_fkey(full_name, phone_number)')
+        .eq('kyc_verified', true)
+        .eq('is_available', true);
 
       if (error) throw error;
       setAvailableWorkers(data || []);

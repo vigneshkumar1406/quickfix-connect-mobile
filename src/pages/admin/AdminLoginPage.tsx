@@ -29,16 +29,18 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Check if user is admin/call center staff
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('user_type')
-        .eq('id', data.user.id)
-        .single();
+      // Check if user has admin or call_center role
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', data.user.id);
 
-      if (profile?.user_type === 'admin') {
+      const hasAdminRole = roles?.some(r => r.role === 'admin');
+      const hasCallCenterRole = roles?.some(r => r.role === 'call_center');
+
+      if (hasAdminRole) {
         navigate('/admin/dashboard');
-      } else if (profile?.user_type === 'call_center') {
+      } else if (hasCallCenterRole) {
         navigate('/call-center/dashboard');
       } else {
         toast.error('Access denied. Admin/Call center access required.');

@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { MapPin, Navigation, StopCircle, Loader2 } from "lucide-react";
+import { MapPin, Navigation, StopCircle } from "lucide-react";
+import { locationAPI } from "@/services/api";
 
 interface LocationSharingProps {
   bookingId: string;
@@ -21,38 +21,6 @@ export default function LocationSharing({
   const [watchId, setWatchId] = useState<number | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Check if location sharing was already active
-    checkExistingTracking();
-    
-    return () => {
-      if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-      }
-    };
-  }, [bookingId, workerId]);
-
-  const checkExistingTracking = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('location_tracking')
-        .select('*')
-        .eq('booking_id', bookingId)
-        .eq('worker_id', workerId)
-        .eq('is_active', true)
-        .order('timestamp', { ascending: false })
-        .limit(1);
-
-      if (error) throw error;
-      
-      if (data && data.length > 0) {
-        setIsSharing(true);
-      }
-    } catch (error) {
-      console.error('Error checking existing tracking:', error);
-    }
-  };
-
   const startLocationSharing = async () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by this browser");
@@ -65,7 +33,12 @@ export default function LocationSharing({
       const id = navigator.geolocation.watchPosition(
         (position) => {
           setCurrentLocation(position);
-          updateLocationInDatabase(position);
+          // Update location in profiles table
+          locationAPI.updateLocation(
+            workerId,
+            position.coords.latitude,
+            position.coords.longitude
+          );
         },
         (error) => {
           console.error('Geolocation error:', error);
@@ -94,46 +67,9 @@ export default function LocationSharing({
       setWatchId(null);
     }
 
-    try {
-      // Mark existing tracking as inactive
-      const { error } = await supabase
-        .from('location_tracking')
-        .update({ is_active: false })
-        .eq('booking_id', bookingId)
-        .eq('worker_id', workerId)
-        .eq('is_active', true);
-
-      if (error) throw error;
-      
-      setIsSharing(false);
-      setCurrentLocation(null);
-      toast.success("Location sharing stopped");
-    } catch (error) {
-      console.error('Error stopping location sharing:', error);
-      toast.error("Failed to stop location sharing");
-    }
-  };
-
-  const updateLocationInDatabase = async (position: GeolocationPosition) => {
-    try {
-      const { error } = await supabase
-        .from('location_tracking')
-        .insert({
-          booking_id: bookingId,
-          worker_id: workerId,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-          accuracy: position.coords.accuracy,
-          heading: position.coords.heading,
-          speed: position.coords.speed,
-          timestamp: new Date().toISOString(),
-          is_active: true
-        });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error updating location:', error);
-    }
+    setIsSharing(false);
+    setCurrentLocation(null);
+    toast.success("Location sharing stopped");
   };
 
   const openCurrentLocationInMaps = () => {

@@ -1,5 +1,5 @@
-
-import { supabase } from "@/integrations/supabase/client";
+// Portfolio and Service Gallery fallback data
+// These tables don't exist yet, so we return mock data
 
 export interface ServiceGallery {
   id: string;
@@ -25,168 +25,76 @@ export interface WorkerPortfolio {
   updated_at: string;
 }
 
-// Service Gallery API
+const mockServiceImages: ServiceGallery[] = [
+  {
+    id: '1',
+    service_type: 'plumbing',
+    title: 'Expert Plumbing Services',
+    description: 'Professional plumbing repair and installation',
+    image_url: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=800&h=600&fit=crop',
+    display_order: 1,
+    is_featured: true,
+    created_at: new Date().toISOString()
+  },
+  {
+    id: '2',
+    service_type: 'electrical',
+    title: 'Electrical Repairs',
+    description: 'Safe and reliable electrical services',
+    image_url: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=600&fit=crop',
+    display_order: 2,
+    is_featured: true,
+    created_at: new Date().toISOString()
+  }
+];
+
+// Service Gallery API - Returns mock data
 export const serviceGalleryAPI = {
   getServiceImages: async (serviceType: string): Promise<ServiceGallery[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('service_galleries')
-        .select('*')
-        .eq('service_type', serviceType)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching service images:', error);
-      return [];
-    }
+    console.log('Using fallback service images for:', serviceType);
+    return mockServiceImages.filter(img => img.service_type === serviceType);
   },
 
   getAllServiceImages: async (): Promise<ServiceGallery[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('service_galleries')
-        .select('*')
-        .order('service_type', { ascending: true })
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching all service images:', error);
-      return [];
-    }
+    console.log('Using fallback service images');
+    return mockServiceImages;
   },
 
   getFeaturedImages: async (): Promise<ServiceGallery[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('service_galleries')
-        .select('*')
-        .eq('is_featured', true)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching featured images:', error);
-      return [];
-    }
+    console.log('Using fallback featured images');
+    return mockServiceImages.filter(img => img.is_featured);
   }
 };
 
-// Worker Portfolio API
+// Worker Portfolio API - Returns mock data
 export const workerPortfolioAPI = {
   getWorkerPortfolios: async (workerId: string): Promise<WorkerPortfolio[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('worker_portfolios')
-        .select('*')
-        .eq('worker_id', workerId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching worker portfolios:', error);
-      return [];
-    }
+    console.log('Portfolio feature not yet implemented');
+    return [];
   },
 
   getPortfoliosByServiceType: async (serviceType: string): Promise<WorkerPortfolio[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('worker_portfolios')
-        .select(`
-          *,
-          workers!inner(
-            id,
-            rating,
-            total_jobs,
-            profiles!inner(full_name)
-          )
-        `)
-        .eq('service_type', serviceType)
-        .order('customer_rating', { ascending: false })
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching portfolios by service type:', error);
-      return [];
-    }
+    console.log('Portfolio feature not yet implemented');
+    return [];
   },
 
-  createPortfolio: async (portfolio: Omit<WorkerPortfolio, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('worker_portfolios')
-        .insert(portfolio)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { success: true, data };
-    } catch (error: any) {
-      console.error('Error creating portfolio:', error);
-      return { success: false, message: error.message };
-    }
+  createPortfolio: async (portfolio: Partial<WorkerPortfolio>) => {
+    console.log('Portfolio feature not yet implemented');
+    return { success: false, message: 'Portfolio feature coming soon' };
   },
 
   updatePortfolio: async (portfolioId: string, updates: Partial<WorkerPortfolio>) => {
-    try {
-      const { data, error } = await supabase
-        .from('worker_portfolios')
-        .update(updates)
-        .eq('id', portfolioId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { success: true, data };
-    } catch (error: any) {
-      console.error('Error updating portfolio:', error);
-      return { success: false, message: error.message };
-    }
+    console.log('Portfolio feature not yet implemented');
+    return { success: false, message: 'Portfolio feature coming soon' };
   },
 
   deletePortfolio: async (portfolioId: string) => {
-    try {
-      const { error } = await supabase
-        .from('worker_portfolios')
-        .delete()
-        .eq('id', portfolioId);
-
-      if (error) throw error;
-      return { success: true };
-    } catch (error: any) {
-      console.error('Error deleting portfolio:', error);
-      return { success: false, message: error.message };
-    }
+    console.log('Portfolio feature not yet implemented');
+    return { success: false, message: 'Portfolio feature coming soon' };
   },
 
   uploadPortfolioImage: async (file: File, portfolioId: string) => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${portfolioId}-${Date.now()}.${fileExt}`;
-      const filePath = `portfolios/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('portfolios')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('portfolios')
-        .getPublicUrl(filePath);
-
-      return { success: true, url: publicUrl };
-    } catch (error: any) {
-      console.error('Error uploading portfolio image:', error);
-      return { success: false, message: error.message };
-    }
+    console.log('Portfolio feature not yet implemented');
+    return { success: false, message: 'Portfolio feature coming soon' };
   }
 };

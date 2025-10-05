@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { serviceGalleryAPI } from "@/services/portfolioAPI";
 
 interface ServiceImage {
   id: string;
@@ -29,15 +28,8 @@ export default function ServiceImageSlider({ serviceType, className = "" }: Serv
 
   const fetchServiceImages = async () => {
     try {
-      const { data, error } = await supabase
-        .from('service_galleries')
-        .select('*')
-        .eq('service_type', serviceType)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      
-      setImages(data || []);
+      const data = await serviceGalleryAPI.getServiceImages(serviceType);
+      setImages(data);
     } catch (error) {
       console.error('Error fetching service images:', error);
     } finally {

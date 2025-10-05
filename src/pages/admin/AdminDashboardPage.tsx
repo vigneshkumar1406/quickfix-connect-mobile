@@ -34,24 +34,24 @@ export default function AdminDashboardPage() {
       const { count: workersCount } = await supabase
         .from('workers')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'verified');
+        .eq('kyc_verified', true);
 
       // Get total customers
-      const { count: customersCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_type', 'customer');
+      const { data: customerRoles } = await supabase
+        .from('user_roles')
+        .select('user_id', { count: 'exact', head: true })
+        .eq('role', 'customer');
 
       // Get pending verifications
       const { count: pendingCount } = await supabase
         .from('workers')
         .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending_verification');
+        .eq('kyc_verified', false);
 
       setStats({
         totalBookings: bookingsCount || 0,
         activeWorkers: workersCount || 0,
-        totalCustomers: customersCount || 0,
+        totalCustomers: customerRoles?.length || 0,
         pendingVerifications: pendingCount || 0
       });
     } catch (error) {

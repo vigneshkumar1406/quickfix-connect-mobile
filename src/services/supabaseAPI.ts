@@ -15,13 +15,7 @@ type ServiceBooking = Database['public']['Tables']['service_bookings']['Row'];
 type ServiceBookingInsert = Database['public']['Tables']['service_bookings']['Insert'];
 type ServiceBookingUpdate = Database['public']['Tables']['service_bookings']['Update'];
 
-type UserLocation = Database['public']['Tables']['user_locations']['Row'];
-type UserLocationInsert = Database['public']['Tables']['user_locations']['Insert'];
-
 type NotificationInsert = Database['public']['Tables']['notifications']['Insert'];
-
-type ServiceGallery = Database['public']['Tables']['service_galleries']['Row'];
-type WorkerPortfolio = Database['public']['Tables']['worker_portfolios']['Row'];
 
 // Authentication API
 export const authAPI = {
@@ -195,13 +189,12 @@ export const workerAPI = {
 
   findNearbyWorkers: async (latitude: number, longitude: number, serviceType: string, radius: number = 10) => {
     try {
-      // For now, we'll get all verified workers with the required skill
-      // In production, you'd use PostGIS for proper geospatial queries
+      // Get all verified workers with the required skill
       const { data, error } = await supabase
         .from('workers')
         .select('*, profiles!workers_user_id_fkey(*)')
-        .eq('status', 'verified')
-        .eq('available', true)
+        .eq('kyc_verified', true)
+        .eq('is_available', true)
         .contains('skills', [serviceType]);
       
       if (error) throw error;
@@ -221,27 +214,18 @@ export const workerAPI = {
   }
 };
 
-// Location API
+// Location API - stores location in profiles table
 export const locationAPI = {
-  updateLocation: async (locationData: UserLocationInsert) => {
+  updateLocation: async (userId: string, latitude: number, longitude: number, address?: string) => {
     try {
-      // Ensure required fields are present
-      if (!locationData.latitude || !locationData.longitude) {
-        throw new Error("Latitude and longitude are required");
-      }
-
-      // First, set all user's locations to not current
-      const { error: updateError } = await supabase
-        .from('user_locations')
-        .update({ is_current: false })
-        .eq('user_id', locationData.user_id);
-      
-      if (updateError) throw updateError;
-      
-      // Insert new current location
       const { data, error } = await supabase
-        .from('user_locations')
-        .insert({ ...locationData, is_current: true })
+        .from('profiles')
+        .update({ 
+          latitude, 
+          longitude, 
+          address 
+        })
+        .eq('id', userId)
         .select()
         .single();
       
@@ -253,20 +237,19 @@ export const locationAPI = {
     }
   },
 
-  getCurrentLocation: async (userId: string): Promise<UserLocation | null> => {
+  getCurrentLocation: async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('user_locations')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('is_current', true)
+        .from('profiles')
+        .select('latitude, longitude, address')
+        .eq('id', userId)
         .single();
       
-      if (error && error.code !== 'PGRST116') throw error;
-      return data as UserLocation;
-    } catch (error) {
+      if (error) throw error;
+      return { success: true, data };
+    } catch (error: any) {
       console.error("Error fetching current location:", error);
-      return null;
+      return { success: false, message: error.message };
     }
   }
 };
@@ -364,7 +347,7 @@ export const serviceAPI = {
 
 // Notification API
 export const notificationAPI = {
-  createNotification: async (userId: string, title: string, message: string, type?: Database['public']['Enums']['notification_type'], data?: any) => {
+  createNotification: async (userId: string, title: string, message: string, type?: string, data?: any) => {
     try {
       const notificationData: NotificationInsert = {
         user_id: userId,
@@ -438,28 +421,39 @@ export const walletAPI = {
     }
   },
 
-  updateBalance: async (userId: string, amount: number, type: 'credit' | 'debit', description: string) => {
+  updateBalance: async (userId: string, amount: number, type: 'credit' | 'debit', description: string, bookingId?: string) => {
     try {
       // Get current wallet
       const { data: wallet, error: walletError } = await supabase
         .from('wallets')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
       
       if (walletError) throw walletError;
       
+      // Create wallet if it doesn't exist
+      if (!wallet) {
+        const { error: createError } = await supabase
+          .from('wallets')
+          .insert({ user_id: userId, balance: 0, total_earned: 0 });
+        
+        if (createError) throw createError;
+      }
+      
+      const currentBalance = wallet?.balance || 0;
+      const currentEarned = wallet?.total_earned || 0;
+      
       const newBalance = type === 'credit' 
-        ? (wallet.balance || 0) + amount 
-        : (wallet.balance || 0) - amount;
+        ? currentBalance + amount 
+        : currentBalance - amount;
       
       // Update wallet balance
       const { error: updateError } = await supabase
         .from('wallets')
         .update({ 
           balance: newBalance,
-          total_earned: type === 'credit' ? (wallet.total_earned || 0) + amount : wallet.total_earned,
-          total_spent: type === 'debit' ? (wallet.total_spent || 0) + amount : wallet.total_spent
+          total_earned: type === 'credit' ? currentEarned + amount : currentEarned
         })
         .eq('user_id', userId);
       
@@ -469,10 +463,12 @@ export const walletAPI = {
       const { error: transactionError } = await supabase
         .from('wallet_transactions')
         .insert({
-          wallet_id: wallet.id,
+          user_id: userId,
           amount,
           type,
-          description
+          description,
+          booking_id: bookingId,
+          balance_after: newBalance
         });
       
       if (transactionError) throw transactionError;
@@ -488,8 +484,8 @@ export const walletAPI = {
     try {
       const { data, error } = await supabase
         .from('wallet_transactions')
-        .select('*, wallets!inner(user_id)')
-        .eq('wallets.user_id', userId)
+        .select('*')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -545,24 +541,14 @@ export const reviewAPI = {
     try {
       const { data, error } = await supabase
         .from('reviews')
-        .select(`
-          *, 
-          service_bookings!reviews_booking_id_fkey(service_type, worker_id),
-          workers!reviews_worker_id_fkey(
-            *, 
-            profiles!workers_user_id_fkey(full_name)
-          )
-        `)
+        .select('*, service_bookings!reviews_booking_id_fkey(service_type)')
         .eq('customer_id', customerId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      // Transform data to include worker_name
-      const transformedData = data?.map(review => ({
-        ...review,
-        worker_name: review.workers?.profiles?.full_name || 'Service Provider'
-      })) || [];
+      // Simple return without worker names for now
+      const transformedData = data || [];
       
       return { success: true, data: transformedData };
     } catch (error: any) {
@@ -572,118 +558,7 @@ export const reviewAPI = {
   }
 };
 
-// Service Gallery API
-export const serviceGalleryAPI = {
-  getServiceImages: async (serviceType: string): Promise<ServiceGallery[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('service_galleries')
-        .select('*')
-        .eq('service_type', serviceType)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching service images:', error);
-      return [];
-    }
-  },
-
-  getAllServiceImages: async (): Promise<ServiceGallery[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('service_galleries')
-        .select('*')
-        .order('service_type', { ascending: true })
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching all service images:', error);
-      return [];
-    }
-  },
-
-  getFeaturedImages: async (): Promise<ServiceGallery[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('service_galleries')
-        .select('*')
-        .eq('is_featured', true)
-        .order('display_order', { ascending: true });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching featured images:', error);
-      return [];
-    }
-  }
-};
-
-// Worker Portfolio API
-export const portfolioAPI = {
-  getWorkerPortfolios: async (workerId: string): Promise<WorkerPortfolio[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('worker_portfolios')
-        .select('*')
-        .eq('worker_id', workerId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching worker portfolios:', error);
-      return [];
-    }
-  },
-
-  getPortfoliosByServiceType: async (serviceType: string): Promise<WorkerPortfolio[]> => {
-    try {
-      const { data, error } = await supabase
-        .from('worker_portfolios')
-        .select(`
-          *,
-          workers!inner(
-            id,
-            rating,
-            total_jobs,
-            profiles!inner(full_name)
-          )
-        `)
-        .eq('service_type', serviceType)
-        .order('customer_rating', { ascending: false })
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    } catch (error) {
-      console.error('Error fetching portfolios by service type:', error);
-      return [];
-    }
-  },
-
-  createPortfolio: async (portfolio: Omit<WorkerPortfolio, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      const { data, error } = await supabase
-        .from('worker_portfolios')
-        .insert(portfolio)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return { success: true, data };
-    } catch (error: any) {
-      console.error('Error creating portfolio:', error);
-      return { success: false, message: error.message };
-    }
-  }
-};
-
-// Service Categories API - Using fallback data until types are updated
+// Service Categories API - Using fallback data
 export const serviceCategoryAPI = {
   getCategories: async () => {
     try {
@@ -715,4 +590,4 @@ export const serviceCategoryAPI = {
 };
 
 // Export types for use in other files
-export type { Profile, Worker, ServiceBooking, UserLocation, ServiceGallery, WorkerPortfolio };
+export type { Profile, Worker, ServiceBooking };
