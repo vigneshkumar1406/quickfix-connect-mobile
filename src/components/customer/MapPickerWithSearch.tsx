@@ -1,8 +1,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Crosshair } from "lucide-react";
 import OlaMap from "@/components/OlaMap";
+import { toast } from "sonner";
 
 interface Location {
   lat: number;
@@ -33,6 +34,45 @@ export default function MapPickerWithSearch({
     }
   };
 
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    toast.loading("Getting your location...");
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          const address = data.display_name || `${latitude}, ${longitude}`;
+          
+          const location = {
+            lat: latitude,
+            lng: longitude,
+            address: address
+          };
+          
+          setSelectedLocation(location);
+          toast.dismiss();
+          toast.success("Current location set");
+        } catch (error) {
+          toast.dismiss();
+          toast.error("Failed to get address");
+        }
+      },
+      (error) => {
+        toast.dismiss();
+        toast.error("Failed to get your location");
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <div className="w-full max-w-md mx-auto">
@@ -53,12 +93,20 @@ export default function MapPickerWithSearch({
           />
           
           {selectedLocation && (
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
               <Button 
                 onClick={handleConfirm}
                 className="w-full"
               >
                 Confirm Location
+              </Button>
+              <Button 
+                onClick={handleUseCurrentLocation}
+                variant="outline"
+                className="w-full"
+              >
+                <Crosshair className="w-4 h-4 mr-2" />
+                Use Current Location
               </Button>
             </div>
           )}
