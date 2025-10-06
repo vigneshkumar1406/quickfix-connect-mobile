@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 interface Location {
   lat: number;
@@ -15,11 +17,13 @@ interface OlaMapProps {
   showControls?: boolean;
 }
 
-declare global {
-  interface Window {
-    L: any;
-  }
-}
+// Fix default marker icons
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
 
 const OlaMap = ({ 
   initialLocation, 
@@ -36,45 +40,6 @@ const OlaMap = ({
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
 
-  const loadMapLibrary = () => {
-    console.log("Starting to load map library...");
-    
-    if (window.L) {
-      console.log("Leaflet already loaded, initializing...");
-      initializeMap();
-      return;
-    }
-
-    // Use Leaflet with OpenStreetMap tiles as a reliable fallback
-    console.log("Loading Leaflet for mapping...");
-    const script = document.createElement("script");
-    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-    script.async = true;
-    script.defer = true;
-
-    const css = document.createElement("link");
-    css.rel = "stylesheet";
-    css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-    document.head.appendChild(css);
-
-    script.onload = () => {
-      console.log("Leaflet loaded successfully");
-      
-      if (window.L) {
-        initializeMap();
-      } else {
-        console.error("Leaflet not properly loaded");
-        setError("Map library not properly loaded");
-      }
-    };
-
-    script.onerror = () => {
-      console.error("Failed to load Leaflet");
-      setError("Failed to load map library. Please check your internet connection.");
-    };
-
-    document.head.appendChild(script);
-  };
 
   const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
     try {
@@ -104,12 +69,6 @@ const OlaMap = ({
       return;
     }
 
-    if (!window.L) {
-      console.log("Leaflet not available");
-      setError("Map library not loaded");
-      return;
-    }
-
     try {
       const defaultLocation = { lat: 13.0843, lng: 80.2705 };
       let centerLocation = defaultLocation;
@@ -125,14 +84,14 @@ const OlaMap = ({
       console.log("Creating map with center:", centerLocation);
 
       // Initialize Leaflet map
-      const mapInstance = window.L.map(mapRef.current, {
+      const mapInstance = L.map(mapRef.current, {
         center: [centerLocation.lat, centerLocation.lng],
         zoom: 15,
         zoomControl: showControls
       });
 
-      // Use OpenStreetMap tiles as a reliable fallback
-      window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      // Use OpenStreetMap tiles
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
       }).addTo(mapInstance);
@@ -141,7 +100,7 @@ const OlaMap = ({
       setMap(mapInstance);
 
       // Add draggable marker
-      const marker = window.L.marker([centerLocation.lat, centerLocation.lng], {
+      const marker = L.marker([centerLocation.lat, centerLocation.lng], {
         draggable: true
       }).addTo(mapInstance);
 
@@ -184,22 +143,14 @@ const OlaMap = ({
   };
 
   useEffect(() => {
-    console.log("OlaMap component mounting, loading maps...");
+    console.log("OlaMap component mounting...");
     
     const timer = setTimeout(() => {
-      if (!mapRef.current) {
-        console.log("Map container still not available, retrying...");
-        setTimeout(() => {
-          if (mapRef.current) {
-            loadMapLibrary();
-          } else {
-            setError("Map container failed to load");
-          }
-        }, 500);
-        return;
+      if (mapRef.current) {
+        initializeMap();
+      } else {
+        setError("Map container failed to load");
       }
-      
-      loadMapLibrary();
     }, 100);
 
     return () => {
