@@ -157,14 +157,29 @@ export const workerAPI = {
 
   getWorker: async (workerId: string) => {
     try {
-      const { data, error } = await supabase
+      // Fetch worker without joining the sensitive profiles table
+      const { data: worker, error: workerError } = await supabase
         .from('workers')
-        .select('*, profiles!workers_user_id_fkey(*)')
+        .select('*')
         .eq('id', workerId)
         .single();
-      
-      if (error) throw error;
-      return { success: true, data };
+
+      if (workerError) throw workerError;
+
+      // Fetch safe public profile fields via the public_profiles view
+      let publicProfile: any = null;
+      if (worker?.user_id) {
+        const { data: pp } = await supabase
+          .from('public_profiles')
+          .select('id, full_name, avatar_url')
+          .eq('id', worker.user_id)
+          .single();
+        publicProfile = pp || null;
+      }
+
+      // Attach as `profiles` to keep shape compatible with existing UI
+      const combined = { ...worker, profiles: publicProfile };
+      return { success: true, data: combined };
     } catch (error: any) {
       console.error("Error fetching worker:", error);
       return { success: false, message: error.message };
@@ -189,19 +204,31 @@ export const workerAPI = {
 
   findNearbyWorkers: async (latitude: number, longitude: number, serviceType: string, radius: number = 10) => {
     try {
-      // Get all verified workers with the required skill
-      const { data, error } = await supabase
+      // Get all verified and available workers with the required skill (no profiles join)
+      const { data: workers, error } = await supabase
         .from('workers')
-        .select('*, profiles!workers_user_id_fkey(*)')
+        .select('*')
         .eq('kyc_verified', true)
         .eq('is_available', true)
         .contains('skills', [serviceType]);
       
       if (error) throw error;
+
+      // Fetch public profiles for these workers in one query
+      const userIds = (workers || []).map(w => w.user_id).filter(Boolean) as string[];
+      const { data: publicProfiles } = userIds.length
+        ? await supabase
+            .from('public_profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', userIds)
+        : { data: [], error: null } as any;
+
+      const profileMap = new Map<string, any>((publicProfiles || []).map((p: any) => [p.id, p]));
       
-      // Mock distance calculation for demo
-      const workersWithDistance = data.map(worker => ({
+      // Mock distance calculation for demo and attach safe profile
+      const workersWithDistance = (workers || []).map(worker => ({
         ...worker,
+        profiles: profileMap.get(worker.user_id) || null,
         distance: Math.random() * radius,
         eta: Math.floor(Math.random() * 30) + 5
       }));
@@ -291,14 +318,27 @@ export const serviceAPI = {
 
   getBooking: async (bookingId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data: booking, error } = await supabase
         .from('service_bookings')
-        .select('*, workers(*), profiles!service_bookings_customer_id_fkey(*)')
+        .select('*, workers(*)')
         .eq('id', bookingId)
         .single();
       
       if (error) throw error;
-      return { success: true, data };
+
+      // Attach safe public profile of the customer
+      let publicProfile: any = null;
+      if (booking?.customer_id) {
+        const { data: pp } = await supabase
+          .from('public_profiles')
+          .select('id, full_name, avatar_url')
+          .eq('id', booking.customer_id)
+          .single();
+        publicProfile = pp || null;
+      }
+
+      const combined = { ...booking, profiles: publicProfile };
+      return { success: true, data: combined };
     } catch (error: any) {
       console.error("Error fetching booking:", error);
       return { success: false, message: error.message };
@@ -307,14 +347,25 @@ export const serviceAPI = {
 
   getBookings: async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data: bookings, error } = await supabase
         .from('service_bookings')
-        .select('*, workers(*), profiles!service_bookings_customer_id_fkey(*)')
+        .select('*, workers(*)')
         .eq('customer_id', userId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return { success: true, data };
+
+      const customerIds = (bookings || []).map(b => b.customer_id).filter(Boolean) as string[];
+      const { data: publicProfiles } = customerIds.length
+        ? await supabase
+            .from('public_profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', customerIds)
+        : { data: [], error: null } as any;
+      const profileMap = new Map<string, any>((publicProfiles || []).map((p: any) => [p.id, p]));
+
+      const withProfiles = (bookings || []).map(b => ({ ...b, profiles: profileMap.get(b.customer_id) || null }));
+      return { success: true, data: withProfiles };
     } catch (error: any) {
       console.error("Error fetching bookings:", error);
       return { success: false, message: error.message };
@@ -325,19 +376,29 @@ export const serviceAPI = {
     try {
       let query = supabase
         .from('service_bookings')
-        .select('*, workers(*), profiles!service_bookings_customer_id_fkey(*)');
+        .select('*, workers(*)');
       
       if (userType === 'customer') {
         query = query.eq('customer_id', userId);
       } else {
-        // For workers, we need to join with the workers table
+        // For workers, fetch bookings assigned to them
         query = query.eq('worker_id', userId);
       }
       
-      const { data, error } = await query.order('created_at', { ascending: false });
-      
+      const { data: bookings, error } = await query.order('created_at', { ascending: false });
       if (error) throw error;
-      return { success: true, data };
+
+      const customerIds = (bookings || []).map(b => b.customer_id).filter(Boolean) as string[];
+      const { data: publicProfiles } = customerIds.length
+        ? await supabase
+            .from('public_profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', customerIds)
+        : { data: [], error: null } as any;
+      const profileMap = new Map<string, any>((publicProfiles || []).map((p: any) => [p.id, p]));
+
+      const withProfiles = (bookings || []).map(b => ({ ...b, profiles: profileMap.get(b.customer_id) || null }));
+      return { success: true, data: withProfiles };
     } catch (error: any) {
       console.error("Error fetching user bookings:", error);
       return { success: false, message: error.message };
@@ -523,14 +584,25 @@ export const reviewAPI = {
 
   getWorkerReviews: async (workerId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data: reviews, error } = await supabase
         .from('reviews')
-        .select('*, profiles!reviews_customer_id_fkey(*)')
+        .select('*')
         .eq('worker_id', workerId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return { success: true, data };
+
+      const customerIds = (reviews || []).map(r => r.customer_id).filter(Boolean) as string[];
+      const { data: publicProfiles } = customerIds.length
+        ? await supabase
+            .from('public_profiles')
+            .select('id, full_name, avatar_url')
+            .in('id', customerIds)
+        : { data: [], error: null } as any;
+      const profileMap = new Map<string, any>((publicProfiles || []).map((p: any) => [p.id, p]));
+
+      const withProfiles = (reviews || []).map(r => ({ ...r, profiles: profileMap.get(r.customer_id) || null }));
+      return { success: true, data: withProfiles };
     } catch (error: any) {
       console.error("Error fetching worker reviews:", error);
       return { success: false, message: error.message };

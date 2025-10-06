@@ -361,9 +361,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_public_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
