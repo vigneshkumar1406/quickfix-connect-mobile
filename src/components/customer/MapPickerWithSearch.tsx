@@ -93,7 +93,7 @@ export default function MapPickerWithSearch({
           />
           
           {selectedLocation && (
-            <div className="mt-4 space-y-2">
+            <div className="mt-4 space-y-3">
               <Button 
                 onClick={handleConfirm}
                 className="w-full"
@@ -103,10 +103,10 @@ export default function MapPickerWithSearch({
               <Button 
                 onClick={handleUseCurrentLocation}
                 variant="outline"
-                className="w-full"
+                className="w-full flex items-center justify-center gap-2"
               >
-                <Crosshair className="w-4 h-4 mr-2" />
-                Use Current Location
+                <Crosshair className="w-5 h-5" />
+                Current Location
               </Button>
             </div>
           )}
