@@ -87,7 +87,7 @@ export default function MapPickerWithSearch({
         <div className="p-4">
           <OlaMap 
             onLocationSelect={handleLocationSelect}
-            initialLocation={initialLocation}
+            initialLocation={selectedLocation || initialLocation}
             height="500px"
             showControls={true}
           />
