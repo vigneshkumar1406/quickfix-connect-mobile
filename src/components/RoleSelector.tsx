@@ -30,8 +30,9 @@ export default function RoleSelector() {
   const navigate = useNavigate();
 
   const handleRoleSelect = (role: string) => {
-    // In a real app, you would store this in localStorage/context
-    localStorage.setItem("fixsify-role", role);
+    // Store role temporarily in sessionStorage during signup
+    // Will be saved to database after authentication
+    sessionStorage.setItem("fixsify-pending-role", role);
     navigate("/verification");
   };
 
