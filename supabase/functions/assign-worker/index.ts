@@ -1,11 +1,17 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const assignWorkerSchema = z.object({
+  bookingId: z.string().uuid('Invalid booking ID format'),
+  workerId: z.string().uuid('Invalid worker ID format')
+})
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -23,7 +29,33 @@ serve(async (req) => {
       }
     )
 
-    const { bookingId, workerId } = await req.json()
+    // Validate input
+    const body = await req.json()
+    const validationResult = assignWorkerSchema.safeParse(body)
+    
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validationResult.error.issues }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      )
+    }
+
+    const { bookingId, workerId } = validationResult.data
+
+    // Verify user has permission (must be admin or the booking's customer)
+    const { data: { user } } = await supabaseClient.auth.getUser()
+    if (!user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401,
+        },
+      )
+    }
 
     // Update booking with assigned worker
     const { data: booking, error: updateError } = await supabaseClient

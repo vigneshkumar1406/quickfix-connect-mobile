@@ -1,11 +1,20 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const notificationSchema = z.object({
+  userId: z.string().uuid('Invalid user ID format'),
+  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
+  message: z.string().min(1, 'Message is required').max(1000, 'Message too long'),
+  type: z.string().max(50).optional(),
+  data: z.record(z.any()).optional()
+})
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -23,7 +32,21 @@ serve(async (req) => {
       }
     )
 
-    const { userId, title, message, type, data } = await req.json()
+    // Validate input
+    const body = await req.json()
+    const validationResult = notificationSchema.safeParse(body)
+    
+    if (!validationResult.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: validationResult.error.issues }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        },
+      )
+    }
+
+    const { userId, title, message, type, data } = validationResult.data
 
     // Create notification in database
     const { error } = await supabaseClient
