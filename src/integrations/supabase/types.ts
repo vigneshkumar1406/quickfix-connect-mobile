@@ -369,14 +369,44 @@ export type Database = {
         }
         Relationships: []
       }
+      public_workers: {
+        Row: {
+          created_at: string | null
+          experience_years: number | null
+          id: string | null
+          is_available: boolean | null
+          kyc_verified: boolean | null
+          rating: number | null
+          skills: string[] | null
+          total_jobs: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_public_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           avatar_url: string
           full_name: string
           id: string
+        }[]
+      }
+      get_public_workers: {
+        Args: never
+        Returns: {
+          created_at: string
+          experience_years: number
+          id: string
+          is_available: boolean
+          kyc_verified: boolean
+          rating: number
+          skills: string[]
+          total_jobs: number
+          updated_at: string
+          user_id: string
         }[]
       }
       has_role: {

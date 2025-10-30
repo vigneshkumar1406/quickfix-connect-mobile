@@ -204,9 +204,9 @@ export const workerAPI = {
 
   findNearbyWorkers: async (latitude: number, longitude: number, serviceType: string, radius: number = 10) => {
     try {
-      // Get all verified and available workers with the required skill (no profiles join)
+      // Get all verified and available workers with the required skill using public view
       const { data: workers, error } = await supabase
-        .from('workers')
+        .from('public_workers')
         .select('*')
         .eq('kyc_verified', true)
         .eq('is_available', true)
@@ -484,57 +484,19 @@ export const walletAPI = {
 
   updateBalance: async (userId: string, amount: number, type: 'credit' | 'debit', description: string, bookingId?: string) => {
     try {
-      // Get current wallet
-      const { data: wallet, error: walletError } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-      
-      if (walletError) throw walletError;
-      
-      // Create wallet if it doesn't exist
-      if (!wallet) {
-        const { error: createError } = await supabase
-          .from('wallets')
-          .insert({ user_id: userId, balance: 0, total_earned: 0 });
-        
-        if (createError) throw createError;
-      }
-      
-      const currentBalance = wallet?.balance || 0;
-      const currentEarned = wallet?.total_earned || 0;
-      
-      const newBalance = type === 'credit' 
-        ? currentBalance + amount 
-        : currentBalance - amount;
-      
-      // Update wallet balance
-      const { error: updateError } = await supabase
-        .from('wallets')
-        .update({ 
-          balance: newBalance,
-          total_earned: type === 'credit' ? currentEarned + amount : currentEarned
-        })
-        .eq('user_id', userId);
-      
-      if (updateError) throw updateError;
-      
-      // Create transaction record
-      const { error: transactionError } = await supabase
-        .from('wallet_transactions')
-        .insert({
-          user_id: userId,
+      // Call secure edge function to update wallet
+      const { data, error } = await supabase.functions.invoke('update-wallet', {
+        body: {
           amount,
           type,
           description,
-          booking_id: bookingId,
-          balance_after: newBalance
-        });
+          bookingId
+        }
+      });
       
-      if (transactionError) throw transactionError;
+      if (error) throw error;
       
-      return { success: true };
+      return { success: true, data };
     } catch (error: any) {
       console.error("Error updating wallet balance:", error);
       return { success: false, message: error.message };
