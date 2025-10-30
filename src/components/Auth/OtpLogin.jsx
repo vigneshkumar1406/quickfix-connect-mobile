@@ -1,35 +1,68 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card } from '@/components/ui/card';
+import { toast } from 'sonner';
 
 const OtpLogin = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
   const { sendOTP, verifyOTP, loading } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let interval;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
     
     if (!phoneNumber || phoneNumber.length !== 10) {
-      alert('Please enter a valid 10-digit phone number');
+      toast.error('Please enter a valid 10-digit phone number');
       return;
     }
     
-    console.log('Attempting to send OTP...');
     const response = await sendOTP(phoneNumber);
-    console.log('OTP response:', response);
     
     if (response.success) {
       setOtpSent(true);
-      alert('OTP sent successfully!');
+      setResendTimer(60);
+      toast.success('OTP sent successfully! Check your SMS.');
     } else {
-      alert(response.message || 'Failed to send OTP. Please try again.');
+      const errorMsg = response.message || 'Failed to send OTP';
+      if (errorMsg.includes('captcha')) {
+        toast.error('Please complete the reCAPTCHA verification');
+      } else if (errorMsg.includes('domain')) {
+        toast.error('Domain not authorized. Please contact support.');
+      } else if (errorMsg.includes('rate')) {
+        toast.error('Too many attempts. Please try again later.');
+      } else {
+        toast.error(errorMsg);
+      }
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    
+    const response = await sendOTP(phoneNumber);
+    
+    if (response.success) {
+      setResendTimer(60);
+      toast.success('OTP resent successfully!');
+    } else {
+      toast.error(response.message || 'Failed to resend OTP');
     }
   };
   
@@ -37,13 +70,22 @@ const OtpLogin = () => {
     e.preventDefault();
     
     if (!otp || otp.length !== 6) {
-      alert('Please enter a valid 6-digit OTP');
+      toast.error('Please enter a valid 6-digit OTP');
       return;
     }
     
     const response = await verifyOTP(phoneNumber, otp);
     if (response.success) {
+      toast.success('Login successful!');
       navigate('/customer/dashboard');
+    } else {
+      if (response.error?.includes('invalid')) {
+        toast.error('Invalid OTP. Please check and try again.');
+      } else if (response.error?.includes('expired')) {
+        toast.error('OTP expired. Please request a new one.');
+      } else {
+        toast.error('Verification failed. Please try again.');
+      }
     }
   };
 
@@ -98,8 +140,23 @@ const OtpLogin = () => {
             
             <Button 
               type="button" 
+              variant="outline" 
+              onClick={handleResendOtp}
+              disabled={resendTimer > 0 || loading}
+              className="w-full"
+            >
+              {resendTimer > 0 
+                ? `Resend OTP in ${resendTimer}s` 
+                : 'Resend OTP'}
+            </Button>
+            
+            <Button 
+              type="button" 
               variant="link" 
-              onClick={() => setOtpSent(false)}
+              onClick={() => {
+                setOtpSent(false);
+                setResendTimer(0);
+              }}
             >
               Change Phone Number
             </Button>
