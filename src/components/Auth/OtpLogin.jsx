@@ -21,9 +21,15 @@ const OtpLogin = () => {
       return;
     }
     
+    console.log('Attempting to send OTP...');
     const response = await sendOTP(phoneNumber);
+    console.log('OTP response:', response);
+    
     if (response.success) {
       setOtpSent(true);
+      alert('OTP sent successfully!');
+    } else {
+      alert(response.message || 'Failed to send OTP. Please try again.');
     }
   };
   
