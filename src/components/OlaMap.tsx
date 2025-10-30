@@ -39,6 +39,7 @@ const OlaMap = ({
   const [error, setError] = useState<string>("");
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
+  const currentLocationMarkerRef = useRef<any>(null);
 
 
   const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
@@ -132,6 +133,41 @@ const OlaMap = ({
         handleLocationChange(lat, lng);
       });
 
+      // Add current location marker with custom blue dot icon
+      const currentLocationIcon = L.divIcon({
+        className: 'current-location-marker',
+        html: `
+          <div style="
+            width: 20px;
+            height: 20px;
+            background: #4285F4;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          "></div>
+        `,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+
+      // Get and display current location
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            const currentLocationMarker = L.marker([latitude, longitude], {
+              icon: currentLocationIcon,
+              draggable: false
+            }).addTo(mapInstance);
+            
+            currentLocationMarkerRef.current = currentLocationMarker;
+          },
+          (error) => {
+            console.log("Geolocation error:", error);
+          }
+        );
+      }
+
       setIsMapLoaded(true);
       setError("");
       console.log("Map initialized successfully");
@@ -156,6 +192,9 @@ const OlaMap = ({
     return () => {
       console.log("OlaMap component unmounting");
       clearTimeout(timer);
+      if (currentLocationMarkerRef.current) {
+        currentLocationMarkerRef.current.remove();
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
       }
